@@ -496,14 +496,25 @@
       </div>;
 
 
-    const SectionTitle = ({ eyebrow, title, right }) =>
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 14 }}>
-        <div>
-          {eyebrow && <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>{eyebrow}</div>}
-          <h2 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 30, letterSpacing: '-0.01em', color: 'var(--ink)' }}>{title}</h2>
+    const SectionTitle = ({ eyebrow, title, right }) => {
+      const isMobile = useIsMobile();
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'flex-end',
+          justifyContent: 'space-between',
+          gap: isMobile ? 12 : 20,
+          marginBottom: 14
+        }}>
+          <div>
+            {eyebrow && <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>{eyebrow}</div>}
+            <h2 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 24 : 30, letterSpacing: '-0.01em', color: 'var(--ink)' }}>{title}</h2>
+          </div>
+          {right}
         </div>
-        {right}
-      </div>;
+      );
+    };
 
 
     // Page frame with terminal chrome
@@ -531,7 +542,7 @@
       const hh = clock.toISOString().slice(11, 19);
 
       return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflowX: 'hidden' }}>
           {/* Top bar */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 0,
@@ -653,12 +664,18 @@
           {/* Footer */}
           <footer style={{
             borderTop: '1px solid var(--line)', background: 'var(--bg-1)',
-            padding: isMobile ? '10px 16px' : '12px 24px',
-            display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6,
+            padding: isMobile ? '16px' : '12px 24px',
+            display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center',
+            flexWrap: 'wrap', gap: 12,
             fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.06em'
           }}>
             <span>COMMODITYOPS © Inc. 2026</span>
-            <span>DOCS · API · STATUS: <span style={{ color: 'var(--accent-2)' }}>OPERATIONAL</span></span>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <span>DOCS</span>
+              <span>API</span>
+              <span>STATUS: <span style={{ color: 'var(--accent-2)' }}>OPERATIONAL</span></span>
+            </div>
           </footer>
         </div>);
 
@@ -832,6 +849,7 @@
         const context = canvas.getContext('2d');
         if (!context) return;
 
+        const isMobile = window.innerWidth <= 768;
         const containerWidth = containerRef.current.offsetWidth || width;
         const containerHeight = containerRef.current.offsetHeight || height;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -842,7 +860,9 @@
         canvas.style.height = `${containerHeight}px`;
         context.scale(dpr, dpr);
 
-        const projection = d3.geoNaturalEarth1().translate([containerWidth / 2, containerHeight / 2]).scale(containerWidth / 6.1);
+        const projection = d3.geoNaturalEarth1()
+          .translate([containerWidth / 2, containerHeight / (isMobile ? 1.8 : 2)])
+          .scale(containerWidth / (isMobile ? 3.2 : 6.1));
         const path = d3.geoPath().projection(projection).context(context);
 
         const allDots = [];
@@ -929,7 +949,7 @@
           context.fillRect(0, 0, containerWidth, containerHeight);
 
           context.strokeStyle = 'rgba(245,158,11,0.03)';
-          context.lineWidth = Math.max(0.5, 0.6 * sf);
+          context.lineWidth = isMobile ? 1 : Math.max(0.5, 0.6 * sf);
           const gridStep = Math.max(42, Math.floor(containerWidth / 15));
           for (let x = 0; x <= containerWidth; x += gridStep) {
             context.beginPath();
@@ -990,8 +1010,8 @@
             }
 
             strokeSegmentedLine(routePoints, () => {
-              context.strokeStyle = 'rgba(245,158,11,0.12)';
-              context.lineWidth = (primaryLane ? 1.15 : 0.9) * sf;
+              context.strokeStyle = isMobile ? 'rgba(245,158,11,0.22)' : 'rgba(245,158,11,0.12)';
+              context.lineWidth = (primaryLane ? (isMobile ? 2 : 1.15) : (isMobile ? 1.5 : 0.9)) * sf;
               context.lineCap = 'round';
               context.lineJoin = 'round';
               context.stroke();
@@ -1018,7 +1038,7 @@
 
               strokeSegmentedLine(segmentPoints, () => {
                 context.strokeStyle = 'rgba(245,158,11,0.9)';
-                context.lineWidth = 1.95 * sf;
+                context.lineWidth = (isMobile ? 3 : 1.95) * sf;
                 context.lineCap = 'round';
                 context.lineJoin = 'round';
                 context.stroke();
@@ -1026,7 +1046,7 @@
 
               strokeSegmentedLine(segmentPoints, () => {
                 context.strokeStyle = 'rgba(245,158,11,0.26)';
-                context.lineWidth = 4.6 * sf;
+                context.lineWidth = (isMobile ? 7 : 4.6) * sf;
                 context.lineCap = 'round';
                 context.lineJoin = 'round';
                 context.stroke();
@@ -1228,12 +1248,12 @@
               zIndex: 0
             }}>
               <div style={{
-                width: 'min(96vw, 1520px)',
-                opacity: 0.36,
-                transform: 'translateY(-1%) scale(1.05)',
+                width: isMobile ? '180vw' : 'min(96vw, 1520px)',
+                opacity: isMobile ? 0.45 : 0.36,
+                transform: isMobile ? 'translateY(-5%) scale(1.1)' : 'translateY(-1%) scale(1.05)',
                 filter: 'saturate(1.02) contrast(1.04)'
               }}>
-                <div style={{ aspectRatio: '9 / 5' }}>
+                <div style={{ aspectRatio: isMobile ? '1 / 1' : '9 / 5' }}>
                   <WorldMap width={900} height={500} />
                 </div>
               </div>
@@ -2075,7 +2095,7 @@
               <span style={{ color: 'var(--accent)', fontSize: 13 }}>←</span>
               Back to Deals
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.08em' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--mono)', fontSize: isMobile ? 9 : 11, color: 'var(--ink-faint)', letterSpacing: '0.08em' }}>
               <span style={{ color: 'var(--ink-dim)', cursor: 'pointer' }} onClick={onBack}>Deals</span>
               <span>/</span>
               <span style={{ color: 'var(--ink)' }}>{deal.id}</span>
@@ -2112,14 +2132,18 @@
             <>
               {/* Summary strip */}
               <div style={{
-                display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
-                border: '1px solid var(--line)', marginBottom: 24, background: 'var(--bg-1)'
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(5, 1fr)',
+                borderTop: '1px solid var(--line)',
+                borderLeft: '1px solid var(--line)',
+                marginBottom: 24,
+                background: 'var(--bg-1)'
               }}>
-                <Summary label="Parameters" value={analysis.checks.length} sub="cross-checked" />
-                <Summary label="Passed" value={passes} color="var(--accent-2)" sub="within spec" />
-                <Summary label="Warnings" value={warns} color="var(--accent)" sub="within tolerance" />
-                <Summary label="Violations" value={fails} color="var(--accent-3)" sub="above spec" />
-                {!isMobile && <Summary label="Runtime" value={analysis.runtime} sub="1 COA · 1 contract" mono />}
+                <Summary label="Parameters" value={analysis.checks.length} sub="total" isMobile={isMobile} />
+                <Summary label="Passed" value={passes} color="var(--accent-2)" sub="within spec" isMobile={isMobile} />
+                <Summary label="Warnings" value={warns} color="var(--accent)" sub="tolerance" isMobile={isMobile} />
+                <Summary label="Violations" value={fails} color="var(--accent-3)" sub="above spec" isMobile={isMobile} />
+                {!isMobile && <Summary label="Runtime" value={analysis.runtime} sub="1 COA · 1 contract" mono isMobile={isMobile} />}
               </div>
 
               {/* Two-column: violations + sidebar */}
@@ -2142,11 +2166,16 @@
 
     };
 
-    const Summary = ({ label, value, color, sub, mono }) =>
-      <div style={{ padding: '18px 20px', borderRight: '1px solid var(--line)' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</div>
-        <div style={{ fontFamily: mono ? 'var(--mono)' : 'var(--serif)', fontSize: mono ? 26 : 34, fontWeight: 400, color: color || 'var(--ink)', marginTop: 4, lineHeight: 1 }}>{value}</div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.05em', marginTop: 6 }}>{sub}</div>
+    const Summary = ({ label, value, color, sub, mono, isMobile }) =>
+      <div style={{
+        padding: isMobile ? '14px 16px' : '18px 20px',
+        borderRight: '1px solid var(--line)',
+        borderBottom: '1px solid var(--line)',
+        minWidth: 0
+      }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+        <div style={{ fontFamily: mono ? 'var(--mono)' : 'var(--serif)', fontSize: isMobile ? 24 : 34, fontWeight: 400, color: color || 'var(--ink)', marginTop: 4, lineHeight: 1 }}>{value}</div>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-faint)', letterSpacing: '0.05em', marginTop: 6 }}>{sub}</div>
       </div>;
 
 
@@ -2239,7 +2268,7 @@
             <div style={{ color: 'var(--ink-faint)', transform: open ? 'rotate(90deg)' : '', transition: 'transform 120ms' }}>›</div>
           </div>
           {open &&
-            <div style={{ padding: '0 18px 16px 100px', color: 'var(--ink-dim)', fontSize: 13, lineHeight: 1.55, background: 'var(--bg-2)' }}>
+            <div style={{ padding: isMobile ? '0 18px 16px 40px' : '0 18px 16px 100px', color: 'var(--ink-dim)', fontSize: 13, lineHeight: 1.55, background: 'var(--bg-2)' }}>
               <div style={{ paddingTop: 14, borderTop: '1px dashed var(--line-2)' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: 6 }}>REASON</div>
                 {v.reason}
@@ -2256,19 +2285,29 @@
     };
 
     const ComparisonTable = ({ analysis }) => {
+      const isMobile = useIsMobile();
       const [filter, setFilter] = React.useState('ALL');
       const rows = analysis.checks.filter((c) => filter === 'ALL' || c.result === filter);
       return (
         <div style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'flex-start' : 'baseline',
+            gap: 16,
+            marginBottom: 12
+          }}>
             <div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.12em' }}>COMPARISON · ALL PARAMETERS</div>
-              <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 26, margin: '4px 0 0' }}>Every number, side by side</h3>
+              <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 22 : 26, margin: '4px 0 0' }}>Every number, side by side</h3>
             </div>
-            <div style={{ display: 'flex', gap: 0, border: '1px solid var(--line-2)' }}>
+            <div style={{ display: 'flex', gap: 0, border: '1px solid var(--line-2)', width: isMobile ? '100%' : 'auto' }}>
               {['ALL', 'FAIL', 'WARN', 'PASS'].map((k) =>
                 <div key={k} onClick={() => setFilter(k)} style={{
-                  padding: '6px 12px', fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '0.08em',
+                  flex: isMobile ? 1 : 'none',
+                  textAlign: 'center',
+                  padding: '6px 12px', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em',
                   cursor: 'pointer', borderRight: k !== 'PASS' ? '1px solid var(--line-2)' : 'none',
                   color: filter === k ? 'var(--ink)' : 'var(--ink-faint)',
                   background: filter === k ? 'var(--bg-3)' : 'transparent'
@@ -2277,44 +2316,89 @@
             </div>
           </div>
           <div style={{ border: '1px solid var(--line)', background: 'var(--bg-1)', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--line)', background: 'var(--bg-2)' }}>
-                  {['Parameter', 'COA value', 'Spec', 'Tolerance', 'Result', 'Source'].map((h) =>
-                    <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 500, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((c, i) =>
-                  <tr key={i} style={{ borderBottom: '1px solid var(--line)' }}>
-                    <td style={{ padding: '11px 14px', color: 'var(--ink)' }}>{c.param}</td>
-                    <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: c.result === 'PASS' ? 'var(--ink)' : c.result === 'WARN' ? 'var(--accent)' : 'var(--accent-3)' }}>{c.coa}</td>
-                    <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: 'var(--ink-dim)' }}>{c.spec}</td>
-                    <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: 'var(--ink-faint)' }}>{c.tol}</td>
-                    <td style={{ padding: '11px 14px' }}><ResultTag result={c.result} /></td>
-                    <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: 11.5, color: 'var(--ink-faint)' }}>{c.source}</td>
+            {isMobile ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {rows.map((c, i) => (
+                  <div key={i} style={{ borderBottom: i === rows.length - 1 ? 'none' : '1px solid var(--line)', padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div style={{ fontWeight: 500, color: 'var(--ink)', fontSize: 13.5 }}>{c.param}</div>
+                      <ResultTag result={c.result} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontFamily: 'var(--mono)', fontSize: 11 }}>
+                      <div>
+                        <div style={{ color: 'var(--ink-faint)', fontSize: 9, marginBottom: 2 }}>VALUE</div>
+                        <div style={{ color: c.result === 'PASS' ? 'var(--ink)' : c.result === 'WARN' ? 'var(--accent)' : 'var(--accent-3)' }}>{c.coa}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: 'var(--ink-faint)', fontSize: 9, marginBottom: 2 }}>SPEC</div>
+                        <div style={{ color: 'var(--ink-dim)' }}>{c.spec}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: 'var(--ink-faint)', fontSize: 9, marginBottom: 2 }}>TOLERANCE</div>
+                        <div style={{ color: 'var(--ink-faint)' }}>{c.tol || 'None'}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: 'var(--ink-faint)', fontSize: 9, marginBottom: 2 }}>SOURCE</div>
+                        <div style={{ color: 'var(--ink-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.source}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--line)', background: 'var(--bg-2)' }}>
+                    {['Parameter', 'COA value', 'Spec', 'Tolerance', 'Result', 'Source'].map((h) =>
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontFamily: 'var(--mono)', fontSize: 10.5, fontWeight: 500, color: 'var(--ink-faint)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
+                    )}
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((c, i) =>
+                    <tr key={i} style={{ borderBottom: '1px solid var(--line)' }}>
+                      <td style={{ padding: '11px 14px', color: 'var(--ink)' }}>{c.param}</td>
+                      <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: c.result === 'PASS' ? 'var(--ink)' : c.result === 'WARN' ? 'var(--accent)' : 'var(--accent-3)' }}>{c.coa}</td>
+                      <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: 'var(--ink-dim)' }}>{c.spec}</td>
+                      <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', color: 'var(--ink-faint)' }}>{c.tol}</td>
+                      <td style={{ padding: '11px 14px' }}><ResultTag result={c.result} /></td>
+                      <td style={{ padding: '11px 14px', fontFamily: 'var(--mono)', fontSize: 11.5, color: 'var(--ink-faint)' }}>{c.source}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>);
 
     };
 
-    const Traceability = ({ analysis }) =>
-      <div style={{
-        marginBottom: 24, padding: '16px 18px',
-        border: '1px solid var(--line)', background: 'var(--bg-1)',
-        fontFamily: 'var(--mono)', fontSize: 11.5, color: 'var(--ink-dim)', lineHeight: 1.7,
-        letterSpacing: '0.02em'
-      }}>
-        <div style={{ color: 'var(--ink-faint)', letterSpacing: '0.1em', marginBottom: 8 }}>TRACEABILITY · SOURCE PROVENANCE</div>
-        ┌─ COA &nbsp;&nbsp;&nbsp;{analysis.docCOA.filename} · {analysis.docCOA.pages}p · extracted {analysis.docCOA.extractedAt}<br />
-        └─ CONTRACT &nbsp;{analysis.docContract.filename} · {analysis.docContract.pages}p · extracted {analysis.docContract.extractedAt}<br />
-        <span style={{ color: 'var(--ink-faint)' }}>Every value above links to its originating clause. Keep this PDF; it's your audit trail.</span>
-      </div>;
+    const Traceability = ({ analysis }) => {
+      const isMobile = useIsMobile();
+      return (
+        <div style={{
+          marginBottom: 24, padding: isMobile ? '12px 14px' : '16px 18px',
+          border: '1px solid var(--line)', background: 'var(--bg-1)',
+          fontFamily: 'var(--mono)', fontSize: isMobile ? 10.5 : 11.5, color: 'var(--ink-dim)', lineHeight: 1.7,
+          letterSpacing: '0.02em', overflow: 'hidden'
+        }}>
+          <div style={{ color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: 8, fontSize: 10 }}>TRACEABILITY · PROVENANCE</div>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ color: 'var(--ink-faint)' }}>┌─</span> COA &nbsp;&nbsp;&nbsp;{analysis.docCOA.filename}
+          </div>
+          <div style={{ color: 'var(--ink-faint)', fontSize: 10, marginLeft: 22, marginBottom: 4 }}>
+            {analysis.docCOA.pages}p · extracted {analysis.docCOA.extractedAt}
+          </div>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ color: 'var(--ink-faint)' }}>└─</span> CONTRACT &nbsp;{analysis.docContract.filename}
+          </div>
+          <div style={{ color: 'var(--ink-faint)', fontSize: 10, marginLeft: 22, marginBottom: 8 }}>
+            {analysis.docContract.pages}p · extracted {analysis.docContract.extractedAt}
+          </div>
+          <div style={{ color: 'var(--ink-faint)', fontSize: 10, lineHeight: 1.4 }}>Every value above links to its originating clause. Keep this PDF for your audit trail.</div>
+        </div>
+      );
+    };
 
 
     const DocPanel = ({ tab, setTab, analysis }) => {
@@ -2361,6 +2445,7 @@
     };
 
     const VerdictCard = ({ analysis, status, fails, warns, passes }) => {
+      const isMobile = useIsMobile();
       const headline =
         status === 'COMPLIANT' ? 'Release payment.' :
           status === 'NON_COMPLIANT' ? 'Do not release. Renegotiate.' :
@@ -2375,7 +2460,7 @@
           <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 26, lineHeight: 1.2, margin: '6px 0 14px' }}>
             {headline}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 12 : 8, marginBottom: 12 }}>
             <Meter label="Pass" value={passes} max={analysis.checks.length} color="var(--accent-2)" />
             <Meter label="Warn" value={warns} max={analysis.checks.length} color="var(--accent)" />
             <Meter label="Fail" value={fails} max={analysis.checks.length} color="var(--accent-3)" />
@@ -2672,6 +2757,7 @@
     ];
 
     const FeatureDemo = ({ type }) => {
+      const isMobile = useIsMobile();
       // Small inline demos — tuned to match the detail page aesthetic.
       if (type === 'extract') {
         return (
@@ -2742,8 +2828,8 @@
       if (type === 'compare') {
         return (
           <div style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr auto', gap: 0, background: 'var(--bg-2)', padding: '9px 14px', borderBottom: '1px solid var(--line)', color: 'var(--ink-faint)', fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              <span>Parameter</span><span>COA</span><span>Spec</span><span>Result</span>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1.5fr 1fr 1fr' : '1.3fr 1fr 1fr auto', gap: 0, background: 'var(--bg-2)', padding: '9px 14px', borderBottom: '1px solid var(--line)', color: 'var(--ink-faint)', fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span>Parameter</span><span>COA</span><span>Spec</span>{!isMobile && <span>Result</span>}
             </div>
             {[
               ['Moisture', '14.2%', '≤14.0%', 'FAIL', 'var(--accent-3)'],
@@ -2754,11 +2840,11 @@
               ['Splits', '12.1%', '≤20.0%', 'PASS', 'var(--accent-2)'],
               ['Aflatoxin B1', '<2 ppb', '≤5 ppb', 'PASS', 'var(--accent-2)']
             ].map((row, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr auto', gap: 0, padding: '9px 14px', borderBottom: '1px solid var(--line)' }}>
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1.5fr 1fr 1fr' : '1.3fr 1fr 1fr auto', gap: 0, padding: '9px 14px', borderBottom: '1px solid var(--line)' }}>
                 <span style={{ color: 'var(--ink)' }}>{row[0]}</span>
                 <span style={{ color: row[4] }}>{row[1]}</span>
                 <span style={{ color: 'var(--ink-faint)' }}>{row[2]}</span>
-                <span style={{ color: row[4], fontWeight: 700, fontSize: 10.5, letterSpacing: '0.08em' }}>{row[3]}</span>
+                {!isMobile && <span style={{ color: row[4], fontWeight: 700, fontSize: 10.5, letterSpacing: '0.08em' }}>{row[3]}</span>}
               </div>
             ))}
           </div>
@@ -2870,11 +2956,21 @@
               ['2026-04-17 15:45', 'A.KUZNETSOV', 'requested re-sample', 'PENDING', 'var(--ink-faint)'],
               ['2026-04-18 08:12', 'A.KUZNETSOV', 'attached re-sample COA', '+1 DOC', 'var(--accent-2)']
             ].map((row, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '140px 110px 1fr 100px', gap: 14, padding: '10px 14px', borderBottom: i < 4 ? '1px solid var(--line)' : 'none', color: 'var(--ink-dim)' }}>
-                <span style={{ color: 'var(--ink-faint)' }}>{row[0]}</span>
-                <span style={{ color: 'var(--ink)' }}>{row[1]}</span>
-                <span>{row[2]}</span>
-                <span style={{ color: row[4], letterSpacing: '0.08em', fontWeight: 700 }}>{row[3]}</span>
+              <div key={i} style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '100px 1fr 80px' : '140px 110px 1fr 100px',
+                gap: isMobile ? 8 : 14,
+                padding: '10px 14px',
+                borderBottom: i < 4 ? '1px solid var(--line)' : 'none',
+                color: 'var(--ink-dim)'
+              }}>
+                <span style={{ color: 'var(--ink-faint)', fontSize: isMobile ? 10 : 11.5 }}>{isMobile ? row[0].split(' ')[1] : row[0]}</span>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: 'var(--ink)', fontSize: isMobile ? 11 : 13 }}>{row[1]}</span>
+                  {isMobile && <div style={{ fontSize: 10, color: 'var(--ink-faint)' }}>{row[2]}</div>}
+                </div>
+                {!isMobile && <span>{row[2]}</span>}
+                <span style={{ color: row[4], letterSpacing: '0.08em', fontWeight: 700, textAlign: 'right', fontSize: isMobile ? 9 : 11.5 }}>{row[3]}</span>
               </div>
             ))}
           </div>
