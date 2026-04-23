@@ -114,6 +114,12 @@
     #root {
       min-height: 100vh;
     }
+
+    /* ===== Mobile / Responsive ===== */
+    @media (max-width: 768px) {
+      html, body { font-size: 13px; }
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+    }
   </style>
 </head>
 
@@ -132,6 +138,17 @@
     crossorigin="anonymous"></script>
 
   <script type="text/babel" data-presets="react">
+
+    // ===== hooks =====
+    const useIsMobile = () => {
+      const [mobile, setMobile] = React.useState(() => window.innerWidth <= 768);
+      React.useEffect(() => {
+        const handler = () => setMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handler);
+        return () => window.removeEventListener('resize', handler);
+      }, []);
+      return mobile;
+    };
 
 
     // ===== data.jsx =====
@@ -499,11 +516,18 @@
         { key: 'new', label: 'New Deal' },
         { key: 'detail', label: 'Example Deal' }];
 
+      const isMobile = useIsMobile();
       const [clock, setClock] = React.useState(() => new Date());
+      const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+
       React.useEffect(() => {
         const t = setInterval(() => setClock(new Date()), 1000);
         return () => clearInterval(t);
       }, []);
+
+      // Close mobile nav when route changes
+      React.useEffect(() => { setMobileNavOpen(false); }, [route]);
+
       const hh = clock.toISOString().slice(11, 19);
 
       return (
@@ -511,62 +535,114 @@
           {/* Top bar */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 0,
-            height: 64, borderBottom: '1px solid var(--line)', background: 'var(--bg-1)',
-            paddingLeft: 0, paddingRight: 20,
+            height: isMobile ? 52 : 64, borderBottom: '1px solid var(--line)', background: 'var(--bg-1)',
+            paddingLeft: 0, paddingRight: isMobile ? 12 : 20,
             position: 'sticky', top: 0, zIndex: 40, backdropFilter: 'blur(6px)'
           }}>
             {/* Logo */}
-            <div onClick={() => onNav('home')} style={{
-              display: 'flex', alignItems: 'center', gap: 12, height: '100%',
-              padding: '0 24px', cursor: 'pointer',
+            <div onClick={() => { onNav('home'); setMobileNavOpen(false); }} style={{
+              display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12, height: '100%',
+              padding: isMobile ? '0 14px' : '0 24px', cursor: 'pointer',
               borderRight: '1px solid var(--line)'
             }}>
-              <Mark size={26} />
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 14.5, fontWeight: 700, letterSpacing: '0.12em' }}>
+              <Mark size={isMobile ? 20 : 26} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: isMobile ? 12.5 : 14.5, fontWeight: 700, letterSpacing: '0.12em' }}>
                 COMMODITY<span style={{ color: 'var(--accent)' }}>OPS</span>
               </span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-faint)', padding: '3px 7px', border: '1px solid var(--line-2)', borderRadius: 2, marginLeft: 6, letterSpacing: '0.08em' }}>v0.9 · PHASE 1</span>
+              {!isMobile && <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-faint)', padding: '3px 7px', border: '1px solid var(--line-2)', borderRadius: 2, marginLeft: 6, letterSpacing: '0.08em' }}>v0.9 · PHASE 1</span>}
             </div>
-            {/* Nav */}
-            <nav style={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
-              {navItems.map((it) => {
-                const active = route === it.key || it.key === 'detail' && route === 'detail';
-                return (
-                  <div
-                    key={it.key}
-                    onClick={() => onNav(it.key)}
-                    style={{
-                      display: 'flex', alignItems: 'center', padding: '0 22px',
-                      fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, letterSpacing: '0.04em',
-                      cursor: 'pointer', borderRight: '1px solid var(--line)',
-                      color: active ? 'var(--ink)' : 'var(--ink-dim)',
-                      background: active ? 'var(--bg-2)' : 'transparent',
-                      borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-                      position: 'relative', top: 0,
-                      transition: 'color 120ms, background 120ms'
-                    }}
-                    onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg-2)'; } }}
-                    onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = 'var(--ink-dim)'; e.currentTarget.style.background = 'transparent'; } }}>
 
-                    {it.label}
-                  </div>);
-
-              })}
-            </nav>
+            {/* Desktop Nav */}
+            {!isMobile && (
+              <nav style={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
+                {navItems.map((it) => {
+                  const active = route === it.key || it.key === 'detail' && route === 'detail';
+                  return (
+                    <div
+                      key={it.key}
+                      onClick={() => onNav(it.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', padding: '0 22px',
+                        fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, letterSpacing: '0.04em',
+                        cursor: 'pointer', borderRight: '1px solid var(--line)',
+                        color: active ? 'var(--ink)' : 'var(--ink-dim)',
+                        background: active ? 'var(--bg-2)' : 'transparent',
+                        borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
+                        position: 'relative', top: 0,
+                        transition: 'color 120ms, background 120ms'
+                      }}
+                      onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg-2)'; } }}
+                      onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = 'var(--ink-dim)'; e.currentTarget.style.background = 'transparent'; } }}>
+                      {it.label}
+                    </div>);
+                })}
+              </nav>
+            )}
 
             <div style={{ flex: 1 }} />
 
-            {/* Right: clock, org, user */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontFamily: 'var(--mono)', fontSize: 12.5, color: 'var(--ink-dim)', letterSpacing: '0.04em' }}>
-              <span>MERCURIA ENERGY TRADING</span>
-              <span style={{
-                width: 32, height: 32, borderRadius: '50%',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                background: 'var(--bg-3)', border: '1px solid var(--line-2)',
-                fontSize: 11.5, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.04em'
-              }}>AK</span>
-            </div>
+            {/* Desktop right: org + user */}
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontFamily: 'var(--mono)', fontSize: 12.5, color: 'var(--ink-dim)', letterSpacing: '0.04em' }}>
+                <span>MERCURIA ENERGY TRADING</span>
+                <span style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--bg-3)', border: '1px solid var(--line-2)',
+                  fontSize: 11.5, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.04em'
+                }}>AK</span>
+              </div>
+            )}
+
+            {/* Mobile: avatar + hamburger */}
+            {isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  width: 28, height: 28, borderRadius: '50%',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'var(--bg-3)', border: '1px solid var(--line-2)',
+                  fontSize: 11, fontWeight: 700, color: 'var(--accent)'
+                }}>AK</span>
+                <button
+                  onClick={() => setMobileNavOpen(o => !o)}
+                  style={{
+                    background: mobileNavOpen ? 'var(--bg-3)' : 'transparent',
+                    border: '1px solid var(--line-2)', borderRadius: 2,
+                    padding: '5px 10px', cursor: 'pointer',
+                    color: 'var(--ink)', fontFamily: 'var(--mono)', fontSize: 15, lineHeight: 1
+                  }}
+                  aria-label="Toggle navigation"
+                >{mobileNavOpen ? '✕' : '☰'}</button>
+              </div>
+            )}
           </div>
+
+          {/* Mobile nav drawer */}
+          {isMobile && mobileNavOpen && (
+            <div style={{
+              position: 'fixed', top: 53, left: 0, right: 0, zIndex: 39,
+              background: 'var(--bg-1)', borderBottom: '2px solid var(--accent)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+            }}>
+              {navItems.map((it) => {
+                const active = route === it.key;
+                return (
+                  <div
+                    key={it.key}
+                    onClick={() => { onNav(it.key); setMobileNavOpen(false); }}
+                    style={{
+                      padding: '15px 20px',
+                      fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 500, letterSpacing: '0.06em',
+                      cursor: 'pointer', borderBottom: '1px solid var(--line)',
+                      color: active ? 'var(--accent)' : 'var(--ink)',
+                      background: active ? 'var(--bg-2)' : 'transparent',
+                      borderLeft: `3px solid ${active ? 'var(--accent)' : 'transparent'}`
+                    }}
+                  >{it.label}</div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Ticker */}
           <Ticker />
@@ -577,7 +653,8 @@
           {/* Footer */}
           <footer style={{
             borderTop: '1px solid var(--line)', background: 'var(--bg-1)',
-            padding: '12px 24px', display: 'flex', justifyContent: 'space-between',
+            padding: isMobile ? '10px 16px' : '12px 24px',
+            display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6,
             fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.06em'
           }}>
             <span>COMMODITYOPS © Inc. 2026</span>
@@ -1119,16 +1196,17 @@
     // Landing page — /home
 
     const Landing = ({ onNav }) => {
+      const isMobile = useIsMobile();
       return (
         <div>
           {/* Hero */}
           <section style={{
             position: 'relative',
-            minHeight: 'clamp(760px, 80vh, 920px)',
+            minHeight: isMobile ? '560px' : 'clamp(760px, 80vh, 920px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '72px 0 64px',
+            padding: isMobile ? '48px 0 40px' : '72px 0 64px',
             borderBottom: '1px solid var(--line)',
             overflow: 'hidden'
           }}>
@@ -1172,18 +1250,18 @@
               zIndex: 1,
               maxWidth: 1440,
               margin: '0 auto',
-              padding: '0 32px',
+              padding: isMobile ? '0 16px' : '0 32px',
               width: '100%'
             }}>
               {/* Left: text */}
               <div style={{
-                width: 'min(100%, 840px)',
+                width: isMobile ? '100%' : 'min(100%, 840px)',
                 position: 'relative',
                 margin: '0 auto',
                 padding: '16px 0 0',
                 textAlign: 'center'
               }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 28, color: 'var(--accent)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: isMobile ? 10 : 28, color: 'var(--accent)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <span style={{ width: 24, height: 1, background: 'var(--accent)' }} />
                   WHERE PHYSICAL TRADES ARE MANAGED
                   <span style={{ width: 24, height: 1, background: 'var(--accent)' }} />
@@ -1221,18 +1299,18 @@
           </section>
 
           {/* Three phases */}
-          <section style={{ padding: '64px 0', borderBottom: '1px solid var(--line)' }}>
-            <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '40px 0' : '64px 0', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle
                 eyebrow="Phase Roadmap"
                 title="One platform. Three layers of intelligence."
                 right={
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.1em' }}>
-                    PHASE 1 SHIPPING NOW · 2 & 3 ROLLING SOON
+                  !isMobile && <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.1em' }}>
+                    PHASE 1 SHIPPING NOW · 2 &amp; 3 ROLLING SOON
                   </span>
                 } />
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginTop: 28 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 16 : 24, marginTop: 28 }}>
                 {[
                   {
                     n: '01', eyebrow: 'DOCUMENT INTELLIGENCE', avail: 'AVAILABLE NOW',
@@ -1328,14 +1406,14 @@
           </section>
 
           {/* How it works — terminal style */}
-          <section style={{ padding: '64px 0', borderBottom: '1px solid var(--line)', background: 'var(--bg-1)' }}>
-            <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '40px 0' : '64px 0', borderBottom: '1px solid var(--line)', background: 'var(--bg-1)' }}>
+            <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle
                 eyebrow="Phase 1 · Compliance · Available Now"
                 title="Upload. Compare. Decide."
                 right={<span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent-2)', letterSpacing: '0.12em' }}>● SHIPPING</span>}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 40, alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.15fr', gap: isMobile ? 24 : 40, alignItems: 'start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                   {[
                     { n: '1', t: 'Drop in a COA and a contract', d: 'PDFs. Scans. No templates. The extractor reads GAFTA, FOSFA and ISO-style certificates without configuration.' },
@@ -1391,14 +1469,14 @@
           </section>
 
           {/* Phase 2 — Ops Hub mechanics */}
-          <section style={{ padding: '64px 0', borderBottom: '1px solid var(--line)' }}>
-            <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '40px 0' : '64px 0', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle
                 eyebrow="Phase 2 · Ops Hub · Coming Soon"
                 title="Four documents. One verdict. One team."
                 right={<span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.12em' }}>● ROLLING SOON</span>}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 40, alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.15fr 1fr', gap: isMobile ? 24 : 40, alignItems: 'start' }}>
                 {/* Terminal mock (left this time for alternation) */}
                 <CrossCorners style={{ background: 'var(--bg)', border: '1px solid var(--line-2)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--line)', fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.08em' }}>
@@ -1466,14 +1544,14 @@
           </section>
 
           {/* Phase 3 — Terminal mechanics */}
-          <section style={{ padding: '64px 0', borderBottom: '1px solid var(--line)', background: 'var(--bg-1)' }}>
-            <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '40px 0' : '64px 0', borderBottom: '1px solid var(--line)', background: 'var(--bg-1)' }}>
+            <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle
                 eyebrow="Phase 3 · Terminal· Coming Soon"
                 title="Zero manual upload. Every signal, one tab."
                 right={<span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.12em' }}>● ROLLING SOON</span>}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 40, alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.15fr', gap: isMobile ? 24 : 40, alignItems: 'start' }}>
                 {/* Steps left */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                   {[
@@ -1557,8 +1635,8 @@
           {/* CTA strip */}
           <section style={{ background: 'var(--bg-1)' }}>
             <div style={{
-              maxWidth: 1440, margin: '0 auto', padding: '56px 32px',
-              display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 48, alignItems: 'center'
+              maxWidth: 1440, margin: '0 auto', padding: isMobile ? '40px 16px' : '56px 32px',
+              display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: isMobile ? 20 : 48, alignItems: 'center'
             }}>
               <div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.14em', marginBottom: 10 }}>START IN UNDER A MINUTE</div>
@@ -1588,6 +1666,7 @@
     // /deals — table view
 
     const Deals = ({ onOpenDeal, onNav }) => {
+      const isMobile = useIsMobile();
       const [query, setQuery] = React.useState('');
       const [filter, setFilter] = React.useState('ALL');
       const deals = window.DEALS.filter((d) => {
@@ -1604,18 +1683,18 @@
       };
 
       return (
-        <div style={{ maxWidth: 1440, margin: '0 auto', padding: '32px' }}>
+        <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '20px 16px' : '32px' }}>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 22 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-end', flexWrap: 'wrap', gap: 12, marginBottom: 22 }}>
             <div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.14em', marginBottom: 6 }}>WORKSPACE · MERIDIAN TRADING LLC</div>
-              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 44, letterSpacing: '-0.01em' }}>Deals</h1>
+              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 32 : 44, letterSpacing: '-0.01em' }}>Deals</h1>
               <div style={{ marginTop: 8, fontSize: 13.5, color: 'var(--ink-dim)' }}>
                 {counts.ALL} deals · <span style={{ color: 'var(--accent-3)' }}>{counts.NON_COMPLIANT} need attention</span> · <span style={{ color: 'var(--accent)' }}>{counts.PENDING} analyzing</span>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <Btn variant="default" onClick={() => { }}>Export CSV</Btn>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {!isMobile && <Btn variant="default" onClick={() => { }}>Export CSV</Btn>}
               <Btn variant="primary" onClick={() => onNav('new')}>+ New Deal</Btn>
             </div>
           </div>
@@ -1623,16 +1702,16 @@
           {/* Toolbar */}
           <div style={{
             display: 'flex', gap: 0, marginBottom: 0, borderBottom: '1px solid var(--line)',
-            alignItems: 'stretch'
+            alignItems: 'stretch', overflowX: 'auto'
           }}>
             {[
               ['ALL', `All (${counts.ALL})`],
-              ['COMPLIANT', `Compliant (${counts.COMPLIANT})`],
-              ['NON_COMPLIANT', `Non-compliant (${counts.NON_COMPLIANT})`],
-              ['PENDING', `Pending (${counts.PENDING})`]].
+              ['COMPLIANT', isMobile ? `✓ (${counts.COMPLIANT})` : `Compliant (${counts.COMPLIANT})`],
+              ['NON_COMPLIANT', isMobile ? `✗ (${counts.NON_COMPLIANT})` : `Non-compliant (${counts.NON_COMPLIANT})`],
+              ['PENDING', isMobile ? `⏳ (${counts.PENDING})` : `Pending (${counts.PENDING})`]].
               map(([k, label]) =>
                 <div key={k} onClick={() => setFilter(k)} style={{
-                  padding: '10px 16px', cursor: 'pointer',
+                  padding: '10px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
                   fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em',
                   color: filter === k ? 'var(--ink)' : 'var(--ink-dim)',
                   borderBottom: filter === k ? '2px solid var(--accent)' : '2px solid transparent',
@@ -1640,21 +1719,66 @@
                 }}>{label}</div>
               )}
             <div style={{ flex: 1 }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 0 12px' }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)' }}>⌕</span>
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 4px 0 12px' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)' }}>⌕</span>
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search deals, buyers, commodities…"
+                  style={{
+                    background: 'transparent', border: 'none', outline: 'none',
+                    fontSize: 13, color: 'var(--ink)', padding: '8px 0', width: 260
+                  }} />
+              </div>
+            )}
+          </div>
+          {isMobile && (
+            <div style={{ padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search deals, buyers, commodities…"
+                placeholder="Search deals…"
                 style={{
-                  background: 'transparent', border: 'none', outline: 'none',
-                  fontSize: 13, color: 'var(--ink)', padding: '8px 0', width: 260
+                  width: '100%', background: 'var(--bg-1)', border: '1px solid var(--line-2)',
+                  outline: 'none', fontSize: 13, color: 'var(--ink)', padding: '8px 12px',
+                  fontFamily: 'var(--sans)'
                 }} />
-
             </div>
-          </div>
+          )}
 
-          {/* Table */}
+          {/* Table / Cards */}
+          {isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {deals.map((d) => (
+                <div
+                  key={d.id}
+                  onClick={() => onOpenDeal(d.id)}
+                  style={{
+                    padding: '14px 0', borderBottom: '1px solid var(--line)', cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13.5, color: 'var(--ink)', fontWeight: 500, lineHeight: 1.3 }}>{d.title}</div>
+                      <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 3 }}>{d.id}</div>
+                    </div>
+                    <StatusPill status={d.status} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-dim)' }}>
+                    <span>{d.commodity}</span>
+                    <span>·</span>
+                    <span>{d.quantity}</span>
+                    <span>·</span>
+                    <span style={{ color: 'var(--ink)' }}>{d.contractPrice}</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 4 }}>
+                    {d.origin} → {d.destination}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
@@ -1713,6 +1837,7 @@
               </div>
             }
           </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16, fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.06em' }}>
             <span>SHOWING 1–{deals.length} OF {deals.length}</span>
@@ -1729,6 +1854,7 @@
     // /deals/new — create a new deal
 
     const DealNew = ({ onSubmit, onCancel }) => {
+      const isMobile = useIsMobile();
       const [form, setForm] = React.useState({
         title: '', buyer: '', origin: '', commodity: '', quantity: '', deliveryMonth: ''
       });
@@ -1744,11 +1870,11 @@
       const commodities = ['Soybean', 'Iron Ore Fines', 'Crude Oil', 'Milling Wheat', 'Thermal Coal', 'Yellow Corn', 'Copper Cathode', 'Crude Palm Oil', 'Sugar', 'Cocoa', 'Cotton'];
 
       return (
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '20px 16px' : '32px' }}>
           {/* Header */}
           <div style={{ marginBottom: 28 }}>
             <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent)', letterSpacing: '0.14em', marginBottom: 6 }}>NEW DEAL · ANALYSIS 4 OF 30 THIS MONTH</div>
-            <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 44, letterSpacing: '-0.01em' }}>Create a deal</h1>
+            <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 32 : 44, letterSpacing: '-0.01em' }}>Create a deal</h1>
             <p style={{ color: 'var(--ink-dim)', fontSize: 14, marginTop: 8 }}>
               Fill in the metadata, drop in the COA and the contract. We extract, reconcile, and verdict in 30 seconds.
             </p>
@@ -1759,7 +1885,7 @@
             <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', letterSpacing: '0.1em', marginBottom: 18 }}>
               DEAL METADATA
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20, marginBottom: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.5fr 1fr', gap: isMobile ? 14 : 20, marginBottom: 6 }}>
               <Field label="Deal Name" required>
                 <input
                   value={form.title} onChange={(e) => set('title', e.target.value)}
@@ -1774,7 +1900,7 @@
 
               </Field>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 6 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 14 : 20, marginBottom: 6 }}>
               <Field label="Buyer" required>
                 <input value={form.buyer} onChange={(e) => set('buyer', e.target.value)} placeholder="Counterparty name" style={inputStyle} />
               </Field>
@@ -1799,7 +1925,7 @@
           </CrossCorners>
 
           {/* Uploads */}
-          <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div style={{ marginTop: 28, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             <UploadZone label="COA · Certificate of Analysis" sub="PDF · up to 20MB" file={coa} onFile={setCoa} hint="SGS, Intertek, Cotecna, lab report…" />
             <UploadZone label="Contract" sub="PDF · up to 20MB" file={contract} onFile={setContract} hint="GAFTA, FOSFA, or custom sales contract" />
           </div>
@@ -1909,6 +2035,7 @@
     // /deals/[id] — deal detail page with violations, comparison table, traceability
 
     const DealDetail = ({ dealId, onBack }) => {
+      const isMobile = useIsMobile();
       const deal = window.DEALS.find((d) => d.id === dealId) || window.DEALS[0];
       const [loadingState, setLoadingState] = React.useState(deal.status === 'PENDING' ? 'loading' : 'done');
       const [tab, setTab] = React.useState('coa');
@@ -1930,7 +2057,7 @@
       const passes = analysis.checks.filter((c) => c.result === 'PASS').length;
 
       return (
-        <div style={{ maxWidth: 1440, margin: '0 auto', padding: '24px 32px 60px' }}>
+        <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '16px 16px 40px' : '24px 32px 60px' }}>
           {/* Breadcrumb + back */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <button
@@ -1956,21 +2083,22 @@
           </div>
 
           {/* Header */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, marginBottom: 24, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: isMobile ? 14 : 32, marginBottom: 24, alignItems: 'start' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                 <StatusPill status={effectiveStatus} size="lg" />
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)' }}>{deal.id} · LAST RUN {analysis.runAt}</span>
+                {!isMobile && <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)' }}>{deal.id} · LAST RUN {analysis.runAt}</span>}
               </div>
-              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 38, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 26 : 38, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
                 {deal.title}
               </h1>
-              <div style={{ marginTop: 10, fontFamily: 'var(--mono)', fontSize: 11.5, color: 'var(--ink-dim)', letterSpacing: '0.04em' }}>
-                {deal.origin} → {deal.destination} · {deal.vessel} · {deal.quantity} · {deal.contractPrice}
+              <div style={{ marginTop: 10, fontFamily: 'var(--mono)', fontSize: isMobile ? 11 : 11.5, color: 'var(--ink-dim)', letterSpacing: '0.04em' }}>
+                {deal.origin} → {deal.destination} · {deal.vessel}
+                {!isMobile && ` · ${deal.quantity} · ${deal.contractPrice}`}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <Btn variant="default" size="md">↻ Re-run analysis</Btn>
+            <div style={{ display: 'flex', gap: 8, justifyContent: isMobile ? 'flex-start' : 'flex-end', flexWrap: 'wrap' }}>
+              {!isMobile && <Btn variant="default" size="md">↻ Re-run analysis</Btn>}
               <Btn variant="default" size="md">↓ Export PDF</Btn>
               <Btn variant="primary" size="md" disabled={effectiveStatus === 'NON_COMPLIANT'} title={effectiveStatus === 'NON_COMPLIANT' ? 'Resolve violations to release payment' : ''}>
                 {effectiveStatus === 'NON_COMPLIANT' ? '✗ Hold payment' : '✓ Release payment'}
@@ -1984,18 +2112,18 @@
             <>
               {/* Summary strip */}
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)',
+                display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
                 border: '1px solid var(--line)', marginBottom: 24, background: 'var(--bg-1)'
               }}>
                 <Summary label="Parameters" value={analysis.checks.length} sub="cross-checked" />
                 <Summary label="Passed" value={passes} color="var(--accent-2)" sub="within spec" />
                 <Summary label="Warnings" value={warns} color="var(--accent)" sub="within tolerance" />
                 <Summary label="Violations" value={fails} color="var(--accent-3)" sub="above spec" />
-                <Summary label="Runtime" value={analysis.runtime} sub="1 COA · 1 contract" mono />
+                {!isMobile && <Summary label="Runtime" value={analysis.runtime} sub="1 COA · 1 contract" mono />}
               </div>
 
               {/* Two-column: violations + sidebar */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.7fr 1fr', gap: 24 }}>
                 <div>
                   <ViolationsPanel analysis={analysis} />
                   <ComparisonTable analysis={analysis} />
@@ -2089,22 +2217,25 @@
     };
 
     const ViolationRow = ({ v, last }) => {
+      const isMobile = useIsMobile();
       const [open, setOpen] = React.useState(false);
       const accent = v.result === 'FAIL' ? 'var(--accent-3)' : 'var(--accent)';
       return (
         <div style={{ borderBottom: last ? 'none' : '1px solid var(--line)' }}>
           <div onClick={() => setOpen((o) => !o)} style={{
-            display: 'grid', gridTemplateColumns: '80px 1.5fr 1fr 1fr 24px',
-            alignItems: 'center', gap: 16, padding: '14px 18px', cursor: 'pointer',
+            display: 'grid', gridTemplateColumns: isMobile ? '60px 1fr 20px' : '80px 1.5fr 1fr 1fr 24px',
+            alignItems: 'center', gap: isMobile ? 10 : 16, padding: '14px 18px', cursor: 'pointer',
             borderLeft: `2px solid ${accent}`
           }}>
             <ResultTag result={v.result} />
             <div>
               <div style={{ fontSize: 14, color: 'var(--ink)', fontWeight: 500 }}>{v.param}</div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 2 }}>{v.source}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 2 }}>
+                {isMobile ? `${v.coa} · spec ${v.spec}` : v.source}
+              </div>
             </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: accent }}>{v.coa}</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--ink-dim)' }}>spec {v.spec}</div>
+            {!isMobile && <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: accent }}>{v.coa}</div>}
+            {!isMobile && <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--ink-dim)' }}>spec {v.spec}</div>}
             <div style={{ color: 'var(--ink-faint)', transform: open ? 'rotate(90deg)' : '', transition: 'transform 120ms' }}>›</div>
           </div>
           {open &&
@@ -2842,14 +2973,15 @@
     };
 
     const FeatureBlock = ({ feat, index, onNav }) => {
+      const isMobile = useIsMobile();
       const flip = index % 2 === 1;
       return (
         <section id={`feat-${index}`} style={{
-          padding: '80px 0', borderBottom: '1px solid var(--line)',
+          padding: isMobile ? '40px 0' : '80px 0', borderBottom: '1px solid var(--line)',
           background: index % 2 === 1 ? 'var(--bg-1)' : 'var(--bg)'
         }}>
-          <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: 56, alignItems: 'center', direction: flip ? 'rtl' : 'ltr' }}>
+          <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.1fr', gap: isMobile ? 24 : 56, alignItems: 'center', direction: (!isMobile && flip) ? 'rtl' : 'ltr' }}>
               {/* Text */}
               <div style={{ direction: 'ltr' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -2902,21 +3034,22 @@
     };
 
     const Products = ({ onNav }) => {
+      const isMobile = useIsMobile();
       const phase1Count = FEATURES.filter(f => f.phase === 'PHASE 1').length;
       const phase2Count = FEATURES.filter(f => f.phase === 'PHASE 2').length;
       const phase3Count = FEATURES.filter(f => f.phase === 'PHASE 3').length;
       return (
         <div>
           {/* Hero */}
-          <section style={{ padding: '64px 0 48px', borderBottom: '1px solid var(--line)', position: '', overflow: 'hidden' }}>
+          <section style={{ padding: isMobile ? '40px 0 32px' : '64px 0 48px', borderBottom: '1px solid var(--line)', position: '', overflow: 'hidden' }}>
             <div style={{
               position: 'absolute', inset: 0, pointerEvents: 'none',
               backgroundImage: 'linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px)',
               backgroundSize: '48px 48px',
               maskImage: 'radial-gradient(ellipse at 50% 30%, #000 30%, transparent 80%)'
             }} />
-            <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px', position: 'relative', textAlign: 'center' }}>
-              <h1 style={{ margin: '0 auto', fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(42px, 5vw, 72px)', lineHeight: 1.02, letterSpacing: '-0.015em', maxWidth: 900 }}>
+            <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px', position: 'relative', textAlign: 'center' }}>
+              <h1 style={{ margin: '0 auto', fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? '36px' : 'clamp(42px, 5vw, 72px)', lineHeight: 1.05, letterSpacing: '-0.015em', maxWidth: 900 }}>
                 From <em style={{ color: 'var(--accent)' }}>Compliance</em> <br /> to <em style={{ color: 'var(--accent)' }}>Intelligence.</em> <br /> Get the <em style={{ color: 'var(--accent)' }}> Deal</em> Done.
               </h1>
               <p style={{ margin: '20px auto 0', maxWidth: 620, fontSize: 15.5, lineHeight: 1.55, color: 'var(--ink-dim)' }}>
@@ -2936,7 +3069,7 @@
 
           {/* CTA */}
           <section style={{ background: 'var(--bg-1)' }}>
-            <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 32px', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 48, alignItems: 'center' }}>
+            <div style={{ maxWidth: 1280, margin: '0 auto', padding: isMobile ? '40px 16px' : '56px 32px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: isMobile ? 20 : 48, alignItems: 'center' }}>
               <div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.14em', marginBottom: 10 }}>READY · UNDER ONE MINUTE</div>
                 <h2 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 44, lineHeight: 1.05 }}>
@@ -3102,6 +3235,7 @@
     ];
 
     const Pricing = ({ onNav }) => {
+      const isMobile = useIsMobile();
       const cell = (v) => {
         if (v === true) return <span style={{ color: 'var(--accent-2)', fontFamily: 'var(--mono)', fontSize: 13 }}>✓</span>;
         if (v === false) return <span style={{ color: 'var(--ink-faint)', fontFamily: 'var(--mono)', fontSize: 12 }}>—</span>;
@@ -3111,15 +3245,15 @@
       return (
         <div>
           {/* Hero — $0 see example deal */}
-          <section style={{ padding: '72px 0 56px', borderBottom: '1px solid var(--line)', position: 'relative', overflow: 'hidden' }}>
+          <section style={{ padding: isMobile ? '48px 0 36px' : '72px 0 56px', borderBottom: '1px solid var(--line)', position: 'relative', overflow: 'hidden' }}>
             <div style={{
               position: 'absolute', inset: 0, pointerEvents: 'none',
               backgroundImage: 'linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px)',
               backgroundSize: '48px 48px',
               maskImage: 'radial-gradient(ellipse at 50% 30%, #000 40%, transparent 85%)'
             }} />
-            <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 32px', position: 'relative', textAlign: 'center' }}>
-              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(56px, 7vw, 112px)', lineHeight: 0.95, letterSpacing: '-0.02em' }}>
+            <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px', position: 'relative', textAlign: 'center' }}>
+              <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: isMobile ? 'clamp(56px, 16vw, 80px)' : 'clamp(56px, 7vw, 112px)', lineHeight: 0.95, letterSpacing: '-0.02em' }}>
                 <em style={{ color: 'var(--accent)' }}>$0</em> to start.
               </h1>
               <div style={{ marginTop: 10, fontFamily: 'var(--serif)', fontSize: 'clamp(26px, 2.8vw, 38px)', color: 'var(--ink-dim)', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
@@ -3133,18 +3267,19 @@
           </section>
 
           {/* Plan cards */}
-          <section style={{ padding: '56px 0', borderBottom: '1px solid var(--line)' }}>
-            <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '36px 0' : '56px 0', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ maxWidth: 1440, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle
                 eyebrow="Plans"
                 title="Pick the tier your operation is at today."
-                right={<span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.1em' }}>PHASE 1 LIVE · 2 & 3 WAITLIST</span>}
+                right={!isMobile && <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-faint)', letterSpacing: '0.1em' }}>PHASE 1 LIVE · 2 &amp; 3 WAITLIST</span>}
               />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, marginTop: 24, border: '1px solid var(--line)' }}>
+              <div style={{ display: isMobile ? 'flex' : 'grid', flexDirection: 'column', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, marginTop: 24, border: '1px solid var(--line)' }}>
                 {PLANS.map((p, i) => (
                   <div key={p.key} style={{
-                    padding: '28px 22px',
-                    borderRight: i < PLANS.length - 1 ? '1px solid var(--line)' : 'none',
+                    padding: isMobile ? '20px 16px' : '28px 22px',
+                    borderRight: !isMobile && i < PLANS.length - 1 ? '1px solid var(--line)' : 'none',
+                    borderBottom: isMobile && i < PLANS.length - 1 ? '1px solid var(--line)' : 'none',
                     background: p.highlight ? 'var(--bg-1)' : 'transparent',
                     position: 'relative',
                     display: 'flex', flexDirection: 'column'
@@ -3194,6 +3329,7 @@
           </section>
 
           {/* Compare all features */}
+          {!isMobile && (
           <section style={{ padding: '56px 0', borderBottom: '1px solid var(--line)', background: 'var(--bg-1)' }}>
             <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
               <SectionTitle eyebrow="Compare plans" title="Every feature, every tier." />
@@ -3233,12 +3369,13 @@
               </div>
             </div>
           </section>
+          )}
 
           {/* FAQ strip (short) */}
-          <section style={{ padding: '56px 0', borderBottom: '1px solid var(--line)' }}>
-            <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 32px' }}>
+          <section style={{ padding: isMobile ? '36px 0' : '56px 0', borderBottom: '1px solid var(--line)' }}>
+            <div style={{ maxWidth: 1100, margin: '0 auto', padding: isMobile ? '0 16px' : '0 32px' }}>
               <SectionTitle eyebrow="Questions" title="Essentials." />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 22 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 22 }}>
                 {[
                   { q: 'What counts as an analysis?', a: 'One COA + one contract, run through the extractor and rules engine, produces one analysis. Re-running after updating a document doesn\'t double-count within 24 hours.' },
                   { q: 'Do I need to configure templates?', a: 'No. The extractor reads GAFTA, FOSFA, ISO-style certificates, and most lab reports without setup. Paste the PDF, get the verdict.' },
