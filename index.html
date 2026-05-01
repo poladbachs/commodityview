@@ -815,9 +815,9 @@
       );
     };
 
-    const ActivityFeed = ({ dealId = "SOY-2604" }) => {
+    const ActivityFeed = ({ dealId = "SOY-2604", overrideEvents }) => {
       const { state } = useStore();
-      const events = state.activity[dealId] || [];
+      const events = overrideEvents || state.activity[dealId] || [];
       const tone = (k) => k === "ai" ? "var(--signal-amber)" : k === "rule" ? "var(--signal-info)" : k === "human" ? "var(--fg)" : "var(--fg-3)";
       return (
         <div className="card">
@@ -1301,7 +1301,11 @@
             <ExtractedCard doc="COA · SGS-BR-44128" />
             <ComplianceLedger />
           </div>
-          <ActivityFeed />
+          <ActivityFeed overrideEvents={[
+            {t:"12:42", actor:"CLAUDE", act:"Extracted COA SGS-BR-44128", res:"avg confidence 0.96", kind:"ai"},
+            {t:"12:42", actor:"RULE ENGINE", act:"Validation completed", res:"FAIL · moisture, splits", kind:"rule"},
+            {t:"09:14", actor:"M. Park", act:"Created demo deal", kind:"human"},
+          ]} />
         </div>
       </div>
     );
