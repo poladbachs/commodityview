@@ -1,0 +1,2054 @@
+<!doctype html>
+<html lang="en" data-mode="ink">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CommodityOps — Interactive Prototype</title>
+
+  <!-- ============ DESIGN TOKENS — full copy from CommodityOps/tokens.css ============ -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap');
+
+    :root {
+      --font-ui: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      --font-display: "Newsreader", "Times New Roman", serif;
+
+      --ink-bg: oklch(16% 0.005 240);
+      --ink-bg-2: oklch(19% 0.005 240);
+      --ink-bg-3: oklch(23% 0.005 240);
+      --ink-line: oklch(32% 0.006 240);
+      --ink-line-soft: oklch(26% 0.005 240);
+      --ink-fg: oklch(96% 0.005 90);
+      --ink-fg-2: oklch(78% 0.006 90);
+      --ink-fg-3: oklch(58% 0.006 90);
+      --ink-fg-4: oklch(42% 0.006 90);
+
+      --paper-bg: oklch(98.2% 0.004 90);
+      --paper-bg-2: oklch(95.5% 0.005 90);
+      --paper-bg-3: oklch(92% 0.006 90);
+      --paper-line: oklch(85% 0.006 90);
+      --paper-line-soft: oklch(91% 0.005 90);
+      --paper-fg: oklch(18% 0.005 240);
+      --paper-fg-2: oklch(36% 0.005 240);
+      --paper-fg-3: oklch(52% 0.005 240);
+      --paper-fg-4: oklch(68% 0.005 240);
+
+      --signal-amber: oklch(78% 0.155 75);
+      --signal-amber-2: oklch(70% 0.155 75);
+      --signal-pass: oklch(72% 0.155 145);
+      --signal-fail: oklch(64% 0.215 25);
+      --signal-info: oklch(70% 0.135 235);
+      --signal-warn: oklch(80% 0.155 95);
+
+      --s-1: 4px;
+      --s-2: 8px;
+      --s-3: 12px;
+      --s-4: 16px;
+      --s-5: 20px;
+      --s-6: 24px;
+      --s-7: 32px;
+      --s-8: 40px;
+      --s-9: 48px;
+      --s-10: 64px;
+      --s-11: 80px;
+      --s-12: 120px;
+
+      --r-0: 0px;
+      --r-1: 2px;
+      --r-2: 4px;
+      --r-3: 6px;
+      --r-pill: 999px;
+      --hair: 1px;
+    }
+
+    [data-mode="ink"] {
+      --bg: var(--ink-bg);
+      --bg-2: var(--ink-bg-2);
+      --bg-3: var(--ink-bg-3);
+      --line: var(--ink-line);
+      --line-soft: var(--ink-line-soft);
+      --fg: var(--ink-fg);
+      --fg-2: var(--ink-fg-2);
+      --fg-3: var(--ink-fg-3);
+      --fg-4: var(--ink-fg-4);
+      --shadow-card: 0 1px 0 oklch(100% 0 0 / 0.03) inset, 0 0 0 1px var(--line);
+      color-scheme: dark;
+    }
+
+    [data-mode="paper"] {
+      --bg: var(--paper-bg);
+      --bg-2: var(--paper-bg-2);
+      --bg-3: var(--paper-bg-3);
+      --line: var(--paper-line);
+      --line-soft: var(--paper-line-soft);
+      --fg: var(--paper-fg);
+      --fg-2: var(--paper-fg-2);
+      --fg-3: var(--paper-fg-3);
+      --fg-4: var(--paper-fg-4);
+      --shadow-card: 0 1px 0 oklch(0% 0 0 / 0.02) inset, 0 0 0 1px var(--line);
+      color-scheme: light;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .surface {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--fg);
+      font-feature-settings: "ss01", "cv11", "tnum";
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum";
+      letter-spacing: -0.01em;
+    }
+
+    .tnum {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+    }
+
+    .display {
+      font-family: var(--font-ui);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 0.95;
+    }
+
+    .editorial {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+    }
+
+    .hr {
+      height: 1px;
+      background: var(--line);
+      border: 0;
+    }
+
+    .vr {
+      width: 1px;
+      background: var(--line);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+      border-radius: var(--r-1);
+      transition: background 120ms, border-color 120ms, color 120ms;
+    }
+
+    .btn:hover {
+      background: var(--bg-2);
+      border-color: var(--fg-3);
+    }
+
+    .btn-primary {
+      background: var(--fg);
+      color: var(--bg);
+      border-color: var(--fg);
+    }
+
+    .btn-primary:hover {
+      background: var(--fg-2);
+      color: var(--bg);
+      border-color: var(--fg-2);
+    }
+
+    .btn-amber {
+      background: var(--signal-amber);
+      color: oklch(18% 0.02 75);
+      border-color: var(--signal-amber);
+    }
+
+    .btn-pass {
+      background: var(--signal-pass);
+      color: oklch(15% 0.05 145);
+      border-color: var(--signal-pass);
+    }
+
+    .btn-fail {
+      background: transparent;
+      color: var(--signal-fail);
+      border-color: color-mix(in oklch, var(--signal-fail) 50%, var(--line));
+    }
+
+    .btn-fail:hover {
+      background: color-mix(in oklch, var(--signal-fail) 10%, transparent);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .btn-lg {
+      padding: 14px 22px;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+      color: var(--fg-2);
+      white-space: nowrap;
+    }
+
+    .tag-amber {
+      color: var(--signal-amber);
+      border-color: color-mix(in oklch, var(--signal-amber) 40%, var(--line));
+    }
+
+    .tag-pass {
+      color: var(--signal-pass);
+      border-color: color-mix(in oklch, var(--signal-pass) 40%, var(--line));
+    }
+
+    .tag-fail {
+      color: var(--signal-fail);
+      border-color: color-mix(in oklch, var(--signal-fail) 40%, var(--line));
+    }
+
+    .tag-info {
+      color: var(--signal-info);
+      border-color: color-mix(in oklch, var(--signal-info) 40%, var(--line));
+    }
+
+    .tag-warn {
+      color: var(--signal-warn);
+      border-color: color-mix(in oklch, var(--signal-warn) 50%, var(--line));
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--fg-3);
+      display: inline-block;
+    }
+
+    .dot-amber {
+      background: var(--signal-amber);
+      box-shadow: 0 0 0 3px color-mix(in oklch, var(--signal-amber) 25%, transparent);
+    }
+
+    .dot-pass {
+      background: var(--signal-pass);
+    }
+
+    .dot-fail {
+      background: var(--signal-fail);
+    }
+
+    .dot-pulse {
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.35;
+      }
+    }
+
+    .bg-grid {
+      background-image:
+        linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .bg-dots {
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .card {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-2);
+    }
+
+    .label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--fg-3);
+    }
+
+    .input {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--fg);
+      padding: 9px 12px;
+      border-radius: var(--r-1);
+      width: 100%;
+    }
+
+    .input:focus {
+      outline: 1px solid var(--signal-amber);
+      border-color: var(--signal-amber);
+    }
+
+    .input-low-conf {
+      background: color-mix(in oklch, var(--signal-warn) 10%, var(--bg));
+      border-color: color-mix(in oklch, var(--signal-warn) 50%, var(--line));
+      color: var(--fg);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      background: var(--bg-3);
+      border: 1px solid var(--line);
+      padding: 2px 6px;
+      border-radius: var(--r-1);
+      color: var(--fg-2);
+    }
+
+    .ticker-cell {
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+    }
+
+    @keyframes marquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marquee 60s linear infinite;
+    }
+
+    .paper-noise {
+      position: relative;
+    }
+
+    .paper-noise::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .35;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- ============ STORE · seed data, reducer, persistence ============ -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback, useReducer, useRef, useContext, createContext, Fragment } = React;
+
+    const STAGES = ["CONFIRMED", "DISPATCHED", "IN TRANSIT", "DELIVERED", "INVOICED"];
+
+    // 8 deals from page-app.jsx · DealsListPage
+    const SEED_DEALS = [
+      { id: "SOY-2604", name: "Brazilian Soy 60kt → Qingdao", cmd: "Soybeans", buyer: "Cofco Resources", origin: "Santos, BR", qty: "60,000 MT", price: "432.50", stage: 2, status: "EXCEPTION", exc: "Moisture, splits", upd: "12 min ago" },
+      { id: "WHT-2599", name: "HRW Wheat 25kt → Mersin", cmd: "Wheat HRW", buyer: "Cargill MEA", origin: "Houston, US", qty: "25,000 MT", price: "278.00", stage: 3, status: "ON TRACK", exc: null, upd: "1h ago" },
+      { id: "PLM-2598", name: "RBD Palm 5kt → Rotterdam", cmd: "Palm Olein", buyer: "Wilmar EU", origin: "Port Klang, MY", qty: "5,000 MT", price: "1,118", stage: 4, status: "ON TRACK", exc: null, upd: "3h ago" },
+      { id: "CRN-2595", name: "US Corn 30kt → Veracruz", cmd: "Corn YEL #2", buyer: "Gruma S.A.B.", origin: "New Orleans, US", qty: "30,000 MT", price: "212.40", stage: 1, status: "ON TRACK", exc: null, upd: "5h ago" },
+      { id: "CFE-2592", name: "Arabica 380MT → Antwerp", cmd: "Coffee Arabica", buyer: "Sucden", origin: "Santos, BR", qty: "380 MT", price: "5,140", stage: 0, status: "ON TRACK", exc: null, upd: "1d ago" },
+      { id: "SUG-2588", name: "VHP Sugar 12kt → Algiers", cmd: "Raw Sugar", buyer: "CEVITAL", origin: "Recife, BR", qty: "12,000 MT", price: "459.20", stage: 2, status: "EXCEPTION", exc: "LC discrepancy", upd: "1d ago" },
+      { id: "COC-2581", name: "Cocoa Beans 800MT → Hamburg", cmd: "Cocoa", buyer: "Barry Callebaut", origin: "San Pedro, CI", qty: "800 MT", price: "8,142", stage: 4, status: "ON TRACK", exc: null, upd: "2d ago" },
+      { id: "SBM-2577", name: "Soybean Meal 5kt → Casablanca", cmd: "Soybean Meal", buyer: "Lesieur Cristal", origin: "Paranaguá, BR", qty: "5,000 MT", price: "342.10", stage: 3, status: "ON TRACK", exc: null, upd: "3d ago" },
+    ];
+
+    const COA_PARAMS = [
+      { p: "Protein (dry basis)", e: "34.2%", c: "≥ 34.0%", pass: true, diff: "+0.2pp" },
+      { p: "Moisture", e: "14.8%", c: "≤ 14.0%", pass: false, diff: "+0.8pp", note: "Exceeds contract tolerance" },
+      { p: "Foreign Matter", e: "1.6%", c: "≤ 2.0%", pass: true, diff: "−0.4pp" },
+      { p: "Damaged Kernels", e: "5.4%", c: "≤ 8.0%", pass: true, diff: "−2.6pp" },
+      { p: "Oil Content", e: "19.1%", c: "≥ 18.5%", pass: true, diff: "+0.6pp" },
+      { p: "Splits", e: "22.0%", c: "≤ 20.0%", pass: false, diff: "+2.0pp", note: "Above GAFTA 122 limit" },
+      { p: "FFA (Free Fatty Acid)", e: "0.62%", c: "≤ 0.75%", pass: true, diff: "−0.13pp" },
+      { p: "Test Weight", e: "56.4 lb/bu", c: "≥ 56.0 lb/bu", pass: true, diff: "+0.4" },
+    ];
+
+    const TC_FIELDS = [
+      { k: "COMMODITY", v: "Yellow Soybeans, Brazilian origin, Crop 2025/26", conf: 0.99 },
+      { k: "GRADE", v: "FOB Santos / GAFTA 122", conf: 0.97 },
+      { k: "QUANTITY", v: "60,000 MT (+/− 5% buyer's option)", conf: 0.93 },
+      { k: "PRICE", v: "USD 432.50 / MT", conf: 0.99 },
+      { k: "COUNTERPARTY", v: "Cofco Resources S.A., Switzerland", conf: 0.88, low: true },
+      { k: "DELIVERY", v: "May 2026, Santos → Qingdao", conf: 0.96 },
+      { k: "PAYMENT", v: "LC at sight, confirmed by Tier-1 bank", conf: 0.91 },
+      { k: "INCOTERMS", v: "FOB Santos · Incoterms 2020", conf: 0.99 },
+    ];
+
+    const SEED_ACTIVITY = {
+      "SOY-2604": [
+        { t: "12:42:18", actor: "CLAUDE", act: "Extracted Trade Confirmation", res: "8/8 fields · 1 low-confidence", kind: "ai" },
+        { t: "12:42:01", actor: "n8n", act: "Email routed to deal SOY-2604", res: "from ops@cofco-resources.ch", kind: "sys" },
+        { t: "11:58:04", actor: "R. Jiménez", act: "Approved COA cargo", res: "with 2 exceptions noted", kind: "human" },
+        { t: "11:57:22", actor: "RULE ENGINE", act: "COA validation completed", res: "FAIL · moisture, splits", kind: "rule" },
+        { t: "11:57:21", actor: "CLAUDE", act: "Extracted COA SGS-BR-44128", res: "confidence 0.96 avg", kind: "ai" },
+        { t: "09:14:00", actor: "M. Park", act: "Created deal SOY-2604", res: "60,000 MT · Cofco · Santos→Qingdao", kind: "human" },
+      ],
+    };
+
+    const LS_KEY = "CommodityOps:interactive:v1";
+
+    function loadState() {
+      try {
+        const s = localStorage.getItem(LS_KEY);
+        if (s) {
+          const parsed = JSON.parse(s);
+          // refresh deals from seed if id list changed
+          return { ...defaultState(), ...parsed };
+        }
+      } catch (e) { }
+      return defaultState();
+    }
+    function defaultState() {
+      return {
+        route: "/home",
+        currentDealId: null,
+        deals: SEED_DEALS,
+        fields: { "SOY-2604": Object.fromEntries(TC_FIELDS.map(f => [f.k, f.v])) },
+        approvals: {},
+        activity: SEED_ACTIVITY,
+        layer: 1,
+        mode: "ink",
+        notif: null,
+      };
+    }
+    function saveState(s) { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) { } }
+
+    function reducer(state, action) {
+      switch (action.type) {
+        case "go": return { ...state, route: action.route };
+        case "goDeal": return { ...state, route: "/deals/" + action.id, currentDealId: action.id };
+        case "setLayer": return { ...state, layer: action.l };
+        case "setMode": return { ...state, mode: action.m };
+        case "setField": {
+          const f = { ...(state.fields[action.dealId] || {}), [action.k]: action.v };
+          return { ...state, fields: { ...state.fields, [action.dealId]: f } };
+        }
+        case "approve": {
+          const ap = { ...(state.approvals[action.dealId] || {}), [action.docId]: "approved" };
+          const deals = state.deals.map(d =>
+            d.id === action.dealId
+              ? { ...d, stage: Math.min(4, d.stage + 1), status: d.status === "PENDING" ? "ON TRACK" : d.status, upd: "just now" }
+              : d
+          );
+          const ev = { t: timestamp(), actor: "R. Jain", act: "Approved " + action.docType, res: "Lifecycle advanced", kind: "human" };
+          return {
+            ...state,
+            approvals: { ...state.approvals, [action.dealId]: ap },
+            deals,
+            activity: { ...state.activity, [action.dealId]: [ev, ...(state.activity[action.dealId] || [])] },
+            notif: { tag: "APPROVED", msg: action.docType + " approved · lifecycle advanced", kind: "pass" },
+          };
+        }
+        case "reject": {
+          const ap = { ...(state.approvals[action.dealId] || {}), [action.docId]: "rejected" };
+          const ev = { t: timestamp(), actor: "R. Jain", act: "Rejected " + action.docType, res: "Counterparty notified", kind: "human" };
+          return {
+            ...state,
+            approvals: { ...state.approvals, [action.dealId]: ap },
+            activity: { ...state.activity, [action.dealId]: [ev, ...(state.activity[action.dealId] || [])] },
+            notif: { tag: "REJECTED", msg: action.docType + " rejected", kind: "fail" },
+          };
+        }
+        case "createDeal": {
+          const ev = { t: timestamp(), actor: "R. Jain", act: "Created deal record", res: action.deal.qty + " · " + action.deal.buyer, kind: "human" };
+          return {
+            ...state,
+            deals: [{ ...action.deal, upd: "just now" }, ...state.deals],
+            currentDealId: action.deal.id,
+            route: "/deals/" + action.deal.id,
+            activity: { ...state.activity, [action.deal.id]: [ev] },
+            notif: { tag: "CREATED", msg: "Deal " + action.deal.id + " opened", kind: "amber" },
+          };
+        }
+        case "clearNotif": return { ...state, notif: null };
+        default: return state;
+      }
+    }
+    function timestamp() { return new Date().toTimeString().slice(0, 8); }
+
+    const StoreCtx = createContext(null);
+    const useStore = () => useContext(StoreCtx);
+
+    Object.assign(window, { STAGES, SEED_DEALS, COA_PARAMS, TC_FIELDS, SEED_ACTIVITY, LS_KEY, loadState, saveState, reducer, StoreCtx, useStore });
+  </script>
+
+  <!-- ============ SHARED CHROME · Logo, Ticker, MarketingNav, AppNav, LifecycleBar ============ -->
+  <script type="text/babel">
+    const Logo = ({ size = 14 }) => (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-ui)", fontWeight: 600, letterSpacing: "-0.02em", fontSize: size }}>
+        <span style={{ display: "inline-grid", placeItems: "center", width: size + 6, height: size + 6, background: "var(--fg)", color: "var(--bg)", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: size - 3, borderRadius: 2 }}>C</span>
+        CommodityOps
+      </span>
+    );
+
+    const TICKER_DATA = [
+      { sym: "SOY-CBOT", price: "1184.50", d: "+12.25", up: true, unit: "¢/bu" },
+      { sym: "WHEAT-K", price: "627.75", d: "-3.50", up: false, unit: "¢/bu" },
+      { sym: "CORN-Z", price: "468.25", d: "+1.75", up: true, unit: "¢/bu" },
+      { sym: "PALM-FCPO", price: "4,118", d: "+38", up: true, unit: "MYR/MT" },
+      { sym: "COFFEE-C", price: "228.40", d: "-1.85", up: false, unit: "¢/lb" },
+      { sym: "SUGAR-11", price: "20.84", d: "+0.12", up: true, unit: "¢/lb" },
+      { sym: "COCOA", price: "8,142", d: "-94", up: false, unit: "$/MT" },
+      { sym: "BDI", price: "1,612", d: "+24", up: true, unit: "INDEX" },
+      { sym: "BRENT", price: "84.12", d: "-0.43", up: false, unit: "$/bbl" },
+      { sym: "USD/BRL", price: "5.0824", d: "+0.0128", up: true, unit: "FX" },
+      { sym: "FFA-CAPE", price: "$22,150", d: "+$425", up: true, unit: "/day" },
+      { sym: "SOYMEAL", price: "342.10", d: "+2.40", up: true, unit: "$/sht" },
+    ];
+
+    const Ticker = ({ compact = false }) => (
+      <div style={{ borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", background: "var(--bg-2)", overflow: "hidden", fontFamily: "var(--font-mono)", fontSize: compact ? 11 : 12, height: compact ? 28 : 36, display: "flex", alignItems: "center" }}>
+        <div className="marquee-track">
+          {[...TICKER_DATA, ...TICKER_DATA, ...TICKER_DATA].map((t, i) => (
+            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 18px", borderRight: "1px solid var(--line-soft)" }}>
+              <span style={{ color: "var(--fg-3)", letterSpacing: "0.06em" }}>{t.sym}</span>
+              <span style={{ color: "var(--fg)" }}>{t.price}</span>
+              <span style={{ color: t.up ? "var(--signal-pass)" : "var(--signal-fail)" }}>{t.up ? "▲" : "▼"} {t.d}</span>
+              <span style={{ color: "var(--fg-4)", fontSize: 10 }}>{t.unit}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+
+    const MarketingNav = ({ go }) => (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)" }}>
+        <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={14} /></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 13, color: "var(--fg-2)" }}>
+          <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
+          <a onClick={() => go("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
+          <a onClick={() => go("/demo")} style={{ cursor: "pointer" }}>Demo</a>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="btn btn-sm" onClick={() => go("/deals")}>SIGN IN</button>
+          <button className="btn btn-sm btn-primary" onClick={() => go("/deals/new")}>GET STARTED</button>
+        </div>
+      </div>
+    );
+
+    // AppNav · with the layer plan switch added in top-right (NOT in the design system).
+    const AppNav = ({ active, go, layer, setLayer }) => {
+      const items = [
+        { id: "deals", label: "DEALS", route: "/deals" },
+        { id: "inbox", label: "INBOX", route: "/inbox", count: 4 },
+        { id: "vessels", label: "VESSELS", route: "/vessels", lock: layer < 3 },
+        { id: "market", label: "MARKET", route: "/market", lock: layer < 3 },
+        { id: "activity", label: "ACTIVITY", route: "/activity" },
+        { id: "settings", label: "SETTINGS", route: "/settings" },
+      ];
+      return (
+        <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)", background: "var(--bg)" }}>
+          <div onClick={() => go("/home")} style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", borderRight: "1px solid var(--line)", cursor: "pointer" }}>
+            <Logo size={13} />
+          </div>
+          <div style={{ display: "flex", alignItems: "stretch" }}>
+            {items.map(it => (
+              <div key={it.id} onClick={() => !it.lock && go(it.route)} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "0 18px", height: 44,
+                borderRight: "1px solid var(--line)",
+                color: it.lock ? "var(--fg-4)" : (active === it.id ? "var(--fg)" : "var(--fg-2)"),
+                background: active === it.id ? "var(--bg-2)" : "transparent",
+                fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em",
+                position: "relative", cursor: it.lock ? "not-allowed" : "pointer",
+              }}>
+                {it.label}
+                {it.count != null && <span style={{ background: "var(--signal-amber)", color: "oklch(20% 0.05 75)", fontSize: 10, padding: "1px 5px", borderRadius: 2 }}>{it.count}</span>}
+                {it.lock && <span style={{ fontSize: 10, color: "var(--fg-4)" }}>L3</span>}
+                {active === it.id && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 1, background: "var(--signal-amber)" }} />}
+              </div>
+            ))}
+          </div>
+
+          {/* TOP-RIGHT — added (not in design-system): plan / layer switch + firm + avatar */}
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14, padding: "0 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)", letterSpacing: "0.1em" }}>PLAN</span>
+              <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 2, overflow: "hidden" }}>
+                {[
+                  { v: 1, l: "PRO · L1" },
+                  { v: 2, l: "DESK · L2" },
+                  { v: 3, l: "FLOOR · L3" },
+                ].map(opt => (
+                  <button key={opt.v} onClick={() => setLayer(opt.v)} style={{
+                    border: "none",
+                    background: layer === opt.v ? "var(--signal-amber)" : "transparent",
+                    color: layer === opt.v ? "oklch(18% 0.02 75)" : "var(--fg-2)",
+                    fontFamily: "var(--font-mono)", fontSize: 10.5, letterSpacing: "0.06em",
+                    padding: "6px 10px", cursor: "pointer",
+                    borderRight: opt.v < 3 ? "1px solid var(--line)" : "none",
+                  }}>{opt.l}</button>
+                ))}
+              </div>
+            </div>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>HARTLEY GRAIN · DESK</span>
+            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)" }}>RJ</span>
+          </div>
+        </div>
+      );
+    };
+
+    const LifecycleBar = ({ stage = 2, compact = false }) => (
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${STAGES.length}, 1fr)`, border: "1px solid var(--line)", background: "var(--bg-2)", borderRadius: 2 }}>
+        {STAGES.map((s, i) => {
+          const done = i < stage, current = i === stage;
+          return (
+            <div key={s} style={{ padding: compact ? "10px 12px" : "14px 18px", borderRight: i < STAGES.length - 1 ? "1px solid var(--line)" : "none", background: current ? "var(--bg-3)" : "transparent", position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: done || current ? "var(--fg-2)" : "var(--fg-4)" }}>
+                <span style={{ color: done ? "var(--signal-pass)" : current ? "var(--signal-amber)" : "var(--fg-4)" }}>{done ? "✓" : "0" + (i + 1)}</span>
+                STAGE {i + 1}
+              </div>
+              <div style={{ marginTop: 4, fontSize: compact ? 12 : 14, fontWeight: 500, color: done || current ? "var(--fg)" : "var(--fg-3)", letterSpacing: "-0.01em" }}>{s}</div>
+              {current && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, background: "var(--signal-amber)" }} />}
+            </div>
+          );
+        })}
+      </div>
+    );
+
+    Object.assign(window, { Logo, Ticker, MarketingNav, AppNav, LifecycleBar });
+  </script>
+
+  <!-- ============ INTERACTIVE COMPONENTS ============ -->
+  <script type="text/babel">
+    // Editable extracted card · interactive (edits TC fields, approve/reject)
+    const ExtractedCard = ({ doc = "TRADE CONFIRMATION", dealId = "SOY-2604", source = "confirmation_cofco_2026-04-29.pdf" }) => {
+      const { state, dispatch } = useStore();
+      const vals = state.fields[dealId] || Object.fromEntries(TC_FIELDS.map(f => [f.k, f.v]));
+      const approved = (state.approvals[dealId] || {}).tc;
+      const lowConfCount = TC_FIELDS.filter(f => f.low).length;
+      return (
+        <div className="card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span className="eyebrow">EXTRACTED · {doc}</span>
+              {approved === "approved" && <span className="tag tag-pass">APPROVED</span>}
+              {approved === "rejected" && <span className="tag tag-fail">REJECTED</span>}
+              {!approved && <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" /> CLAUDE · 1.4s</span>}
+            </div>
+            <div style={{ display: "flex", gap: 8, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+              <span>SRC: {source}</span><span>·</span><span>3 pages</span>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            {TC_FIELDS.map((f, i) => (
+              <div key={f.k} style={{
+                padding: "14px 18px",
+                borderRight: i % 2 === 0 ? "1px solid var(--line)" : "none",
+                borderBottom: i < TC_FIELDS.length - 2 ? "1px solid var(--line)" : "none",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span className="label">{f.k}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: f.low ? "var(--signal-warn)" : "var(--fg-4)" }}>
+                    {f.low && "⚠ "}{Math.round(f.conf * 100)}%
+                  </span>
+                </div>
+                <input
+                  value={vals[f.k] ?? f.v}
+                  onChange={e => dispatch({ type: "setField", dealId, k: f.k, v: e.target.value })}
+                  className={f.low ? "input input-low-conf" : "input"}
+                  style={{ marginTop: 6, border: "none", padding: "4px 0", background: "transparent", fontFamily: "var(--font-ui)", fontSize: 13.5 }}
+                />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderTop: "1px solid var(--line)", background: "var(--bg)" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+              {approved ? "STATUS · " + approved.toUpperCase() : lowConfCount + " LOW-CONFIDENCE FIELD · REVIEW BEFORE APPROVING"}
+            </div>
+            {!approved && (
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-sm">EDIT RAW</button>
+                <button className="btn btn-sm btn-fail" onClick={() => dispatch({ type: "reject", dealId, docId: "tc", docType: "Trade Confirmation" })}>REJECT</button>
+                <button className="btn btn-sm btn-pass" onClick={() => dispatch({ type: "approve", dealId, docId: "tc", docType: "Trade Confirmation" })}>APPROVE & ADVANCE</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // Compliance ledger · interactive accept/reject of cargo
+    const ComplianceLedger = ({ dealId = "SOY-2604" }) => {
+      const { state, dispatch } = useStore();
+      const approved = (state.approvals[dealId] || {}).coa;
+      const failCount = COA_PARAMS.filter(p => !p.pass).length;
+      const passCount = COA_PARAMS.filter(p => p.pass).length;
+      return (
+        <div className="card" style={{ overflow: "hidden" }}>
+          <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span className="eyebrow">COMPLIANCE LEDGER · COA vs. CONTRACT</span>
+              {approved === "approved" && <span className="tag tag-pass">CARGO ACCEPTED</span>}
+              {approved === "rejected" && <span className="tag tag-fail">CARGO REJECTED</span>}
+              {!approved && <><span className="tag tag-fail">{failCount} FAIL</span><span className="tag tag-pass">{passCount} PASS</span></>}
+            </div>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>RULE ENGINE · DETERMINISTIC · 38ms</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+            {["PARAMETER", "EXTRACTED", "CONTRACT SPEC", "DELTA", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
+          </div>
+          {COA_PARAMS.map((r, i) => (
+            <div key={i} style={{
+              display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr",
+              padding: "11px 18px",
+              borderBottom: i < COA_PARAMS.length - 1 ? "1px solid var(--line-soft)" : "none",
+              background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent",
+              alignItems: "center", fontSize: 13,
+            }}>
+              <span style={{ color: "var(--fg)" }}>{r.p}</span>
+              <span className="mono" style={{ color: "var(--fg)" }}>{r.e}</span>
+              <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+              <span className="mono" style={{ color: r.pass ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.diff}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                {r.note && <span style={{ fontSize: 11, color: "var(--fg-3)" }}>{r.note}</span>}
+              </div>
+            </div>
+          ))}
+          {!approved && (
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 18px", borderTop: "1px solid var(--line)" }}>
+              <button className="btn btn-sm btn-fail" onClick={() => dispatch({ type: "reject", dealId, docId: "coa", docType: "COA" })}>REJECT CARGO</button>
+              <button className="btn btn-sm btn-pass" onClick={() => dispatch({ type: "approve", dealId, docId: "coa", docType: "COA" })}>ACCEPT CARGO</button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const ActivityFeed = ({ dealId = "SOY-2604" }) => {
+      const { state } = useStore();
+      const events = state.activity[dealId] || [];
+      const tone = (k) => k === "ai" ? "var(--signal-amber)" : k === "rule" ? "var(--signal-info)" : k === "human" ? "var(--fg)" : "var(--fg-3)";
+      return (
+        <div className="card">
+          <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span className="eyebrow">ACTIVITY · DEAL {dealId}</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>UTC · NEWEST FIRST</span>
+          </div>
+          <div>
+            {events.length === 0 ? (
+              <div style={{ padding: 24, color: "var(--fg-3)", fontSize: 13, textAlign: "center" }}>No activity yet.</div>
+            ) : events.map((e, i) => (
+              <div key={i} style={{
+                display: "grid", gridTemplateColumns: "84px 110px 1fr",
+                padding: "11px 18px",
+                borderBottom: i < events.length - 1 ? "1px solid var(--line-soft)" : "none",
+                fontSize: 12.5, alignItems: "baseline", gap: 14,
+              }}>
+                <span className="mono" style={{ color: "var(--fg-4)" }}>{e.t}</span>
+                <span className="mono" style={{ color: tone(e.kind), fontSize: 11 }}>
+                  {e.kind === "ai" && "◆ "}
+                  {e.kind === "rule" && "◇ "}
+                  {e.kind === "human" && "○ "}
+                  {e.kind === "sys" && "· "}
+                  {e.actor}
+                </span>
+                <div>
+                  <div style={{ color: "var(--fg)" }}>{e.act}</div>
+                  {e.res && <div style={{ color: "var(--fg-3)", fontSize: 12 }}>{e.res}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const PositionCard = () => (
+      <div className="card" style={{ padding: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className="eyebrow">MARKET INTELLIGENCE · SOY-2604</span>
+          <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" /> LIVE · 12s AGO</span>
+        </div>
+        <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+          {[
+            { l: "CONTRACT PRICE", v: "432.50", u: "$/MT" },
+            { l: "MARKET PRICE", v: "472.10", u: "$/MT", up: true, d: "+39.60" },
+            { l: "FREIGHT LOCKED", v: "26.40", u: "$/MT" },
+            { l: "FREIGHT MARKET", v: "28.90", u: "$/MT", up: false, d: "+2.50" },
+          ].map((m, i) => (
+            <div key={i} style={{ background: "var(--bg-2)", padding: "12px 14px" }}>
+              <div className="label">{m.l}</div>
+              <div style={{ marginTop: 4, display: "flex", alignItems: "baseline", gap: 6, fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: 22, color: "var(--fg)", letterSpacing: "-0.02em" }}>{m.v}</span>
+                <span style={{ fontSize: 10, color: "var(--fg-3)" }}>{m.u}</span>
+              </div>
+              {m.d && <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: m.up ? "var(--signal-pass)" : "var(--signal-fail)" }}>{m.up ? "▲" : "▼"} {m.d}</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 16, padding: 16, border: "1px dashed var(--line)", borderRadius: 2 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>CLAUDE · POSITION SUMMARY</div>
+          <p className="editorial" style={{ fontSize: 19, lineHeight: 1.4, color: "var(--fg)", margin: 0 }}>
+            Market moved <span style={{ color: "var(--signal-pass)", fontStyle: "normal", fontFamily: "var(--font-mono)" }}>+$39.60/MT</span> above your locked contract on a 60,000 MT cargo. Your unrealised position is <span style={{ color: "var(--signal-pass)", fontStyle: "normal", fontFamily: "var(--font-mono)" }}>+$2.376M</span>. Freight is eating <span style={{ color: "var(--signal-fail)", fontStyle: "normal", fontFamily: "var(--font-mono)" }}>−$150K</span> of that gain. Net: <span style={{ color: "var(--signal-pass)", fontStyle: "normal", fontFamily: "var(--font-mono)" }}>+$2.226M</span>.
+          </p>
+        </div>
+      </div>
+    );
+
+    const VesselTracker = () => (
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <span className="eyebrow">VESSEL · M/V FRONTIER ASTRA</span>
+            <span className="tag">IMO 9874213</span>
+            <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" /> AT SEA</span>
+          </div>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>MARINETRAFFIC · 00:42 UTC</span>
+        </div>
+        <div style={{ position: "relative", height: 220, background: "var(--bg)", overflow: "hidden" }} className="bg-grid">
+          <svg viewBox="0 0 800 220" style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}>
+            <path d="M 0 110 L 800 110" stroke="var(--line)" strokeDasharray="2 6" />
+            <path d="M 80 140 Q 400 40 720 90" stroke="var(--signal-amber)" strokeWidth="1.2" fill="none" strokeDasharray="3 5" />
+            <circle cx="80" cy="140" r="4" fill="var(--signal-pass)" />
+            <text x="92" y="144" fill="var(--fg-2)" fontSize="10" fontFamily="var(--font-mono)">SANTOS · BR</text>
+            <circle cx="720" cy="90" r="4" fill="var(--signal-amber)" />
+            <text x="640" y="80" fill="var(--fg-2)" fontSize="10" fontFamily="var(--font-mono)">QINGDAO · CN</text>
+            <g transform="translate(420 78)">
+              <circle r="6" fill="var(--signal-amber)" />
+              <circle r="14" fill="none" stroke="var(--signal-amber)" strokeOpacity="0.4" />
+              <text y="-12" fill="var(--fg)" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle">FRONTIER ASTRA</text>
+            </g>
+          </svg>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          {[
+            { l: "SPEED", v: "13.4 kn" },
+            { l: "HEADING", v: "048°" },
+            { l: "ETA QINGDAO", v: "MAY 24, 04:30" },
+            { l: "VOYAGE", v: "47% · 4,820 nm" },
+          ].map((m, i) => (
+            <div key={i} style={{ padding: "12px 16px", borderRight: i < 3 ? "1px solid var(--line)" : "none", borderTop: "1px solid var(--line)" }}>
+              <div className="label">{m.l}</div>
+              <div className="mono" style={{ marginTop: 4, fontSize: 14, color: "var(--fg)" }}>{m.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    // BL extracted card · L2 deal-detail (interactive approve/reject)
+    const BLExtractedCard = ({ dealId = "SOY-2604" }) => {
+      const { state, dispatch } = useStore();
+      const approved = (state.approvals[dealId] || {}).bl;
+      return (
+        <div className="card">
+          <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <span className="eyebrow">EXTRACTED · BILL OF LADING</span>
+              {approved === "approved" && <span className="tag tag-pass">APPROVED</span>}
+              {approved === "rejected" && <span className="tag tag-fail">REJECTED</span>}
+              {!approved && <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" /> CLAUDE · 1.8s</span>}
+            </div>
+            <span className="mono" style={{ fontSize: 11, color: "var(--fg-3)" }}>BL-FA-44291.pdf · 4 pages</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+            {[
+              { k: "VESSEL", v: "M/V FRONTIER ASTRA" },
+              { k: "IMO", v: "9874213" },
+              { k: "FLAG", v: "Marshall Islands" },
+              { k: "LOAD PORT", v: "Santos, BR" },
+              { k: "DISCH PORT", v: "Tianjin, CN", fail: true },
+              { k: "B/L DATE", v: "2026-04-22" },
+              { k: "QUANTITY", v: "59,840 MT" },
+              { k: "PACKAGING", v: "In bulk" },
+              { k: "FREIGHT", v: "Prepaid" },
+            ].map((f, i) => (
+              <div key={i} style={{ padding: "12px 16px", borderRight: i % 3 !== 2 ? "1px solid var(--line-soft)" : "none", borderBottom: i < 6 ? "1px solid var(--line-soft)" : "none" }}>
+                <div className="label">{f.k}</div>
+                <div className={"mono " + (f.fail ? "input-low-conf" : "")} style={{ marginTop: 6, fontSize: 13, color: f.fail ? "var(--signal-fail)" : "var(--fg)", padding: f.fail ? "4px 8px" : 0, borderRadius: 2 }}>{f.v}</div>
+              </div>
+            ))}
+          </div>
+          {!approved && (
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 18px", borderTop: "1px solid var(--line)" }}>
+              <button className="btn btn-sm btn-fail" onClick={() => dispatch({ type: "reject", dealId, docId: "bl", docType: "Bill of Lading" })}>REJECT</button>
+              <button className="btn btn-sm btn-pass" onClick={() => dispatch({ type: "approve", dealId, docId: "bl", docType: "Bill of Lading" })}>APPROVE</button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const CrossDocReconcile = () => (
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+          <span className="eyebrow">CROSS-DOCUMENT RECONCILE · BL vs LC vs CONTRACT</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--fg-3)" }}>RULE ENGINE · 22ms</span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr 0.8fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+          {["FIELD", "CONTRACT", "LC", "BL", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
+        </div>
+        {[
+          { f: "Discharge port", c: "Qingdao", l: "Qingdao", b: "Tianjin", pass: false },
+          { f: "Quantity", c: "60,000 MT", l: "60,000 MT", b: "59,840 MT", pass: true, note: "within ±5%" },
+          { f: "Shipment date", c: "≤ Apr 30", l: "≤ Apr 28", b: "Apr 22", pass: true },
+          { f: "Quality cert", c: "GAFTA 122", l: "GAFTA 122", b: "Attached", pass: true },
+        ].map((r, i) => (
+          <div key={i} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr 0.8fr", padding: "11px 18px", borderBottom: "1px solid var(--line-soft)", fontSize: 13, alignItems: "center", background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent" }}>
+            <span style={{ color: "var(--fg)" }}>{r.f}</span>
+            <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+            <span className="mono" style={{ color: "var(--fg-2)" }}>{r.l}</span>
+            <span className="mono" style={{ color: r.pass ? "var(--fg)" : "var(--signal-fail)" }}>{r.b}</span>
+            <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+    Object.assign(window, { ExtractedCard, ComplianceLedger, ActivityFeed, PositionCard, VesselTracker, BLExtractedCard, CrossDocReconcile });
+  </script>
+
+
+  <!-- ============ PAGE: 02 · MARKETING (Home, Pricing, Demo, Products) ============ -->
+  <script type="text/babel">
+    const HomePage = ({ go }) => (
+      <div className="surface" style={{ minHeight: "100vh", fontFamily: "var(--font-ui)" }}>
+        <Ticker />
+        <MarketingNav go={go} />
+
+        {/* HERO */}
+        <div style={{ position: "relative", padding: "80px 32px 100px", borderBottom: "1px solid var(--line)", overflow: "hidden" }} className="bg-grid">
+          <svg viewBox="0 0 1440 600" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.35 }}>
+            <path d="M 60 380 Q 400 200 760 280 T 1380 220" stroke="var(--signal-amber)" strokeWidth="1" fill="none" strokeDasharray="2 6" />
+            <path d="M 100 460 Q 500 360 900 420 T 1380 380" stroke="var(--fg-3)" strokeWidth="1" fill="none" strokeDasharray="2 6" />
+            <path d="M 160 280 Q 480 140 880 180 T 1340 140" stroke="var(--fg-3)" strokeWidth="1" fill="none" strokeDasharray="2 6" />
+            {[[60, 380], [760, 280], [1380, 220], [100, 460], [900, 420], [160, 280], [880, 180]].map(([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r="3" fill="var(--signal-amber)" />
+            ))}
+          </svg>
+          <div style={{ position: "relative", maxWidth: 1100, margin: "0 auto" }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
+            </div>
+            <h1 className="display" style={{ fontSize: 72, margin: 0, color: "var(--fg)" }}>
+              Agentic AI for<br /> <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span> Trade Operations
+            </h1>
+            <p style={{ marginTop: 16, fontSize: 16, color: "var(--fg-3)", maxWidth: 640, lineHeight: 1.6 }}>
+              Purpose-built AI that captures trade confirmations, validates documents, and manages the full trade lifecycle — from confirmation to delivery. No sales call. Immediate onboarding.
+            </p>
+            <div style={{ marginTop: 36, display: "flex", gap: 12 }}>
+              <button className="btn btn-lg btn-primary" onClick={() => go("/deals/new")}>GET STARTED FREE →</button>
+              <button className="btn btn-lg" onClick={() => go("/demo")}>SEE HOW IT WORKS</button>
+            </div>
+            <div style={{ marginTop: 48, display: "flex", gap: 32, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+              <span>2 FREE ANALYSES · NO CARD</span>
+            </div>
+          </div>
+        </div>
+
+        {/* LIFECYCLE STRIP */}
+        <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
+              <span className="eyebrow">THE TRADE LIFECYCLE · AUTOMATED END-TO-END</span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>5 STAGES · 1 PLATFORM</span>
+            </div>
+            <LifecycleBar stage={2} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", marginTop: 16, gap: 12 }}>
+              {[
+                "Trade confirmation captured from inbound email",
+                "Documents validated, dispatch instructions issued",
+                "Vessel tracked, ETA recalculated continuously",
+                "BL reconciled against LC and contract on arrival",
+                "Invoice matched, exceptions flagged for ops",
+              ].map((t, i) => (
+                <div key={i} style={{ fontSize: 12.5, color: "var(--fg-3)", lineHeight: 1.5, padding: "0 8px" }}>{t}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* THREE LAYERS */}
+        <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48 }}>
+              <div>
+                <span className="eyebrow">THE STACK</span>
+                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>Three layers.<br />One operating system.</h2>
+              </div>
+              <p style={{ maxWidth: 380, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>
+                Start with capture. Add operations when you ship. Add intelligence when the desk needs market awareness baked into every deal.
+              </p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+              {[
+                { n: "01", t: "Capture", sub: "Trade confirmation, COA, contract.", body: "Claude reads the inbox. Every field extracted, every spec validated, every exception surfaced before approval.", chips: ["EMAIL INGEST", "CLAUDE EXTRACT", "RULE ENGINE", "EDIT INLINE", "APPROVE / REJECT"] },
+                { n: "02", t: "Operations", sub: "LC, BL, invoice — full lifecycle.", body: "Cross-document validation runs simultaneously. LC port vs. contract port. BL date vs. LC deadline. Invoice quantity vs. delivered quantity.", chips: ["LC VALIDATION", "BL RECONCILE", "INVOICE MATCH", "LIFECYCLE TRACK"] },
+                { n: "03", t: "Intelligence", sub: "Vessel, market, counterparty.", body: "Live vessel position. Current price vs. your locked contract. Sanctions and risk signals on every counterparty, refreshed continuously.", chips: ["VESSEL LIVE", "MARKET DELTA", "COUNTERPARTY SCREEN", "CTRM / ERP"] },
+              ].map(l => (
+                <div key={l.n} style={{ background: "var(--bg)", padding: 32, position: "relative" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                    <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)", letterSpacing: "0.1em" }}>LAYER {l.n}</span>
+                  </div>
+                  <h3 className="display" style={{ fontSize: 40, margin: "20px 0 4px" }}>{l.t}.</h3>
+                  <div className="editorial" style={{ fontSize: 18, color: "var(--fg-2)", marginBottom: 20 }}>{l.sub}</div>
+                  <p style={{ color: "var(--fg-3)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{l.body}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 24 }}>
+                    {l.chips.map(c => <span key={c} className="tag">{c}</span>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* PRICING TEASE */}
+        <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+              <h2 className="display" style={{ fontSize: 56, margin: 0 }}>$0 to start.<br />No card required.</h2>
+              <button className="btn btn-lg" onClick={() => go("/pricing")}>SEE FULL PRICING →</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+              {[
+                { name: "FREE", price: "$0", sub: "for the first analysis", inc: ["2 analyses lifetime", "Trade confirmation extract", "COA validation", "Inline edit, approve/reject"] },
+                { name: "PRO", price: "$199", sub: "/month, billed monthly", inc: ["Layer 1 unlimited", "Email ingestion", "Activity feed", "GAFTA/FOSFA/ICE/CME library"], primary: true },
+              ].map(p => (
+                <div key={p.name} style={{ padding: 32, background: p.primary ? "var(--bg-2)" : "var(--bg)", position: "relative" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: p.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{p.name}</span>
+                    {p.primary && <span className="tag tag-amber">RECOMMENDED</span>}
+                  </div>
+                  <div style={{ marginTop: 20, display: "flex", alignItems: "baseline", gap: 12 }}>
+                    <span className="display" style={{ fontSize: 72 }}>{p.price}</span>
+                    <span style={{ color: "var(--fg-3)", fontSize: 14 }}>{p.sub}</span>
+                  </div>
+                  <ul style={{ listStyle: "none", padding: 0, marginTop: 24, display: "grid", gap: 8 }}>
+                    {p.inc.map(i => (
+                      <li key={i} style={{ display: "flex", gap: 12, fontSize: 13.5, color: "var(--fg-2)" }}>
+                        <span style={{ color: "var(--signal-pass)" }}>+</span>{i}
+                      </li>
+                    ))}
+                  </ul>
+                  <button className={"btn btn-lg " + (p.primary ? "btn-primary" : "")} style={{ marginTop: 28, width: "100%", justifyContent: "center" }} onClick={() => go("/deals/new")}>
+                    {p.primary ? "START PRO" : "START FREE"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <Ticker compact />
+        <div style={{ padding: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+          <Logo size={12} />
+          <div style={{ display: "flex", gap: 24 }}>
+            <span>EU/US DATA RESIDENCY</span>
+            <span>·</span><span>HTTPS/TLS</span>
+            <span>·</span><span>ENCRYPTION AT REST</span>
+            <span>·</span><span>AUDIT LOGS</span>
+          </div>
+          <span>commodityops.com · 2026</span>
+        </div>
+      </div>
+    );
+
+    const PricingPage = ({ go }) => {
+      const plans = [
+        { name: "FREE", price: "$0", sub: "lifetime", cta: "Start free", desc: "For your first mismatch.", inc: ["2 analyses (lifetime)", "Trade confirmation", "COA validation"] },
+        { name: "PRO", price: "$199", sub: "/month", cta: "Start Pro", desc: "For solo ops.", inc: ["Everything in Free", "Unlimited Layer 1", "Email ingestion", "Activity feed"], primary: true },
+        { name: "DESK", price: "$499", sub: "/month", cta: "Join waitlist", desc: "Full lifecycle.", inc: ["Everything in Pro", "LC validation", "BL reconcile", "Invoice matching", "Cross-document checks"], soon: true },
+        { name: "FLOOR", price: "$999", sub: "/month", cta: "Join waitlist", desc: "Market-aware desk.", inc: ["Everything in Desk", "Live vessel tracking", "Market intelligence", "Counterparty screening"], soon: true },
+        { name: "ENTERPRISE", price: "$2,500+", sub: "/month", cta: "Talk to us", desc: "Bespoke integration.", inc: ["Everything in Floor", "CTRM / ERP webhooks", "SSO / SAML", "API key management", "Bring your own region"], soon: true },
+      ];
+      const matrix = [
+        {
+          sec: "CAPTURE", rows: [
+            ["Trade confirmation extract", "2", "∞", "∞", "∞", "∞"],
+            ["COA validation", "2", "∞", "∞", "∞", "∞"],
+            ["Custom contract terms", "✓", "✓", "✓", "✓", "✓"],
+            ["Email ingestion", "—", "✓", "✓", "✓", "✓"],
+          ]
+        },
+        {
+          sec: "OPERATIONS", rows: [
+            ["LC validation", "—", "—", "✓", "✓", "✓"],
+            ["BL reconciliation", "—", "—", "✓", "✓", "✓"],
+            ["Invoice matching", "—", "—", "✓", "✓", "✓"],
+            ["Lifecycle tracking", "—", "—", "✓", "✓", "✓"],
+          ]
+        },
+        {
+          sec: "INTELLIGENCE", rows: [
+            ["Live vessel tracking", "—", "—", "—", "✓", "✓"],
+            ["Market position summary", "—", "—", "—", "✓", "✓"],
+            ["Counterparty screening", "—", "—", "—", "✓", "✓"],
+            ["CTRM / ERP webhooks", "—", "—", "—", "—", "✓"],
+            ["SSO / SAML", "—", "—", "—", "—", "✓"],
+          ]
+        },
+      ];
+
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <Ticker />
+          <MarketingNav go={go} />
+
+          <div style={{ padding: "80px 32px 48px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
+            <span className="eyebrow">PRICING · PLAIN AS DAY</span>
+            <h1 className="display" style={{ fontSize: 96, margin: "16px 0 0" }}>$0 to start.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>No card required.</span></h1>
+            <p style={{ maxWidth: 580, margin: "20px auto 0", color: "var(--fg-2)", fontSize: 16 }}>
+              Free + Pro live today. Desk, Floor, and Enterprise rolling out as the lifecycle layers ship.
+            </p>
+          </div>
+
+          <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1380, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+              {plans.map(p => (
+                <div key={p.name} style={{ background: p.primary ? "var(--bg-2)" : "var(--bg)", padding: 24, position: "relative" }}>
+                  {p.primary && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--signal-amber)" }} />}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: p.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{p.name}</span>
+                    {p.soon && <span className="tag">SOON</span>}
+                    {p.primary && <span className="tag tag-amber">LIVE</span>}
+                  </div>
+                  <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginTop: 16, minHeight: 24 }}>{p.desc}</div>
+                  <div style={{ marginTop: 12, display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span className="display" style={{ fontSize: 48 }}>{p.price}</span>
+                    <span style={{ color: "var(--fg-3)", fontSize: 12, fontFamily: "var(--font-mono)" }}>{p.sub}</span>
+                  </div>
+                  <ul style={{ listStyle: "none", padding: 0, marginTop: 20, display: "grid", gap: 6, minHeight: 160 }}>
+                    {p.inc.map(i => (
+                      <li key={i} style={{ display: "flex", gap: 8, fontSize: 12.5, color: "var(--fg-2)" }}>
+                        <span style={{ color: "var(--signal-pass)" }}>+</span>{i}
+                      </li>
+                    ))}
+                  </ul>
+                  <button className={"btn " + (p.primary ? "btn-primary" : "")} style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => go("/deals/new")}>{p.cta}</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1380, margin: "0 auto" }}>
+              <span className="eyebrow">FEATURE MATRIX · WHAT'S IN EACH PLAN</span>
+              <h2 className="display" style={{ fontSize: 40, margin: "12px 0 32px" }}>Compare every line.</h2>
+              <div className="card" style={{ overflow: "hidden" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "12px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                  <span className="label">FEATURE</span>
+                  {plans.map(p => <span key={p.name} className="label" style={{ textAlign: "center" }}>{p.name}</span>)}
+                </div>
+                {matrix.map(s => (
+                  <Fragment key={s.sec}>
+                    <div style={{ padding: "10px 18px", background: "var(--bg-2)", borderBottom: "1px solid var(--line-soft)" }}>
+                      <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.12em", color: "var(--signal-amber)" }}>{s.sec}</span>
+                    </div>
+                    {s.rows.map((r, i) => (
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "11px 18px", borderBottom: "1px solid var(--line-soft)", fontSize: 13 }}>
+                        <span style={{ color: "var(--fg)" }}>{r[0]}</span>
+                        {r.slice(1).map((v, j) => (
+                          <span key={j} className="mono" style={{ textAlign: "center", color: v === "—" ? "var(--fg-4)" : v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
+                        ))}
+                      </div>
+                    ))}
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", background: "var(--bg-2)" }}>
+            <div style={{ maxWidth: 980, margin: "0 auto" }}>
+              <h2 className="display" style={{ fontSize: 48, margin: "0 0 32px" }}>Frequent questions.</h2>
+              {[
+                { q: "What counts as one analysis?", a: "Any document Claude extracts and the rule engine validates — a single trade confirmation, COA, LC, BL, or invoice. Re-running the same document does not consume an additional analysis." },
+                { q: "Can I bring my own contract terms?", a: "Yes. Custom terms, standard terms (GAFTA / FOSFA / ICE / CME), and hybrid contracts that reference standard terms with amendments are all handled. Deal-specific exceptions stack on top of the reference library." },
+                { q: "Is my data used to train models?", a: "No. Customer data is never used for model training. Documents are processed in-flight and stored encrypted at rest in your chosen region." },
+                { q: "When are Desk, Floor, and Enterprise live?", a: "Desk is in private testing with three operations teams. Join the waitlist and we will reach out as your region opens up." },
+              ].map((f, i) => (
+                <div key={i} style={{ padding: "20px 0", borderTop: "1px solid var(--line)", display: "grid", gridTemplateColumns: "1fr 2fr", gap: 32 }}>
+                  <h3 style={{ margin: 0, fontSize: 18, color: "var(--fg)", letterSpacing: "-0.01em", fontWeight: 500 }}>{f.q}</h3>
+                  <p style={{ margin: 0, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>{f.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
+            <h2 className="display" style={{ fontSize: 64, margin: 0 }}>First analysis on us.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>The next mismatch won't be.</span></h2>
+            <button className="btn btn-lg btn-primary" style={{ marginTop: 28 }} onClick={() => go("/deals/new")}>GET STARTED FREE →</button>
+          </div>
+
+          <Ticker compact />
+        </div>
+      );
+    };
+
+    const DemoPage = ({ go }) => (
+      <div className="surface" style={{ minHeight: "100vh" }}>
+        <Ticker />
+        <MarketingNav go={go} />
+        <div style={{ padding: "32px 32px 12px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <span className="eyebrow">PUBLIC DEMO · NON-COMPLIANT BRAZILIAN SOYBEAN DEAL</span>
+              <h1 className="display" style={{ fontSize: 48, margin: "8px 0 0" }}>Watch a real failure get caught.</h1>
+              <p style={{ marginTop: 8, color: "var(--fg-3)", fontSize: 14, maxWidth: 720 }}>
+                No login. Live extraction, live rule engine, live activity feed. Hit Approve or Reject — your changes flow into the deal record.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span className="tag tag-amber">INTERACTIVE</span>
+              <button className="btn btn-sm btn-primary" onClick={() => go("/deals/new")}>SIGN UP TO RUN YOURS →</button>
+            </div>
+          </div>
+        </div>
+        <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24 }}>
+          <div style={{ display: "grid", gap: 24 }}>
+            <LifecycleBar stage={2} />
+            <ExtractedCard doc="COA · SGS-BR-44128" />
+            <ComplianceLedger />
+          </div>
+          <ActivityFeed />
+        </div>
+      </div>
+    );
+
+    const ProductsPage = ({ go }) => {
+      const [activeFeature, setActiveFeature] = useState("tc");
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <Ticker />
+          <MarketingNav go={go} />
+          <div style={{ padding: "60px 32px 48px", borderBottom: "1px solid var(--line)" }} className="bg-grid">
+            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+              <span className="eyebrow">PRODUCT · ALL LAYERS</span>
+              <h1 className="display" style={{ fontSize: 84, margin: "12px 0 0", maxWidth: 1100 }}>
+                From trade confirmation to delivery. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Automated.</span>
+              </h1>
+              <div style={{ marginTop: 20, fontSize: 17, color: "var(--fg-2)", maxWidth: 760, lineHeight: 1.5 }}>
+                Every document. Every validation. Every exception. One agentic stack that reads your inbox, validates against your contracts, and surfaces only the decisions a human needs to make.
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+              <span className="eyebrow">THE STACK</span>
+              <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+                {[
+                  { tag: "LIVE", l: "01", t: "Trade Capture", sub: "Trade conf · COA · Contract", b: "Email arrives or PDF is dropped. Claude reads it. Every field surfaces in an editable card. Low-confidence values flagged. You hit Approve — the deal record is created and the lifecycle starts." },
+                  { tag: "LIVE", l: "02", t: "Shipment Operations", sub: "LC · BL · Invoice", b: "Same extraction pattern, different prompts. The deterministic rule engine cross-checks LC port vs contract port, BL date vs LC deadline, invoice quantity vs delivered quantity — simultaneously, before a human sees it." },
+                  { tag: "LIVE", l: "03", t: "Connected Intelligence", sub: "Vessel · Market · Counterparty", b: "Live vessel position via MarineTraffic. Current price vs locked contract. OpenSanctions screening on every counterparty. Claude generates a one-sentence position summary in plain English." },
+                ].map(c => (
+                  <div key={c.l} style={{ background: "var(--bg)", padding: 24 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)" }}>LAYER {c.l}</span>
+                      <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" />{c.tag}</span>
+                    </div>
+                    <h3 className="display" style={{ fontSize: 32, margin: "14px 0 4px" }}>{c.t}.</h3>
+                    <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginBottom: 12 }}>{c.sub}</div>
+                    <p style={{ color: "var(--fg-3)", fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{c.b}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Live mini-demo (Layer 1) — clickable feature switcher */}
+          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+              <span className="eyebrow">LIVE · LAYER 1 IN ACTION</span>
+              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px", maxWidth: 900 }}>
+                Pick a document. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Watch it parse.</span>
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 24 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+                  {[
+                    { id: "tc", l: "TRADE CONFIRMATION", b: "Counterparty terms" },
+                    { id: "coa", l: "CERTIFICATE OF ANALYSIS", b: "Quality vs spec" },
+                    { id: "ctr", l: "CONTRACT", b: "GAFTA · FOSFA · custom" },
+                  ].map(it => (
+                    <div key={it.id} onClick={() => setActiveFeature(it.id)}
+                      style={{ background: activeFeature === it.id ? "var(--bg-3)" : "var(--bg)", padding: "14px 16px", cursor: "pointer", borderLeft: activeFeature === it.id ? "2px solid var(--signal-amber)" : "2px solid transparent" }}>
+                      <div className="mono" style={{ fontSize: 11, color: activeFeature === it.id ? "var(--signal-amber)" : "var(--fg-3)" }}>{it.l}</div>
+                      <div style={{ fontSize: 13, color: "var(--fg-2)", marginTop: 3 }}>{it.b}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="card" style={{ minHeight: 340 }}>
+                  {activeFeature === "tc" && (
+                    <>
+                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                        <span className="eyebrow">TRADE CONFIRMATION · trade_conf.pdf</span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+                        {TC_FIELDS.slice(0, 6).map((f, i) => (
+                          <div key={f.k} style={{ padding: "12px 18px", borderRight: i % 2 === 0 ? "1px solid var(--line-soft)" : "none", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span className="label">{f.k}</span>
+                              <span className="mono" style={{ fontSize: 10, color: f.low ? "var(--signal-warn)" : "var(--fg-4)" }}>{f.low && "⚠ "}{Math.round(f.conf * 100)}%</span>
+                            </div>
+                            <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--fg)" }}>{f.v}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {activeFeature === "coa" && (
+                    <>
+                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                        <span className="eyebrow">COA · DETERMINISTIC RULE ENGINE</span>
+                        <div style={{ display: "flex", gap: 6 }}><span className="tag tag-fail">2 FAIL</span><span className="tag tag-pass">6 PASS</span></div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                        {["PARAMETER", "EXTRACTED", "SPEC", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
+                      </div>
+                      {COA_PARAMS.slice(0, 5).map((r, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "10px 18px", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent", alignItems: "center", fontSize: 13 }}>
+                          <span>{r.p}</span>
+                          <span className="mono">{r.e}</span>
+                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+                          <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {activeFeature === "ctr" && (
+                    <>
+                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                        <span className="eyebrow">CONTRACT · STANDARD + EXCEPTIONS</span>
+                        <span className="tag tag-amber">GAFTA 122 · 4 OVERRIDES</span>
+                      </div>
+                      <div style={{ padding: "18px 18px 8px" }}>
+                        <div className="label">REFERENCE LIBRARY</div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                          {["GAFTA", "FOSFA", "ICE", "CME"].map(s => <span key={s} className="tag">{s}</span>)}
+                        </div>
+                      </div>
+                      <div style={{ padding: "8px 18px 18px" }}>
+                        <div className="label" style={{ marginTop: 14 }}>DEAL-SPECIFIC OVERRIDES</div>
+                        <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 6 }}>
+                          {["Moisture max raised to 14.5%", "Discharge port: Qingdao only", "Payment: LC at sight, confirmed", "Demurrage: USD 18,000/day"].map(s =>
+                            <li key={s} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--fg-2)" }}><span className="mono" style={{ color: "var(--signal-amber)" }}>◆</span>{s}</li>
+                          )}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Layer 2 cross-doc */}
+          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+              <span className="eyebrow">LAYER 2 · CROSS-DOCUMENT VALIDATION</span>
+              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px", maxWidth: 900 }}>
+                One mismatch. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Caught before the bank sees it.</span>
+              </h2>
+              <div className="card">
+                <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                  <span className="eyebrow">CROSS-DOC CHECK · LC ↔ BL ↔ CONTRACT</span>
+                  <span className="tag tag-fail">1 EXCEPTION</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                  {["FIELD", "CONTRACT", "LETTER OF CREDIT", "BILL OF LADING"].map(h => <span key={h} className="label">{h}</span>)}
+                </div>
+                {[
+                  { f: "Discharge port", a: "Qingdao", b: "Qingdao", c: "Qingdao", ok: true },
+                  { f: "Quantity (MT)", a: "60,000 ±5%", b: "60,000 ±5%", c: "59,840", ok: true },
+                  { f: "Shipment by", a: "15 May 2026", b: "15 May 2026", c: "12 May 2026", ok: true },
+                  { f: "LC expiry", a: "30 May 2026", b: "28 May 2026", c: "—", ok: false, note: "LC expires 2 days before contract window — discrepancy" },
+                  { f: "Description", a: "Yellow Soybeans, FOB Santos", b: "Yellow Soybeans, FOB Santos", c: "Yellow Soybeans, FOB Santos", ok: true },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "10px 18px", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.ok ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent", alignItems: "center", fontSize: 13 }}>
+                    <span style={{ color: "var(--fg-2)", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: r.ok ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.ok ? "✓" : "✗"}</span>{r.f}
+                    </span>
+                    <span className="mono">{r.a}</span>
+                    <span className="mono">{r.b}</span>
+                    <span className="mono">{r.c}</span>
+                    {!r.ok && <div style={{ gridColumn: "1 / -1", padding: "6px 0 0", color: "var(--signal-fail)", fontSize: 12 }}>↳ {r.note}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Layer 3 strip */}
+          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+              <span className="eyebrow">LAYER 3 · MARKET-AWARE</span>
+              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px" }}>
+                Position. Vessel. Counterparty.
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
+                <PositionCard />
+                <div className="card">
+                  <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                    <span className="eyebrow">COUNTERPARTY · COFCO RESOURCES S.A.</span>
+                    <span className="tag tag-pass">SANCTIONS CLEAR</span>
+                  </div>
+                  <div style={{ padding: "14px 18px" }}>
+                    <div className="label">RISK SIGNALS · CLAUDE WEB</div>
+                    <ul style={{ margin: "10px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+                      {[
+                        { t: "OpenSanctions", v: "No matches across OFAC, EU, UK, UN", k: "pass" },
+                        { t: "News (30 days)", v: "Q1 earnings beat · soybean exports up 12% YoY", k: "info" },
+                        { t: "Litigation", v: "No active disputes flagged", k: "pass" },
+                        { t: "Credit", v: "Standard terms · LC at sight, confirmed Tier-1 bank", k: "info" },
+                      ].map((s, i) => (
+                        <li key={i} style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 14, padding: "6px 0", borderTop: i ? "1px solid var(--line-soft)" : "none" }}>
+                          <span className="mono" style={{ fontSize: 11, color: s.k === "pass" ? "var(--signal-pass)" : "var(--fg-3)" }}>{s.t.toUpperCase()}</span>
+                          <span style={{ fontSize: 13, color: "var(--fg-2)" }}>{s.v}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: "80px 32px", textAlign: "center" }}>
+            <span className="eyebrow">START NOW</span>
+            <h2 className="display" style={{ fontSize: 64, margin: "12px 0 8px" }}>2 free analyses.</h2>
+            <div className="editorial" style={{ fontSize: 24, color: "var(--fg-2)" }}>No card. No setup.</div>
+            <div style={{ marginTop: 28, display: "flex", justifyContent: "center", gap: 12 }}>
+              <button className="btn btn-lg btn-primary" onClick={() => go("/deals/new")}>GET STARTED →</button>
+              <button className="btn btn-lg" onClick={() => go("/pricing")}>SEE PRICING</button>
+            </div>
+          </div>
+          <Ticker compact />
+        </div>
+      );
+    };
+
+    Object.assign(window, { HomePage, PricingPage, DemoPage, ProductsPage });
+  </script>
+
+  <!-- ============ PAGE: 03 · APP — Deals list + New Deal ============ -->
+  <script type="text/babel">
+    const DealsListPage = ({ go }) => {
+      const { state, dispatch } = useStore();
+      const [query, setQuery] = useState("");
+      const [filterOpen, setFilterOpen] = useState(false);
+      const [statusFilter, setStatusFilter] = useState("ALL");
+      const [stageFilter, setStageFilter] = useState("ALL");
+
+      const visible = state.deals.filter(d => {
+        if (statusFilter !== "ALL" && d.status !== statusFilter) return false;
+        if (stageFilter !== "ALL" && d.stage !== Number(stageFilter)) return false;
+        if (query) {
+          const q = query.toLowerCase();
+          const hay = (d.id + " " + d.name + " " + d.cmd + " " + d.buyer + " " + (d.origin || "")).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      const activeFilterCount = (statusFilter !== "ALL" ? 1 : 0) + (stageFilter !== "ALL" ? 1 : 0);
+      const exceptionCount = state.deals.filter(d => d.status === "EXCEPTION").length;
+
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
+
+          <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
+              <h1 className="display" style={{ fontSize: 36, margin: 0 }}>Deals</h1>
+              <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>
+                {visible.length} OF {state.deals.length}{exceptionCount ? " · " + exceptionCount + " EXCEPTIONS" : ""}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 8, position: "relative" }}>
+              <input className="input" placeholder="Search deals, vessels, counterparties…" value={query} onChange={e => setQuery(e.target.value)} style={{ width: 320 }} />
+              <button className="btn btn-sm" onClick={() => setFilterOpen(o => !o)} style={activeFilterCount ? { borderColor: "var(--signal-amber)", color: "var(--signal-amber)" } : {}}>
+                FILTER {activeFilterCount ? "· " + activeFilterCount : ""} ⌄
+              </button>
+              <button className="btn btn-sm btn-primary" onClick={() => go("/deals/new")}>+ NEW DEAL</button>
+
+              {filterOpen && (
+                <div style={{ position: "absolute", right: 90, top: 42, width: 320, background: "var(--bg-2)", border: "1px solid var(--line)", borderRadius: 2, padding: 14, zIndex: 50, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <span className="eyebrow">FILTER</span>
+                    {activeFilterCount > 0 && <span onClick={() => { setStatusFilter("ALL"); setStageFilter("ALL"); }} className="mono" style={{ fontSize: 10.5, color: "var(--signal-amber)", cursor: "pointer", letterSpacing: "0.08em" }}>CLEAR ALL</span>}
+                  </div>
+                  <div className="label" style={{ marginBottom: 6 }}>STATUS</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+                    {["ALL", "ON TRACK", "EXCEPTION", "PENDING"].map(s => (
+                      <button key={s} onClick={() => setStatusFilter(s)} className={"btn btn-sm " + (statusFilter === s ? "btn-primary" : "")} style={{ padding: "4px 10px", fontSize: 10.5, letterSpacing: "0.06em" }}>{s}</button>
+                    ))}
+                  </div>
+                  <div className="label" style={{ marginBottom: 6 }}>LIFECYCLE STAGE</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    <button onClick={() => setStageFilter("ALL")} className={"btn btn-sm " + (stageFilter === "ALL" ? "btn-primary" : "")} style={{ padding: "4px 10px", fontSize: 10.5 }}>ALL</button>
+                    {STAGES.map((s, i) => (
+                      <button key={s} onClick={() => setStageFilter(String(i))} className={"btn btn-sm " + (stageFilter === String(i) ? "btn-primary" : "")} style={{ padding: "4px 10px", fontSize: 10.5, letterSpacing: "0.06em" }}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
+            {["DEAL ID", "DEAL NAME", "COMMODITY", "BUYER", "LIFECYCLE", "STATUS", "UPDATED"].map(h => <span key={h} className="label">{h}</span>)}
+          </div>
+
+          {visible.length === 0 && (
+            <div style={{ padding: "60px 24px", textAlign: "center", color: "var(--fg-3)" }}>
+              <div style={{ fontSize: 15 }}>No deals match the current filter.</div>
+              <button className="btn btn-sm" style={{ marginTop: 12 }} onClick={() => { setQuery(""); setStatusFilter("ALL"); setStageFilter("ALL"); }}>CLEAR FILTERS</button>
+            </div>
+          )}
+
+          {visible.map(d => (
+            <div key={d.id} onClick={() => dispatch({ type: "goDeal", id: d.id })} style={{
+              display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr",
+              padding: "14px 24px", borderBottom: "1px solid var(--line-soft)", fontSize: 13.5, alignItems: "center", cursor: "pointer",
+              background: d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 4%, transparent)" : "transparent",
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 8%, transparent)" : "var(--bg-2)"}
+              onMouseLeave={e => e.currentTarget.style.background = d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 4%, transparent)" : "transparent"}>
+              <span className="mono" style={{ color: "var(--signal-amber)" }}>{d.id}</span>
+              <span style={{ color: "var(--fg)" }}>{d.name}</span>
+              <span style={{ color: "var(--fg-2)" }}>{d.cmd}</span>
+              <span style={{ color: "var(--fg-2)" }}>{d.buyer}</span>
+              <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                {STAGES.map((s, j) => (
+                  <div key={s} style={{ width: 22, height: 4, background: j < d.stage ? "var(--signal-pass)" : j === d.stage ? "var(--signal-amber)" : "var(--bg-3)" }} />
+                ))}
+                <span className="mono" style={{ marginLeft: 8, fontSize: 10.5, color: "var(--fg-3)" }}>{STAGES[d.stage]}</span>
+              </div>
+              <span className={d.status === "EXCEPTION" ? "tag tag-fail" : "tag tag-pass"}>{d.status}{d.exc ? " · " + d.exc : ""}</span>
+              <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>{d.upd || "just now"}</span>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    const NewDealPage = ({ go }) => {
+      const { state, dispatch } = useStore();
+      const [form, setForm] = useState({ name: "", buyer: "", origin: "", cmd: "", qty: "", deliv: "" });
+      const [emailIngest, setEmailIngest] = useState(true);
+      const ready = form.name && form.buyer && form.origin && form.cmd && form.qty;
+      const submit = () => {
+        if (!ready) return;
+        const id = form.cmd.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, "X") + "-" + Math.floor(2600 + Math.random() * 100);
+        dispatch({ type: "createDeal", deal: { id, name: form.name, buyer: form.buyer, origin: form.origin, cmd: form.cmd, qty: form.qty, price: "—", stage: 0, status: "PENDING" } });
+      };
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
+          <div style={{ padding: "32px 24px", display: "grid", gridTemplateColumns: "1fr 380px", gap: 32, maxWidth: 1400, margin: "0 auto" }}>
+            <div>
+              <span className="eyebrow">NEW DEAL · DRAFT</span>
+              <h1 className="display" style={{ fontSize: 48, margin: "8px 0 32px" }}>Open a position.</h1>
+              <div className="card" style={{ padding: 24 }}>
+                {[
+                  { l: "DEAL NAME *", k: "name", ph: "Brazilian Soy 60kt → Qingdao" },
+                  { l: "BUYER *", k: "buyer", ph: "Cofco Resources S.A." },
+                  { l: "ORIGIN *", k: "origin", ph: "Santos, BR" },
+                  { l: "COMMODITY *", k: "cmd", ph: "Yellow Soybeans, Crop 2025/26", note: "Free text — Claude reconciles to your contract on extraction." },
+                  { l: "QUANTITY *", k: "qty", ph: "60,000 MT  ±5% buyer's option" },
+                  { l: "DELIVERY MONTH", k: "deliv", ph: "May 2026", optional: true },
+                ].map(f => (
+                  <div key={f.k} style={{ marginBottom: 20 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span className="label">{f.l}</span>
+                      {f.optional && <span className="mono" style={{ fontSize: 10, color: "var(--fg-4)" }}>OPTIONAL</span>}
+                    </div>
+                    <input className="input" placeholder={f.ph} value={form[f.k]} onChange={e => setForm({ ...form, [f.k]: e.target.value })} style={{ marginTop: 6 }} />
+                    {f.note && <div style={{ fontSize: 11.5, color: "var(--fg-3)", marginTop: 6 }}>{f.note}</div>}
+                  </div>
+                ))}
+
+                <div style={{ marginTop: 8, padding: 16, border: "1px dashed var(--line)", borderRadius: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 14, color: "var(--fg)" }}>Receive documents automatically from your inbox</div>
+                    <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 4 }}>Forward to <span className="mono" style={{ color: "var(--signal-amber)" }}>soy-2604@in.commodityops.com</span> · Claude routes to this deal.</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span className="label">EMAIL INGEST</span>
+                    <div onClick={() => setEmailIngest(v => !v)} style={{ width: 36, height: 20, background: emailIngest ? "var(--signal-amber)" : "var(--bg-3)", borderRadius: 999, position: "relative", cursor: "pointer", transition: "background 120ms" }}>
+                      <div style={{ position: "absolute", left: emailIngest ? 18 : 2, top: 2, width: 16, height: 16, background: "var(--bg)", borderRadius: "50%", transition: "left 120ms" }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <button className="btn" onClick={() => go("/deals")}>SAVE DRAFT</button>
+                  <button className="btn btn-primary" disabled={!ready} style={{ opacity: ready ? 1 : 0.4, cursor: ready ? "pointer" : "not-allowed" }} onClick={submit}>ANALYZE →</button>
+                </div>
+              </div>
+            </div>
+
+            <aside>
+              <span className="eyebrow">WHAT HAPPENS NEXT</span>
+              <div className="card" style={{ padding: 20, marginTop: 12 }}>
+                {[
+                  "Save draft — required fields can be filled later.",
+                  "Hit Analyze to attach the trade confirmation PDF.",
+                  "Claude extracts every field. Edit inline.",
+                  "Approve to advance the lifecycle to CONFIRMED.",
+                ].map((s, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "32px 1fr", gap: 12, padding: "10px 0", borderTop: i ? "1px solid var(--line-soft)" : "none" }}>
+                    <span className="mono" style={{ color: "var(--signal-amber)" }}>0{i + 1}</span>
+                    <span style={{ fontSize: 13, color: "var(--fg-2)", lineHeight: 1.5 }}>{s}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 20, padding: 16, border: "1px solid var(--line)", borderRadius: 2 }}>
+                <span className="eyebrow">TIP</span>
+                <p className="editorial" style={{ fontSize: 17, color: "var(--fg-2)", margin: "8px 0 0", lineHeight: 1.4 }}>
+                  Custom contracts and hybrid contracts that reference GAFTA, FOSFA, ICE or CME are all handled. Drop the contract once and Claude applies your exceptions on top.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      );
+    };
+
+    Object.assign(window, { DealsListPage, NewDealPage });
+  </script>
+
+  <!-- ============ PAGE: 04 · DEAL DETAIL — L1, L2, L3 (faithful conversions) ============ -->
+  <script type="text/babel">
+    // ─── L1: CAPTURE ──────────────────────────────────────────
+    const DealDetailL1 = ({ deal, go }) => {
+      const { state } = useStore();
+      const tcStatus = (state.approvals[deal.id] || {}).tc;
+      const coaStatus = (state.approvals[deal.id] || {}).coa;
+      const docs = [
+        { n: "trade_confirmation_cofco.pdf", s: tcStatus === "approved" ? "APPROVED" : tcStatus === "rejected" ? "REJECTED" : "PARSED", k: tcStatus === "rejected" ? "fail" : "pass" },
+        { n: "coa_sgs_br_44128.pdf", s: coaStatus === "approved" ? "ACCEPTED" : coaStatus === "rejected" ? "REJECTED" : "FAIL · 2 EXC", k: coaStatus === "approved" ? "pass" : "fail" },
+        { n: "contract_soy_2604.pdf", s: "PARSED", k: "pass" },
+      ];
+      return (
+        <>
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+                  <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 1 — CAPTURE</span>
+                </div>
+                <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
+                <div style={{ marginTop: 6, fontSize: 13, color: "var(--fg-3)" }}>
+                  {deal.buyer} · {deal.cmd} · {deal.qty}{deal.origin ? " · FOB " + deal.origin : ""}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-sm">UPLOAD DOC</button>
+                <button className="btn btn-sm">EXPORT</button>
+                <button className="btn btn-sm btn-primary">VIEW DEAL FILE</button>
+              </div>
+            </div>
+            <LifecycleBar stage={deal.stage} compact />
+          </div>
+
+          <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 24 }}>
+            <div style={{ display: "grid", gap: 24 }}>
+              <ExtractedCard doc="TRADE CONFIRMATION" dealId={deal.id} />
+              <ComplianceLedger dealId={deal.id} />
+            </div>
+            <div style={{ display: "grid", gap: 24, alignContent: "start" }}>
+              <ActivityFeed dealId={deal.id} />
+              <div className="card" style={{ padding: 18 }}>
+                <span className="eyebrow">DOCUMENTS</span>
+                <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                  {docs.map((d, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", border: "1px solid var(--line-soft)", borderRadius: 2 }}>
+                      <span className="mono" style={{ fontSize: 12, color: "var(--fg-2)" }}>{d.n}</span>
+                      <span className={d.k === "pass" ? "tag tag-pass" : "tag tag-fail"}>{d.s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    // ─── L2: OPERATIONS ───────────────────────────────────────
+    const DealDetailL2 = ({ deal, go }) => {
+      const tabs = ["Trade Confirmation", "COA", "Contract", "LC", "BL", "Invoice"];
+      const [tab, setTab] = useState("BL");
+      const tabDot = (t) => {
+        if (t === "Invoice") return null;
+        if (t === "BL") return <span className="dot dot-fail" />;
+        return <span className="dot dot-pass" />;
+      };
+      return (
+        <>
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+                  <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 2 — OPERATIONS</span>
+                </div>
+                <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-sm">UPLOAD DOC</button>
+                <button className="btn btn-sm btn-primary">VIEW DEAL FILE</button>
+              </div>
+            </div>
+            <LifecycleBar stage={Math.max(deal.stage, 2)} compact />
+          </div>
+
+          {/* Cross-doc conflict banner */}
+          <div style={{ margin: "16px 24px 0", padding: "14px 18px", border: "1px solid color-mix(in oklch, var(--signal-fail) 40%, var(--line))", background: "color-mix(in oklch, var(--signal-fail) 8%, transparent)", borderRadius: 2 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <span className="tag tag-fail">CROSS-DOC · 1 CONFLICT</span>
+                <span style={{ fontSize: 14, color: "var(--fg)" }}>
+                  <b>LC port</b> = <span className="mono">Qingdao</span> · <b>BL port</b> = <span className="mono" style={{ color: "var(--signal-fail)" }}>Tianjin</span> — discharge port mismatch.
+                </span>
+              </div>
+              <button className="btn btn-sm" onClick={() => setTab("BL")}>REVIEW IN BL TAB →</button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ padding: "20px 24px 0", display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
+            {tabs.map(t => (
+              <div key={t} onClick={() => setTab(t)} style={{
+                padding: "10px 18px", fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em", cursor: "pointer",
+                color: tab === t ? "var(--fg)" : "var(--fg-3)",
+                borderBottom: tab === t ? "2px solid var(--signal-amber)" : "2px solid transparent",
+                display: "flex", gap: 8, alignItems: "center",
+              }}>
+                {t.toUpperCase()}
+                {tabDot(t)}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 24 }}>
+            <div style={{ display: "grid", gap: 24 }}>
+              {tab === "Trade Confirmation" && <ExtractedCard doc="TRADE CONFIRMATION" dealId={deal.id} />}
+              {tab === "COA" && <ComplianceLedger dealId={deal.id} />}
+              {tab === "Contract" && (
+                <div className="card" style={{ padding: 24 }}>
+                  <span className="eyebrow">CONTRACT · GAFTA 122 + 4 OVERRIDES</span>
+                  <p style={{ marginTop: 10, fontSize: 14, color: "var(--fg-2)", lineHeight: 1.6 }}>
+                    Standard terms applied with deal-specific exceptions. All subsequent documents validated against this combined ruleset.
+                  </p>
+                  <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+                    {["Moisture max raised to 14.5%", "Discharge port: Qingdao only", "Payment: LC at sight, confirmed", "Demurrage: USD 18,000/day"].map(s =>
+                      <li key={s} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--fg-2)" }}>
+                        <span className="mono" style={{ color: "var(--signal-amber)" }}>◆</span>{s}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              {tab === "LC" && (
+                <div className="card" style={{ padding: 24 }}>
+                  <span className="eyebrow">LETTER OF CREDIT · LC-CHN-882741</span>
+                  <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                    {[
+                      { k: "LC NUMBER", v: "LC-CHN-882741" },
+                      { k: "LC PORT", v: "Qingdao, CN" },
+                      { k: "LC QUANTITY", v: "60,000 MT ±5%" },
+                      { k: "LATEST SHIPMENT", v: "2026-04-28" },
+                      { k: "LC EXPIRY", v: "2026-05-28" },
+                      { k: "DOC REQUIREMENTS", v: "BL, Invoice, COA, Insurance" },
+                    ].map(f => (
+                      <div key={f.k}>
+                        <div className="label">{f.k}</div>
+                        <div className="mono" style={{ marginTop: 4, fontSize: 13, color: "var(--fg)" }}>{f.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {tab === "BL" && (<><BLExtractedCard dealId={deal.id} /><CrossDocReconcile /></>)}
+              {tab === "Invoice" && <div className="card" style={{ padding: 32, textAlign: "center", color: "var(--fg-3)", fontSize: 14 }}>Invoice issues post-delivery.</div>}
+            </div>
+            <div style={{ display: "grid", gap: 24, alignContent: "start" }}>
+              <ActivityFeed dealId={deal.id} />
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    // ─── L3: CONNECTED INTELLIGENCE ──────────────────────────
+    const DealDetailL3 = ({ deal, go }) => (
+      <>
+        <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+                <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 3 — CONNECTED INTELLIGENCE</span>
+              </div>
+              <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span className="tag tag-pass">SANCTIONS · CLEAR</span>
+              <span className="tag tag-amber">RISK · 2 SIGNALS</span>
+              <button className="btn btn-sm btn-primary">VIEW DEAL FILE</button>
+            </div>
+          </div>
+          <LifecycleBar stage={Math.max(deal.stage, 2)} compact />
+        </div>
+
+        <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
+          <div style={{ display: "grid", gap: 24 }}>
+            <PositionCard />
+            <VesselTracker />
+          </div>
+          <div style={{ display: "grid", gap: 24, alignContent: "start" }}>
+            <div className="card">
+              <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
+                <span className="eyebrow">COUNTERPARTY · {deal.buyer.toUpperCase()}</span>
+                <span className="tag tag-pass">CLEAR</span>
+              </div>
+              <div style={{ padding: 18, display: "grid", gap: 14 }}>
+                {[
+                  { k: "OFAC / UK / EU sanctions", v: "No matches", pass: true },
+                  { k: "OpenSanctions adverse", v: "0 hits", pass: true },
+                  { k: "PEP exposure", v: "None at directorship level", pass: true },
+                  { k: "News risk (90d)", v: "2 supply-chain mentions", warn: true },
+                  { k: "Litigation (12mo)", v: "None disclosed", pass: true },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, paddingBottom: 12, borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none" }}>
+                    <span style={{ color: "var(--fg-2)" }}>{r.k}</span>
+                    <span className="mono" style={{ color: r.warn ? "var(--signal-warn)" : "var(--fg)" }}>{r.v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <ActivityFeed dealId={deal.id} />
+          </div>
+        </div>
+      </>
+    );
+
+    // ─── Layer-router ────────────────────────────────────────
+    const DealDetailPage = ({ go }) => {
+      const { state, dispatch } = useStore();
+      const deal = state.deals.find(d => d.id === state.currentDealId) || state.deals[0];
+      if (!deal) { go("/deals"); return null; }
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
+          {state.layer >= 3 && <DealDetailL3 deal={deal} go={go} />}
+          {state.layer === 2 && <DealDetailL2 deal={deal} go={go} />}
+          {state.layer <= 1 && <DealDetailL1 deal={deal} go={go} />}
+        </div>
+      );
+    };
+
+    Object.assign(window, { DealDetailL1, DealDetailL2, DealDetailL3, DealDetailPage });
+  </script>
+
+  <!-- ============ APP · router + toast + tweaks panel ============ -->
+  <script type="text/babel">
+    function App() {
+      const [state, dispatch] = useReducer(reducer, null, loadState);
+      const [tweaksOpen, setTweaksOpen] = useState(false);
+
+      useEffect(() => saveState(state), [state]);
+      useEffect(() => { document.documentElement.dataset.mode = state.mode; }, [state.mode]);
+      useEffect(() => {
+        if (state.notif) { const t = setTimeout(() => dispatch({ type: "clearNotif" }), 2800); return () => clearTimeout(t); }
+      }, [state.notif]);
+
+      // Toggle tweaks with "."
+      useEffect(() => {
+        const onKey = (e) => {
+          const t = e.target;
+          if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+          if (e.key === ".") setTweaksOpen(o => !o);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+      }, []);
+
+      const go = useCallback((route) => {
+        if (route.startsWith("/deals/") && route !== "/deals/new") {
+          const id = route.split("/")[2];
+          dispatch({ type: "goDeal", id });
+        } else dispatch({ type: "go", route });
+      }, []);
+
+      let screen;
+      const r = state.route || "/home";
+      if (r === "/home") screen = <HomePage go={go} />;
+      else if (r === "/products") screen = <ProductsPage go={go} />;
+      else if (r === "/pricing") screen = <PricingPage go={go} />;
+      else if (r === "/demo") screen = <DemoPage go={go} />;
+      else if (r === "/deals") screen = <DealsListPage go={go} />;
+      else if (r === "/deals/new") screen = <NewDealPage go={go} />;
+      else if (r.startsWith("/deals/")) screen = <DealDetailPage go={go} />;
+      else screen = <HomePage go={go} />;
+
+      return (
+        <StoreCtx.Provider value={{ state, dispatch }}>
+          {screen}
+
+          {/* Toast */}
+          {state.notif && (
+            <div style={{
+              position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+              background: "var(--bg-2)", border: "1px solid var(--line)",
+              borderLeft: "3px solid " + (state.notif.kind === "pass" ? "var(--signal-pass)" : state.notif.kind === "fail" ? "var(--signal-fail)" : "var(--signal-amber)"),
+              padding: "12px 18px", borderRadius: 2, fontSize: 13, color: "var(--fg)", zIndex: 1000,
+              display: "flex", gap: 12, alignItems: "center", boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+              fontFamily: "var(--font-ui)",
+            }}>
+              <span className="mono" style={{ fontSize: 11, color: state.notif.kind === "pass" ? "var(--signal-pass)" : state.notif.kind === "fail" ? "var(--signal-fail)" : "var(--signal-amber)" }}>{state.notif.tag}</span>
+              <span>{state.notif.msg}</span>
+            </div>
+          )}
+
+          {/* Tweaks toggle */}
+          <button onClick={() => setTweaksOpen(o => !o)} title="Tweaks (.)" style={{
+            position: "fixed", right: 18, bottom: 18, zIndex: 1200,
+            width: 40, height: 40, borderRadius: 20,
+            background: "var(--bg-2)", color: "var(--fg)", border: "1px solid var(--line)",
+            fontFamily: "var(--font-mono)", fontSize: 14, cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+          }}>·</button>
+
+          {tweaksOpen && (
+            <div style={{
+              position: "fixed", right: 18, bottom: 70, width: 300, zIndex: 1100,
+              background: "var(--bg-2)", border: "1px solid var(--line)", padding: 16, borderRadius: 2,
+              fontFamily: "var(--font-ui)", color: "var(--fg)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <span className="eyebrow">TWEAKS</span>
+                <span onClick={() => setTweaksOpen(false)} style={{ cursor: "pointer", color: "var(--fg-3)" }}>×</span>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div className="label" style={{ marginBottom: 6 }}>THEME</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {["ink", "paper"].map(m => (
+                    <button key={m} onClick={() => dispatch({ type: "setMode", m })} className={"btn btn-sm " + (state.mode === m ? "btn-primary" : "")} style={{ flex: 1, justifyContent: "center" }}>{m.toUpperCase()}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div className="label" style={{ marginBottom: 6 }}>JUMP TO</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                  {[
+                    { l: "Home", r: "/home" },
+                    { l: "Products", r: "/products" },
+                    { l: "Pricing", r: "/pricing" },
+                    { l: "Demo", r: "/demo" },
+                    { l: "Deals", r: "/deals" },
+                    { l: "New Deal", r: "/deals/new" },
+                    { l: "Deal · L1", r: "/deals/SOY-2604", l1: 1 },
+                  ].map(it => (
+                    <button key={it.r + it.l} className="btn btn-sm" onClick={() => { if (it.l1) dispatch({ type: "setLayer", l: 1 }); go(it.r); }}>{it.l}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="label" style={{ marginBottom: 6 }}>RESET</div>
+                <button className="btn btn-sm" style={{ width: "100%", justifyContent: "center" }} onClick={() => { localStorage.removeItem(LS_KEY); location.reload(); }}>RESET PROTOTYPE</button>
+              </div>
+              <div style={{ marginTop: 12, fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)", lineHeight: 1.5 }}>
+                Press <span className="kbd">.</span> to toggle this panel.
+              </div>
+            </div>
+          )}
+        </StoreCtx.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+
+</html>
