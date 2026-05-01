@@ -2109,6 +2109,11 @@
         if (state.notif) { const t = setTimeout(() => dispatch({ type: "clearNotif" }), 2800); return () => clearTimeout(t); }
       }, [state.notif]);
 
+      // Scroll to top on route change
+      useEffect(() => {
+        window.scrollTo(0, 0);
+      }, [state.route]);
+
       // Toggle tweaks with "."
       useEffect(() => {
         const onKey = (e) => {
