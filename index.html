@@ -472,6 +472,20 @@
       ],
     };
 
+    const INBOX = {
+      "SOY-2604": [
+        { id: "tc", from: "ops@cofco-resources.ch", subj: "RE: Trade Confirmation 60kt FOB Santos", doc: "trade_confirmation.pdf", type: "TRADE CONFIRMATION", at: "12:42" },
+        { id: "coa", from: "lab@sgs.com.br", subj: "COA SGS-BR-44128", doc: "coa_sgs_br_44128.pdf", type: "COA", at: "11:57" },
+        { id: "ctr", from: "legal@cofco-resources.ch", subj: "Master Contract — countersigned", doc: "contract_soy_2604.pdf", type: "CONTRACT", at: "09:14" },
+      ],
+      "CRN-2595": [
+        { id: "tc", from: "trades@gruma.mx", subj: "Confirmation 30kt Corn → Veracruz", doc: "tc_gruma.pdf", type: "TRADE CONFIRMATION", at: "09:02" },
+      ],
+      "SUG-2588": [
+        { id: "lc", from: "trade.finance@bank.dz", subj: "LC issued — discrepancy", doc: "lc_cevital.pdf", type: "LETTER OF CREDIT", at: "08:14" },
+      ],
+    };
+
     const LS_KEY = "CommodityOps:interactive:v1";
 
     function loadState() {
@@ -504,6 +518,7 @@
       switch (action.type) {
         case "go": return { ...state, route: action.route };
         case "goDeal": return { ...state, route: "/deals/" + action.id, currentDealId: action.id };
+        case "goDoc": return { ...state, route: "/deals/" + action.dealId, currentDealId: action.dealId, currentDocId: action.docId };
         case "setLayer": return { ...state, layer: action.l };
         case "setMode": return { ...state, mode: action.m };
         case "setField": {
@@ -556,7 +571,7 @@
     const StoreCtx = createContext(null);
     const useStore = () => useContext(StoreCtx);
 
-    Object.assign(window, { STAGES, SEED_DEALS, COA_PARAMS, TC_FIELDS, SEED_ACTIVITY, LS_KEY, loadState, saveState, reducer, StoreCtx, useStore });
+    Object.assign(window, { STAGES, SEED_DEALS, COA_PARAMS, TC_FIELDS, SEED_ACTIVITY, INBOX, LS_KEY, loadState, saveState, reducer, StoreCtx, useStore });
   </script>
 
   <!-- ============ SHARED CHROME · Logo, Ticker, MarketingNav, AppNav, LifecycleBar ============ -->
@@ -618,9 +633,6 @@
       const items = [
         { id: "deals", label: "DEALS", route: "/deals" },
         { id: "inbox", label: "INBOX", route: "/inbox", count: 4 },
-        { id: "vessels", label: "VESSELS", route: "/vessels", lock: layer < 3 },
-        { id: "market", label: "MARKET", route: "/market", lock: layer < 3 },
-        { id: "activity", label: "ACTIVITY", route: "/activity" },
         { id: "settings", label: "SETTINGS", route: "/settings" },
       ];
       return (
@@ -1927,7 +1939,158 @@
       );
     };
 
-    Object.assign(window, { DealDetailL1, DealDetailL2, DealDetailL3, DealDetailPage });
+    const InboxScreen = ({ go }) => {
+      const { state: store, dispatch } = useStore();
+      const all = [];
+      Object.entries(INBOX).forEach(([dealId, items]) => {
+        const deal = store.deals.find(d => d.id === dealId);
+        if (!deal) return;
+        items.forEach(it => {
+          const approved = (store.approvals[dealId] || {})[it.id];
+          if (approved) return;
+          all.push({ ...it, dealId, dealName: deal.name });
+        });
+      });
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <AppNav active="inbox" go={go} layer={store.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <span className="eyebrow">INBOX · ROUTED BY CLAUDE</span>
+              <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{all.length} document{all.length !== 1 ? "s" : ""} awaiting review.</h1>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
+            {["TIME", "FROM", "SUBJECT", "DEAL", "TYPE", ""].map(h => <span key={h} className="label">{h}</span>)}
+          </div>
+          {all.length === 0 ? (
+            <div style={{ padding: 80, textAlign: "center", color: "var(--fg-3)" }}>
+              <div style={{ fontSize: 18 }}>Inbox clear.</div>
+              <div style={{ fontSize: 13, marginTop: 6 }}>All routed documents have been reviewed.</div>
+            </div>
+          ) : all.map((it, i) => (
+            <div key={i} onClick={() => { dispatch({ type: "goDoc", dealId: it.dealId, docId: it.id }); go(`/deals/${it.dealId}`); }} style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", padding: "14px 24px", borderBottom: "1px solid var(--line-soft)", fontSize: 13, alignItems: "center", cursor: "pointer" }}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-2)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <span className="mono" style={{ color: "var(--fg-3)" }}>{it.at}</span>
+              <span className="mono" style={{ color: "var(--fg-2)", fontSize: 12 }}>{it.from}</span>
+              <span style={{ color: "var(--fg)" }}>{it.subj}</span>
+              <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 12 }}>{it.dealId}</span>
+              <span className="tag tag-amber">{it.type}</span>
+              <span style={{ color: "var(--fg-3)", fontSize: 12, textAlign: "right" }}>OPEN →</span>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    const SettingsScreen = ({ go }) => {
+      const { state: store, dispatch } = useStore();
+      const [emailIngest, setEmailIngest] = useState(true);
+      return (
+        <div className="surface" style={{ minHeight: "100vh" }}>
+          <AppNav active="settings" go={go} layer={store.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
+          <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", minHeight: "calc(100vh - 75px)" }}>
+            <aside style={{ borderRight: "1px solid var(--line)", padding: "20px 0" }}>
+              {[
+                { l: "INTEGRATIONS", active: true },
+                { l: "USERS & ROLES" },
+                { l: "BILLING" },
+                { l: "AUDIT LOG" },
+                { l: "DATA RESIDENCY" },
+              ].map((it, i) => (
+                <div key={i} style={{ padding: "10px 24px", fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em", color: it.active ? "var(--fg)" : "var(--fg-3)", borderLeft: it.active ? "2px solid var(--signal-amber)" : "2px solid transparent", cursor: "pointer" }}>
+                  {it.l}
+                </div>
+              ))}
+            </aside>
+            <main style={{ padding: "28px 32px", maxWidth: 920 }}>
+              <span className="eyebrow">SETTINGS · INTEGRATIONS</span>
+              <h1 className="display" style={{ fontSize: 42, margin: "8px 0 24px" }}>How CommodityOps gets your work.</h1>
+
+              {/* Email ingestion */}
+              <div className="card" style={{ marginBottom: 20 }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 15, color: "var(--fg)" }}>Email ingestion</div>
+                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Forward to your inbox. Claude classifies and routes to the right deal.</div>
+                  </div>
+                  <div onClick={() => setEmailIngest(!emailIngest)} style={{ width: 42, height: 22, borderRadius: 11, background: emailIngest ? "var(--signal-amber)" : "var(--bg-3)", position: "relative", cursor: "pointer", transition: "background 120ms" }}>
+                    <div style={{ position: "absolute", top: 2, left: emailIngest ? 22 : 2, width: 18, height: 18, borderRadius: "50%", background: "var(--bg)", transition: "left 120ms" }} />
+                  </div>
+                </div>
+                <div style={{ padding: "14px 20px", display: "grid", gridTemplateColumns: "160px 1fr", gap: 14, alignItems: "center" }}>
+                  <span className="label">YOUR INBOX</span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input className="input" readOnly value="ops-r9k2@commodityops.email" style={{ flex: 1 }} />
+                    <button className="btn btn-sm">COPY</button>
+                  </div>
+                  <span className="label">FALLBACK</span>
+                  <span style={{ fontSize: 13, color: "var(--fg-2)" }}>Manual upload available on every deal page.</span>
+                </div>
+              </div>
+
+              {/* CTRM/ERP */}
+              <div className="card" style={{ marginBottom: 20 }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 15, color: "var(--fg)" }}>CTRM / ERP webhook</div>
+                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Push approved records to your downstream system.</div>
+                  </div>
+                  <span className="tag">ENTERPRISE</span>
+                </div>
+                <div style={{ padding: "14px 20px", display: "grid", gridTemplateColumns: "160px 1fr", gap: 14, alignItems: "center" }}>
+                  <span className="label">ENDPOINT</span>
+                  <input className="input" placeholder="https://your-ctrm.example.com/webhook" disabled style={{ opacity: 0.5 }} />
+                  <span className="label">SECRET</span>
+                  <input className="input" placeholder="whsec_…" disabled style={{ opacity: 0.5 }} />
+                </div>
+              </div>
+
+              {/* API keys */}
+              <div className="card" style={{ marginBottom: 20 }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 15, color: "var(--fg)" }}>API keys</div>
+                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Programmatic access to deals, documents, activity.</div>
+                  </div>
+                  <span className="tag">ENTERPRISE</span>
+                </div>
+                <div style={{ padding: "14px 20px", color: "var(--fg-3)", fontSize: 13 }}>
+                  Upgrade to Enterprise to manage API keys.
+                </div>
+              </div>
+
+              {/* SSO */}
+              <div className="card">
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 15, color: "var(--fg)" }}>SSO / SAML</div>
+                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Single sign-on via your identity provider.</div>
+                  </div>
+                  <span className="tag">ENTERPRISE</span>
+                </div>
+                <div style={{ padding: "14px 20px", display: "grid", gridTemplateColumns: "160px 1fr", gap: 14, alignItems: "center" }}>
+                  <span className="label">PROVIDER</span>
+                  <select className="input" disabled style={{ opacity: 0.5 }}>
+                    <option>Okta · Azure AD · Google · Custom SAML</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 18, fontSize: 12, color: "var(--fg-3)", display: "flex", gap: 14, fontFamily: "var(--font-mono)" }}>
+                <span>HTTPS/TLS</span><span>·</span>
+                <span>ENCRYPTION AT REST</span><span>·</span>
+                <span>EU/US RESIDENCY</span><span>·</span>
+                <span style={{ color: "var(--fg-4)" }}>SOC 2 TYPE II — ROADMAP</span>
+              </div>
+            </main>
+          </div>
+        </div>
+      );
+    };
+
+    Object.assign(window, { DealDetailL1, DealDetailL2, DealDetailL3, DealDetailPage, InboxScreen, SettingsScreen });
   </script>
 
   <!-- ============ APP · router + toast + tweaks panel ============ -->
@@ -1968,6 +2131,8 @@
       else if (r === "/demo") screen = <DemoPage go={go} />;
       else if (r === "/deals") screen = <DealsListPage go={go} />;
       else if (r === "/deals/new") screen = <NewDealPage go={go} />;
+      else if (r === "/inbox") screen = <InboxScreen go={go} />;
+      else if (r === "/settings") screen = <SettingsScreen go={go} />;
       else if (r.startsWith("/deals/")) screen = <DealDetailPage go={go} />;
       else screen = <HomePage go={go} />;
 
