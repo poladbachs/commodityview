@@ -600,8 +600,8 @@
 
     const MarketingNav = ({ go }) => (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)" }}>
-        <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={14} /></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 13, color: "var(--fg-2)" }}>
+        <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
           <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
           <a onClick={() => go("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
           <a onClick={() => go("/demo")} style={{ cursor: "pointer" }}>Demo</a>
@@ -1060,9 +1060,9 @@
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
               {[
-                { n: "01", t: "Capture", sub: "Trade confirmation, COA, contract.", body: "Claude reads the inbox. Every field extracted, every spec validated, every exception surfaced before approval.", chips: ["EMAIL INGEST", "CLAUDE EXTRACT", "RULE ENGINE", "EDIT INLINE", "APPROVE / REJECT"] },
-                { n: "02", t: "Operations", sub: "LC, BL, invoice — full lifecycle.", body: "Cross-document validation runs simultaneously. LC port vs. contract port. BL date vs. LC deadline. Invoice quantity vs. delivered quantity.", chips: ["LC VALIDATION", "BL RECONCILE", "INVOICE MATCH", "LIFECYCLE TRACK"] },
-                { n: "03", t: "Intelligence", sub: "Vessel, market, counterparty.", body: "Live vessel position. Current price vs. your locked contract. Sanctions and risk signals on every counterparty, refreshed continuously.", chips: ["VESSEL LIVE", "MARKET DELTA", "COUNTERPARTY SCREEN", "CTRM / ERP"] },
+                { n: "01", t: "Capture", sub: "Trade confirmation, COA, contract.", body: "AI reads the inbox. Every field extracted, every spec validated, every exception surfaced before approval.", chips: ["EMAIL INGEST", "AI EXTRACT", "DETERMINISTIC COMPLIANCE", "EDIT INLINE", "APPROVE / REJECT"] },
+                { n: "02", t: "Operations", sub: "LC, BL, invoice — full lifecycle.", body: "Cross-document validation runs simultaneously. LC port vs. contract port. BL date vs. LC deadline. Invoice quantity vs. delivered quantity.", chips: ["LC VALIDATION", "BL RECONCILE", "INVOICE MATCH", "LIFECYCLE TRACK", "AUDIT TRAIL"] },
+                { n: "03", t: "Intelligence", sub: "Vessel, market, counterparty.", body: "Live vessel position. Current price vs. your locked contract. Sanctions and risk signals on every counterparty, refreshed continuously.", chips: ["VESSEL LIVE", "MARKET CONTEXT", "COUNTERPARTY SCREEN"] },
               ].map(l => (
                 <div key={l.n} style={{ background: "var(--bg)", padding: 32, position: "relative" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -1316,9 +1316,9 @@
               <span className="eyebrow">THE STACK</span>
               <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
                 {[
-                  { tag: "LIVE", l: "01", t: "Trade Capture", sub: "Trade conf · COA · Contract", b: "Email arrives or PDF is dropped. Claude reads it. Every field surfaces in an editable card. Low-confidence values flagged. You hit Approve — the deal record is created and the lifecycle starts." },
+                  { tag: "LIVE", l: "01", t: "Trade Capture", sub: "Trade conf · COA · Contract", b: "Email arrives or PDF is dropped. AI reads it. Every field surfaces in an editable card. Low-confidence values flagged. You hit Approve — the deal record is created and the lifecycle starts." },
                   { tag: "LIVE", l: "02", t: "Shipment Operations", sub: "LC · BL · Invoice", b: "Same extraction pattern, different prompts. The deterministic rule engine cross-checks LC port vs contract port, BL date vs LC deadline, invoice quantity vs delivered quantity — simultaneously, before a human sees it." },
-                  { tag: "LIVE", l: "03", t: "Connected Intelligence", sub: "Vessel · Market · Counterparty", b: "Live vessel position via MarineTraffic. Current price vs locked contract. OpenSanctions screening on every counterparty. Claude generates a one-sentence position summary in plain English." },
+                  { tag: "LIVE", l: "03", t: "Connected Intelligence", sub: "Vessel · Market · Counterparty", b: "Live vessel position via MarineTraffic. Current price vs locked contract. OpenSanctions screening on every counterparty. AI generates a one-sentence position summary in plain English." },
                 ].map(c => (
                   <div key={c.l} style={{ background: "var(--bg)", padding: 24 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1713,7 +1713,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
-                  <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 1 — CAPTURE</span>
+                  <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 1 — DEAL CAPTURE</span>
                 </div>
                 <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
                 <div style={{ marginTop: 6, fontSize: 13, color: "var(--fg-3)" }}>
