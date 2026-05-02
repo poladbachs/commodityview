@@ -419,22 +419,30 @@
       h3.display { font-size: 24px !important; }
 
       /* Convert Layout Grids to Stacked */
-      [style*="1.6fr 1fr"],
-      [style*="1.5fr 1fr"],
-      [style*="1fr 360px"],
-      [style*="220px 1fr"],
-      [style*="260px 1fr"],
-      [style*="1.2fr 1fr"],
-      [style*="repeat(3, 1fr)"],
-      [style*="repeat(3,1fr)"],
-      [style*="repeat(5, 1fr)"],
-      [style*="repeat(5,1fr)"] {
+      [style*="1.6fr 1fr;"],
+      [style*="1.5fr 1fr;"],
+      [style*="1fr 380px;"],
+      [style*="1fr 360px;"],
+      [style*="220px 1fr;"],
+      [style*="260px 1fr;"],
+      [style*="1.2fr 1fr;"],
+      [style*="1fr 1fr;"],
+      [style*="repeat(3, 1fr);"],
+      [style*="repeat(3,1fr);"],
+      [style*="repeat(5, 1fr);"],
+      [style*="repeat(5,1fr);"] {
         grid-template-columns: 1fr !important;
       }
 
+      /* Graceful wrapping for flex containers like the Footer */
+      [style*="justify-content: space-between;"] {
+        flex-wrap: wrap;
+        row-gap: 16px;
+      }
+
       /* Convert 4-column data grids to 2-column on mobile */
-      [style*="repeat(4, 1fr)"],
-      [style*="repeat(4,1fr)"] {
+      [style*="repeat(4, 1fr);"],
+      [style*="repeat(4,1fr);"] {
         grid-template-columns: repeat(2, 1fr) !important;
       }
       
@@ -451,11 +459,20 @@
       .surface > div { overflow-x: auto; max-width: 100vw; }
       .card { overflow-x: auto; }
       
+      .desktop-only { display: none !important; }
+      .mobile-only { display: flex !important; }
+      
       /* AppNav scrolling */
       [style*="align-items: stretch"] { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap !important; }
 
-      /* MarketingNav links hide */
-      [style*="gap: 28px"] { display: none !important; }
+      /* MarketingNav links re-order to bottom */
+      [style*="gap: 28px"] { 
+        order: 3 !important; 
+        width: 100% !important; 
+        justify-content: center !important; 
+        margin-top: 12px !important; 
+        gap: 16px !important; 
+      }
       
       /* Adjust border directions for stacked layouts like Settings sidebar */
       [style*="border-right: 1px solid"] {
@@ -1112,8 +1129,21 @@
               <span className="eyebrow">THE TRADE LIFECYCLE · AUTOMATED END-TO-END</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>5 STAGES · 1 PLATFORM</span>
             </div>
-            <LifecycleBar stage={2} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", marginTop: 16, gap: 12 }}>
+            <div className="desktop-only" style={{ display: "block" }}>
+              <LifecycleBar stage={2} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", marginTop: 16, gap: 12 }}>
+                {[
+                  "Trade confirmation captured from inbound email",
+                  "Documents validated, dispatch instructions issued",
+                  "Vessel tracked, ETA recalculated continuously",
+                  "BL reconciled against LC and contract on arrival",
+                  "Invoice matched, exceptions flagged for ops",
+                ].map((t, i) => (
+                  <div key={i} style={{ fontSize: 12.5, color: "var(--fg-3)", lineHeight: 1.5, padding: "0 8px" }}>{t}</div>
+                ))}
+              </div>
+            </div>
+            <div className="mobile-only" style={{ display: "none", flexDirection: "column", gap: 12 }}>
               {[
                 "Trade confirmation captured from inbound email",
                 "Documents validated, dispatch instructions issued",
@@ -1121,7 +1151,13 @@
                 "BL reconciled against LC and contract on arrival",
                 "Invoice matched, exceptions flagged for ops",
               ].map((t, i) => (
-                <div key={i} style={{ fontSize: 12.5, color: "var(--fg-3)", lineHeight: 1.5, padding: "0 8px" }}>{t}</div>
+                <div key={i} className="card" style={{ padding: "16px 20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: i < 2 ? "var(--signal-pass)" : i === 2 ? "var(--signal-amber)" : "var(--fg-4)", marginBottom: 8 }}>
+                    <span style={{ fontSize: 11 }}>{i < 2 ? "✓" : "0" + (i + 1)}</span>
+                    <span style={{ color: i < 2 || i === 2 ? "var(--fg-2)" : "var(--fg-4)" }}>STAGE {i + 1} · {STAGES[i]}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--fg-3)", lineHeight: 1.5 }}>{t}</div>
+                </div>
               ))}
             </div>
           </div>
@@ -1295,7 +1331,7 @@
               <span className="eyebrow">FEATURE MATRIX · WHAT'S IN EACH PLAN</span>
               <h2 className="display" style={{ fontSize: 40, margin: "12px 0 32px" }}>Compare every line.</h2>
               <div className="card" style={{ overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "12px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "12px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
                   <span className="label">FEATURE</span>
                   {plans.map(p => <span key={p.name} className="label" style={{ textAlign: "center" }}>{p.name}</span>)}
                 </div>
@@ -1305,11 +1341,28 @@
                       <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.12em", color: "var(--signal-amber)" }}>{s.sec}</span>
                     </div>
                     {s.rows.map((r, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "11px 18px", borderBottom: "1px solid var(--line-soft)", fontSize: 13 }}>
-                        <span style={{ color: "var(--fg)" }}>{r[0]}</span>
-                        {r.slice(1).map((v, j) => (
-                          <span key={j} className="mono" style={{ textAlign: "center", color: v === "—" ? "var(--fg-4)" : v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
-                        ))}
+                      <div key={i} style={{ borderBottom: "1px solid var(--line-soft)" }}>
+                        <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "11px 18px", fontSize: 13 }}>
+                          <span style={{ color: "var(--fg)" }}>{r[0]}</span>
+                          {r.slice(1).map((v, j) => (
+                            <span key={j} className="mono" style={{ textAlign: "center", color: v === "—" ? "var(--fg-4)" : v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
+                          ))}
+                        </div>
+                        <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 10 }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>{r[0]}</span>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
+                            {plans.map((p, j) => {
+                              const v = r[j+1];
+                              if (v === "—") return null;
+                              return (
+                                <div key={p.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 12 }}>
+                                  <span style={{ color: "var(--fg-3)" }}>{p.name}</span>
+                                  <span className="mono" style={{ color: v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </Fragment>
@@ -1465,15 +1518,27 @@
                         <span className="eyebrow">COA · DETERMINISTIC RULE ENGINE</span>
                         <div style={{ display: "flex", gap: 6 }}><span className="tag tag-fail">2 FAIL</span><span className="tag tag-pass">6 PASS</span></div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                      <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
                         {["PARAMETER", "EXTRACTED", "SPEC", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
                       </div>
                       {COA_PARAMS.slice(0, 5).map((r, i) => (
-                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "10px 18px", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent", alignItems: "center", fontSize: 13 }}>
-                          <span>{r.p}</span>
-                          <span className="mono">{r.e}</span>
-                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
-                          <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                        <div key={i} style={{ borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent" }}>
+                          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "10px 18px", alignItems: "center", fontSize: 13 }}>
+                            <span>{r.p}</span>
+                            <span className="mono">{r.e}</span>
+                            <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+                            <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                          </div>
+                          <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 6 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: 14, fontWeight: 500 }}>{r.p}</span>
+                              <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                              <span style={{ color: "var(--fg-3)" }}>Extracted: <span className="mono" style={{ color: !r.pass ? "var(--signal-fail)" : "var(--fg)" }}>{r.e}</span></span>
+                              <span style={{ color: "var(--fg-3)" }}>Spec: <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span></span>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </>
@@ -1517,7 +1582,7 @@
                   <span className="eyebrow">CROSS-DOC CHECK · LC ↔ BL ↔ CONTRACT</span>
                   <span className="tag tag-fail">1 EXCEPTION</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
                   {["FIELD", "CONTRACT", "LETTER OF CREDIT", "BILL OF LADING"].map(h => <span key={h} className="label">{h}</span>)}
                 </div>
                 {[
@@ -1527,14 +1592,38 @@
                   { f: "LC expiry", a: "30 May 2026", b: "28 May 2026", c: "—", ok: false, note: "LC expires 2 days before contract window — discrepancy" },
                   { f: "Description", a: "Yellow Soybeans, FOB Santos", b: "Yellow Soybeans, FOB Santos", c: "Yellow Soybeans, FOB Santos", ok: true },
                 ].map((r, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "10px 18px", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.ok ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "var(--fg-2)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ color: r.ok ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.ok ? "✓" : "✗"}</span>{r.f}
-                    </span>
-                    <span className="mono">{r.a}</span>
-                    <span className="mono">{r.b}</span>
-                    <span className="mono">{r.c}</span>
-                    {!r.ok && <div style={{ gridColumn: "1 / -1", padding: "6px 0 0", color: "var(--signal-fail)", fontSize: 12 }}>↳ {r.note}</div>}
+                  <div key={i} style={{ borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.ok ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent" }}>
+                    <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "10px 18px", alignItems: "center", fontSize: 13 }}>
+                      <span style={{ color: "var(--fg-2)", display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: r.ok ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.ok ? "✓" : "✗"}</span>{r.f}
+                      </span>
+                      <span className="mono">{r.a}</span>
+                      <span className="mono">{r.b}</span>
+                      <span className="mono">{r.c}</span>
+                      {!r.ok && <div style={{ gridColumn: "1 / -1", padding: "6px 0 0", color: "var(--signal-fail)", fontSize: 12 }}>↳ {r.note}</div>}
+                    </div>
+                    
+                    <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>{r.f}</span>
+                        {r.ok ? <span className="tag tag-pass">MATCH</span> : <span className="tag tag-fail">EXCEPTION</span>}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "var(--fg-3)" }}>Contract</span>
+                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.a}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "var(--fg-3)" }}>LC</span>
+                          <span className="mono" style={{ color: !r.ok ? "var(--signal-fail)" : "var(--fg-2)" }}>{r.b}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ color: "var(--fg-3)" }}>BL</span>
+                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+                        </div>
+                      </div>
+                      {!r.ok && <div style={{ color: "var(--signal-fail)", fontSize: 12, marginTop: 2 }}>↳ {r.note}</div>}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1618,15 +1707,15 @@
         <div className="surface" style={{ minHeight: "100vh" }}>
           <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
 
-          <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)" }}>
+          <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
               <h1 className="display" style={{ fontSize: 36, margin: 0 }}>Deals</h1>
               <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>
                 {visible.length} OF {state.deals.length}{exceptionCount ? " · " + exceptionCount + " EXCEPTIONS" : ""}
               </span>
             </div>
-            <div style={{ display: "flex", gap: 8, position: "relative" }}>
-              <input className="input" placeholder="Search deals, vessels, counterparties…" value={query} onChange={e => setQuery(e.target.value)} style={{ width: 320 }} />
+            <div style={{ display: "flex", gap: 8, position: "relative", flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
+              <input className="input" placeholder="Search deals…" value={query} onChange={e => setQuery(e.target.value)} style={{ flex: 1, minWidth: 200, maxWidth: 320 }} />
               <button className="btn btn-sm" onClick={() => setFilterOpen(o => !o)} style={activeFilterCount ? { borderColor: "var(--signal-amber)", color: "var(--signal-amber)" } : {}}>
                 FILTER {activeFilterCount ? "· " + activeFilterCount : ""} ⌄
               </button>
@@ -1656,7 +1745,7 @@
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
+          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
             {["DEAL ID", "DEAL NAME", "COMMODITY", "BUYER", "LIFECYCLE", "STATUS", "UPDATED"].map(h => <span key={h} className="label">{h}</span>)}
           </div>
 
@@ -1669,24 +1758,47 @@
 
           {visible.map(d => (
             <div key={d.id} onClick={() => dispatch({ type: "goDeal", id: d.id })} style={{
-              display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr",
-              padding: "14px 24px", borderBottom: "1px solid var(--line-soft)", fontSize: 13.5, alignItems: "center", cursor: "pointer",
+              padding: "16px 24px", borderBottom: "1px solid var(--line-soft)", cursor: "pointer",
               background: d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 4%, transparent)" : "transparent",
             }}
               onMouseEnter={e => e.currentTarget.style.background = d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 8%, transparent)" : "var(--bg-2)"}
               onMouseLeave={e => e.currentTarget.style.background = d.status === "EXCEPTION" ? "color-mix(in oklch, var(--signal-fail) 4%, transparent)" : "transparent"}>
-              <span className="mono" style={{ color: "var(--signal-amber)" }}>{d.id}</span>
-              <span style={{ color: "var(--fg)" }}>{d.name}</span>
-              <span style={{ color: "var(--fg-2)" }}>{d.cmd}</span>
-              <span style={{ color: "var(--fg-2)" }}>{d.buyer}</span>
-              <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-                {STAGES.map((s, j) => (
-                  <div key={s} style={{ width: 22, height: 4, background: j < d.stage ? "var(--signal-pass)" : j === d.stage ? "var(--signal-amber)" : "var(--bg-3)" }} />
-                ))}
-                <span className="mono" style={{ marginLeft: 8, fontSize: 10.5, color: "var(--fg-3)" }}>{STAGES[d.stage]}</span>
+              
+              <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "180px 1.4fr 1fr 1fr 1.2fr 1fr 0.8fr", fontSize: 13.5, alignItems: "center" }}>
+                <span className="mono" style={{ color: "var(--signal-amber)" }}>{d.id}</span>
+                <span style={{ color: "var(--fg)" }}>{d.name}</span>
+                <span style={{ color: "var(--fg-2)" }}>{d.cmd}</span>
+                <span style={{ color: "var(--fg-2)" }}>{d.buyer}</span>
+                <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                  {STAGES.map((s, j) => (
+                    <div key={s} style={{ width: 22, height: 4, background: j < d.stage ? "var(--signal-pass)" : j === d.stage ? "var(--signal-amber)" : "var(--bg-3)" }} />
+                  ))}
+                  <span className="mono" style={{ marginLeft: 8, fontSize: 10.5, color: "var(--fg-3)" }}>{STAGES[d.stage]}</span>
+                </div>
+                <span className={d.status === "EXCEPTION" ? "tag tag-fail" : "tag tag-pass"}>{d.status}{d.exc ? " · " + d.exc : ""}</span>
+                <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>{d.upd || "just now"}</span>
               </div>
-              <span className={d.status === "EXCEPTION" ? "tag tag-fail" : "tag tag-pass"}>{d.status}{d.exc ? " · " + d.exc : ""}</span>
-              <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>{d.upd || "just now"}</span>
+
+              <div className="mobile-only" style={{ display: "none", flexDirection: "column", gap: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 12 }}>{d.id}</span>
+                    <span style={{ color: "var(--fg)", fontSize: 15, fontWeight: 500 }}>{d.name}</span>
+                  </div>
+                  <span className={d.status === "EXCEPTION" ? "tag tag-fail" : "tag tag-pass"}>{d.status}</span>
+                </div>
+                <div style={{ fontSize: 13, color: "var(--fg-2)" }}>{d.cmd} · {d.buyer}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                  <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                    {STAGES.map((s, j) => (
+                      <div key={s} style={{ width: 14, height: 4, background: j < d.stage ? "var(--signal-pass)" : j === d.stage ? "var(--signal-amber)" : "var(--bg-3)", borderRadius: 2 }} />
+                    ))}
+                    <span className="mono" style={{ marginLeft: 6, fontSize: 10.5, color: "var(--fg-3)" }}>{STAGES[d.stage]}</span>
+                  </div>
+                  <span className="mono" style={{ color: "var(--fg-3)", fontSize: 11 }}>{d.upd || "just now"}</span>
+                </div>
+                {d.exc && <div style={{ fontSize: 12, color: "var(--signal-fail)", marginTop: 4 }}>↳ {d.exc}</div>}
+              </div>
             </div>
           ))}
         </div>
@@ -2033,7 +2145,7 @@
               <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{all.length} document{all.length !== 1 ? "s" : ""} awaiting review.</h1>
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
+          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", padding: "10px 24px", background: "var(--bg-2)", borderBottom: "1px solid var(--line)" }}>
             {["TIME", "FROM", "SUBJECT", "DEAL", "TYPE", ""].map(h => <span key={h} className="label">{h}</span>)}
           </div>
           {all.length === 0 ? (
@@ -2042,15 +2154,33 @@
               <div style={{ fontSize: 13, marginTop: 6 }}>All routed documents have been reviewed.</div>
             </div>
           ) : all.map((it, i) => (
-            <div key={i} onClick={() => { dispatch({ type: "goDoc", dealId: it.dealId, docId: it.id }); go(`/deals/${it.dealId}`); }} style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", padding: "14px 24px", borderBottom: "1px solid var(--line-soft)", fontSize: 13, alignItems: "center", cursor: "pointer" }}
+            <div key={i} onClick={() => { dispatch({ type: "goDoc", dealId: it.dealId, docId: it.id }); go(`/deals/${it.dealId}`); }} style={{ padding: "14px 24px", borderBottom: "1px solid var(--line-soft)", cursor: "pointer" }}
               onMouseEnter={e => e.currentTarget.style.background = "var(--bg-2)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <span className="mono" style={{ color: "var(--fg-3)" }}>{it.at}</span>
-              <span className="mono" style={{ color: "var(--fg-2)", fontSize: 12 }}>{it.from}</span>
-              <span style={{ color: "var(--fg)" }}>{it.subj}</span>
-              <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 12 }}>{it.dealId}</span>
-              <span className="tag tag-amber">{it.type}</span>
-              <span style={{ color: "var(--fg-3)", fontSize: 12, textAlign: "right" }}>OPEN →</span>
+              
+              <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "100px 220px 1fr 200px 140px 100px", fontSize: 13, alignItems: "center" }}>
+                <span className="mono" style={{ color: "var(--fg-3)" }}>{it.at}</span>
+                <span className="mono" style={{ color: "var(--fg-2)", fontSize: 12 }}>{it.from}</span>
+                <span style={{ color: "var(--fg)" }}>{it.subj}</span>
+                <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 12 }}>{it.dealId}</span>
+                <span className="tag tag-amber">{it.type}</span>
+                <span style={{ color: "var(--fg-3)", fontSize: 12, textAlign: "right" }}>OPEN →</span>
+              </div>
+              
+              <div className="mobile-only" style={{ display: "none", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>{it.at}</span>
+                    <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 12 }}>{it.dealId}</span>
+                  </div>
+                  <span className="tag tag-amber">{it.type}</span>
+                </div>
+                <span style={{ color: "var(--fg)", fontSize: 14 }}>{it.subj}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                  <span className="mono" style={{ color: "var(--fg-2)", fontSize: 12 }}>{it.from}</span>
+                  <span style={{ color: "var(--fg-3)", fontSize: 12 }}>OPEN →</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
