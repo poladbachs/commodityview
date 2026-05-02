@@ -476,6 +476,13 @@
         padding: 8px 12px !important; 
         height: auto !important;
       }
+      .plan-switch-container { 
+        flex: 0 0 auto !important; 
+        display: flex !important; 
+        justify-content: center !important; 
+        white-space: nowrap !important;
+      }
+      .avatar-container { flex: 1 !important; display: flex !important; justify-content: flex-end !important; }
       .firm-name { display: none !important; }
       .logo-container { padding: 0 12px !important; }
       
@@ -723,7 +730,7 @@
     );
 
     const MarketingNav = ({ go }) => (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
         <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
         <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
           <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
@@ -773,7 +780,8 @@
           </div>
 
           <div className="nav-utilities" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", height: 40, marginLeft: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="mobile-only" style={{ display: "none", flex: 1 }} />
+            <div className="plan-switch-container" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)", letterSpacing: "0.1em" }}>PLAN</span>
               <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 2, overflow: "hidden" }}>
                 {[
@@ -793,7 +801,9 @@
               </div>
             </div>
             <span className="firm-name" style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>HARTLEY GRAIN · DESK</span>
-            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)", flexShrink: 0 }}>RJ</span>
+            <div className="avatar-container" style={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
+              <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)", flexShrink: 0 }}>RJ</span>
+            </div>
           </div>
         </div>
       );
