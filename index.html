@@ -425,6 +425,7 @@
       [style*="1fr 360px;"],
       [style*="220px 1fr;"],
       [style*="260px 1fr;"],
+      [style*="1.4fr 1fr;"],
       [style*="1.2fr 1fr;"],
       [style*="1fr 1fr;"],
       [style*="repeat(3, 1fr);"],
@@ -465,6 +466,28 @@
       /* AppNav scrolling */
       [style*="align-items: stretch"] { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap !important; }
 
+      /* AppNav mobile adjustments */
+      .app-nav { flex-direction: column !important; height: auto !important; }
+      .nav-primary { width: 100%; border-bottom: 1px solid var(--line) !important; }
+      .nav-utilities { 
+        width: 100% !important; 
+        margin-left: 0 !important;
+        justify-content: space-between !important; 
+        padding: 8px 12px !important; 
+        height: auto !important;
+      }
+      .firm-name { display: none !important; }
+      .logo-container { padding: 0 12px !important; }
+      
+      /* Section nav (document tabs) mobile scrolling */
+      .section-nav { 
+        overflow-x: auto; 
+        white-space: nowrap; 
+        flex-wrap: nowrap !important; 
+        padding-bottom: 0 !important;
+      }
+      .section-nav > div { flex-shrink: 0; }
+      
       /* MarketingNav links re-order to bottom */
       [style*="gap: 28px"] { 
         order: 3 !important; 
@@ -700,7 +723,7 @@
     );
 
     const MarketingNav = ({ go }) => (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
         <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
         <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
           <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
@@ -722,38 +745,41 @@
         { id: "settings", label: "SETTINGS", route: "/settings" },
       ];
       return (
-        <div style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)", background: "var(--bg)" }}>
-          <div onClick={() => go("/home")} style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", borderRight: "1px solid var(--line)", cursor: "pointer" }}>
-            <Logo size={13} />
-          </div>
-          <div style={{ display: "flex", alignItems: "stretch" }}>
-            {items.map(it => (
-              <div key={it.id} onClick={() => !it.lock && go(it.route)} style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "0 18px", height: 44,
-                borderRight: "1px solid var(--line)",
-                color: it.lock ? "var(--fg-4)" : (active === it.id ? "var(--fg)" : "var(--fg-2)"),
-                background: active === it.id ? "var(--bg-2)" : "transparent",
-                fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em",
-                position: "relative", cursor: it.lock ? "not-allowed" : "pointer",
-              }}>
-                {it.label}
-                {it.count != null && <span style={{ background: "var(--signal-amber)", color: "oklch(20% 0.05 75)", fontSize: 10, padding: "1px 5px", borderRadius: 2 }}>{it.count}</span>}
-                {it.lock && <span style={{ fontSize: 10, color: "var(--fg-4)" }}>L3</span>}
-                {active === it.id && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 1, background: "var(--signal-amber)" }} />}
-              </div>
-            ))}
+        <div className="app-nav" style={{ display: "flex", borderBottom: "1px solid var(--line)", background: "var(--bg)" }}>
+          <div className="nav-primary" style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)" }}>
+            <div onClick={() => go("/home")} className="logo-container" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", borderRight: "1px solid var(--line)", cursor: "pointer", flexShrink: 0 }}>
+              <Logo size={14} />
+            </div>
+            <div className="nav-links" style={{ display: "flex", alignItems: "stretch", overflowX: "auto", flex: 1 }}>
+              {items.map(it => (
+                <div key={it.id} onClick={() => !it.lock && go(it.route)} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "0 18px", height: 44,
+                  borderRight: "1px solid var(--line)",
+                  color: it.lock ? "var(--fg-4)" : (active === it.id ? "var(--fg)" : "var(--fg-2)"),
+                  background: active === it.id ? "var(--bg-2)" : "transparent",
+                  fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em",
+                  position: "relative", cursor: it.lock ? "not-allowed" : "pointer",
+                  flexShrink: 0,
+                }}>
+                  <span className="desktop-only">{it.label}</span>
+                  <span className="mobile-only" style={{ display: "none" }}>{it.label === "SETTINGS" ? "SETTINGS" : it.label}</span>
+                  {it.count != null && <span style={{ background: "var(--signal-amber)", color: "oklch(20% 0.05 75)", fontSize: 10, padding: "1px 5px", borderRadius: 2 }}>{it.count}</span>}
+                  {it.lock && <span style={{ fontSize: 10, color: "var(--fg-4)" }}>L3</span>}
+                  {active === it.id && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 1, background: "var(--signal-amber)" }} />}
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* TOP-RIGHT — added (not in design-system): plan / layer switch + firm + avatar */}
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14, padding: "0 20px" }}>
+          <div className="nav-utilities" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", height: 40, marginLeft: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)", letterSpacing: "0.1em" }}>PLAN</span>
               <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 2, overflow: "hidden" }}>
                 {[
-                  { v: 1, l: "PRO · L1" },
-                  { v: 2, l: "DESK · L2" },
-                  { v: 3, l: "FLOOR · L3" },
+                  { v: 1, l: "PRO · L1", s: "PRO · L1" },
+                  { v: 2, l: "DESK · L2", s: "DESK · L2" },
+                  { v: 3, l: "FLOOR · L3", s: "FLOOR · L3" },
                 ].map(opt => (
                   <button key={opt.v} onClick={() => setLayer(opt.v)} style={{
                     border: "none",
@@ -762,12 +788,12 @@
                     fontFamily: "var(--font-mono)", fontSize: 10.5, letterSpacing: "0.06em",
                     padding: "6px 10px", cursor: "pointer",
                     borderRight: opt.v < 3 ? "1px solid var(--line)" : "none",
-                  }}>{opt.l}</button>
+                  }}><span className="desktop-only">{opt.l}</span><span className="mobile-only" style={{ display: "none" }}>{opt.s}</span></button>
                 ))}
               </div>
             </div>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>HARTLEY GRAIN · DESK</span>
-            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)" }}>RJ</span>
+            <span className="firm-name" style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>HARTLEY GRAIN · DESK</span>
+            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)", flexShrink: 0 }}>RJ</span>
           </div>
         </div>
       );
@@ -870,24 +896,53 @@
             </div>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>RULE ENGINE · DETERMINISTIC · 38ms</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
             {["PARAMETER", "EXTRACTED", "CONTRACT SPEC", "DELTA", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
           </div>
           {COA_PARAMS.map((r, i) => (
             <div key={i} style={{
-              display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr",
-              padding: "11px 18px",
               borderBottom: i < COA_PARAMS.length - 1 ? "1px solid var(--line-soft)" : "none",
               background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent",
-              alignItems: "center", fontSize: 13,
             }}>
-              <span style={{ color: "var(--fg)" }}>{r.p}</span>
-              <span className="mono" style={{ color: "var(--fg)" }}>{r.e}</span>
-              <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
-              <span className="mono" style={{ color: r.pass ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.diff}</span>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
-                {r.note && <span style={{ fontSize: 11, color: "var(--fg-3)" }}>{r.note}</span>}
+              <div className="desktop-only" style={{
+                display: "grid", gridTemplateColumns: "1.4fr 0.9fr 0.9fr 0.6fr 1fr",
+                padding: "11px 18px",
+                alignItems: "center", fontSize: 13,
+              }}>
+                <span style={{ color: "var(--fg)" }}>{r.p}</span>
+                <span className="mono" style={{ color: "var(--fg)" }}>{r.e}</span>
+                <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+                <span className="mono" style={{ color: r.pass ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.diff}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                  {r.note && <span style={{ fontSize: 11, color: "var(--fg-3)" }}>{r.note}</span>}
+                </div>
+              </div>
+              <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                   <span style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>{r.p}</span>
+                   <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px", fontSize: 13 }}>
+                   <div style={{ overflow: "hidden" }}>
+                     <div className="label" style={{ fontSize: 9 }}>EXTRACTED</div>
+                     <div className="mono" style={{ color: "var(--fg)", wordBreak: "break-all" }}>{r.e}</div>
+                   </div>
+                   <div style={{ overflow: "hidden" }}>
+                     <div className="label" style={{ fontSize: 9 }}>CONTRACT SPEC</div>
+                     <div className="mono" style={{ color: "var(--fg-2)", wordBreak: "break-all" }}>{r.c}</div>
+                   </div>
+                   <div>
+                     <div className="label" style={{ fontSize: 9 }}>DELTA</div>
+                     <div className="mono" style={{ color: r.pass ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.diff}</div>
+                   </div>
+                   {r.note && (
+                     <div>
+                       <div className="label" style={{ fontSize: 9 }}>NOTE</div>
+                       <div style={{ color: "var(--fg-3)", fontSize: 11 }}>{r.note}</div>
+                     </div>
+                   )}
+                </div>
               </div>
             </div>
           ))}
@@ -997,14 +1052,14 @@
             </g>
           </svg>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
           {[
             { l: "SPEED", v: "13.4 kn" },
             { l: "HEADING", v: "048°" },
             { l: "ETA QINGDAO", v: "MAY 24, 04:30" },
             { l: "VOYAGE", v: "47% · 4,820 nm" },
           ].map((m, i) => (
-            <div key={i} style={{ padding: "12px 16px", borderRight: i < 3 ? "1px solid var(--line)" : "none", borderTop: "1px solid var(--line)" }}>
+            <div key={i} style={{ padding: "12px 16px", borderRight: "1px solid var(--line)", borderTop: "1px solid var(--line)" }}>
               <div className="label">{m.l}</div>
               <div className="mono" style={{ marginTop: 4, fontSize: 14, color: "var(--fg)" }}>{m.v}</div>
             </div>
@@ -1992,15 +2047,17 @@
           </div>
 
           {/* Tabs */}
-          <div style={{ padding: "20px 24px 0", display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
+          <div className="section-nav" style={{ padding: "20px 24px 0", display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
             {tabs.map(t => (
               <div key={t} onClick={() => setTab(t)} style={{
                 padding: "10px 18px", fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em", cursor: "pointer",
                 color: tab === t ? "var(--fg)" : "var(--fg-3)",
                 borderBottom: tab === t ? "2px solid var(--signal-amber)" : "2px solid transparent",
                 display: "flex", gap: 8, alignItems: "center",
+                flexShrink: 0,
               }}>
-                {t.toUpperCase()}
+                <span className="desktop-only">{t.toUpperCase()}</span>
+                <span className="mobile-only" style={{ display: "none" }}>{t === "Trade Confirmation" ? "TC" : t === "Contract" ? "CTR" : t === "Invoice" ? "INV" : t.toUpperCase()}</span>
                 {tabDot(t)}
               </div>
             ))}
@@ -2077,7 +2134,7 @@
           <LifecycleBar stage={Math.max(deal.stage, 2)} compact />
         </div>
 
-        <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
+        <div className="deal-detail-l3-grid" style={{ padding: 24, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
           <div style={{ display: "grid", gap: 24 }}>
             <PositionCard />
             <VesselTracker />
@@ -2096,7 +2153,7 @@
                   { k: "News risk (90d)", v: "2 supply-chain mentions", warn: true },
                   { k: "Litigation (12mo)", v: "None disclosed", pass: true },
                 ].map((r, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, paddingBottom: 12, borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none" }}>
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, paddingBottom: 12, borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", flexWrap: "wrap", gap: 8 }}>
                     <span style={{ color: "var(--fg-2)" }}>{r.k}</span>
                     <span className="mono" style={{ color: r.warn ? "var(--signal-warn)" : "var(--fg)" }}>{r.v}</span>
                   </div>
