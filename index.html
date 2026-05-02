@@ -412,6 +412,36 @@
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     }
 
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--fg-2);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.02);
+      text-transform: uppercase;
+    }
+    .back-link:hover {
+      background: var(--bg-3);
+      border-color: var(--fg-4);
+      color: var(--fg);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .back-link:active {
+      transform: translateY(0);
+    }
+
     @media (max-width: 800px) {
       /* Typography Scaling */
       .display { font-size: clamp(28px, 8vw, 42px) !important; }
@@ -494,6 +524,21 @@
         padding-bottom: 0 !important;
       }
       .section-nav > div { flex-shrink: 0; }
+      
+      /* Deals List Header & Filter */
+      .deals-header { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+      [style*="justify-content: flex-end"] { width: 100% !important; }
+      .filter-dropdown { 
+        position: relative !important; 
+        top: 0 !important; 
+        right: 0 !important; 
+        width: 100% !important; 
+        margin-top: 8px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+      }
       
       /* MarketingNav links re-order to bottom */
       [style*="gap: 28px"] { 
@@ -1772,7 +1817,7 @@
         <div className="surface" style={{ minHeight: "100vh" }}>
           <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
 
-          <div style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
+          <div className="deals-header" style={{ padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
               <h1 className="display" style={{ fontSize: 36, margin: 0 }}>Deals</h1>
               <span className="mono" style={{ color: "var(--fg-3)", fontSize: 12 }}>
@@ -1787,7 +1832,7 @@
               <button className="btn btn-sm btn-primary" onClick={() => go("/deals/new")}>+ NEW DEAL</button>
 
               {filterOpen && (
-                <div style={{ position: "absolute", right: 90, top: 42, width: 320, background: "var(--bg-2)", border: "1px solid var(--line)", borderRadius: 2, padding: 14, zIndex: 50, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                <div className="filter-dropdown" style={{ position: "absolute", right: 90, top: 42, width: 320, background: "var(--bg-2)", border: "1px solid var(--line)", borderRadius: 2, padding: 14, zIndex: 50, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                     <span className="eyebrow">FILTER</span>
                     {activeFilterCount > 0 && <span onClick={() => { setStatusFilter("ALL"); setStageFilter("ALL"); }} className="mono" style={{ fontSize: 10.5, color: "var(--signal-amber)", cursor: "pointer", letterSpacing: "0.08em" }}>CLEAR ALL</span>}
@@ -1973,8 +2018,9 @@
           <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <span onClick={() => go("/deals")} className="back-link">← BACK TO DEALS</span>
+                  <div style={{ width: 1, height: 14, background: "var(--line)" }} />
                   <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 1 — DEAL CAPTURE</span>
                 </div>
                 <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
@@ -2029,8 +2075,9 @@
           <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <span onClick={() => go("/deals")} className="back-link">← BACK TO DEALS</span>
+                  <div style={{ width: 1, height: 14, background: "var(--line)" }} />
                   <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 2 — OPERATIONS</span>
                 </div>
                 <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
@@ -2129,8 +2176,9 @@
         <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--line)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span onClick={() => go("/deals")} className="mono" style={{ color: "var(--fg-3)", fontSize: 11, cursor: "pointer", letterSpacing: "0.1em" }}>← DEALS</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <span onClick={() => go("/deals")} className="back-link">← BACK TO DEALS</span>
+                <div style={{ width: 1, height: 14, background: "var(--line)" }} />
                 <span className="mono" style={{ color: "var(--signal-amber)", fontSize: 11, letterSpacing: "0.1em" }}>{deal.id} · LAYER 3 — CONNECTED INTELLIGENCE</span>
               </div>
               <h1 className="display" style={{ fontSize: 36, margin: "4px 0 0" }}>{deal.name}</h1>
@@ -2351,7 +2399,7 @@
               <div style={{ marginTop: 18, fontSize: 12, color: "var(--fg-3)", display: "flex", gap: 14, fontFamily: "var(--font-mono)" }}>
                 <span>HTTPS/TLS</span><span>·</span>
                 <span>ENCRYPTION AT REST</span><span>·</span>
-                <span>EU/US RESIDENCY</span><span>·</span>
+                <span>EU/US RESIDENCY</span>
               </div>
             </main>
           </div>
