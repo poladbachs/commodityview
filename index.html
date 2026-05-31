@@ -546,14 +546,19 @@
       [style*="align-items: stretch"] { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap !important; }
 
       /* AppNav mobile adjustments */
-      .app-nav { flex-direction: column !important; height: auto !important; }
-      .nav-primary { width: 100%; border-bottom: 1px solid var(--line) !important; }
+      .app-nav { position: relative !important; flex-direction: row !important; flex-wrap: wrap !important; align-items: flex-start !important; height: auto !important; }
+      .nav-primary { flex: 1 1 auto !important; min-width: 0 !important; border-bottom: none !important; flex-wrap: wrap !important; padding-right: 160px !important; }
       .nav-utilities { 
-        width: 100% !important; 
+        position: absolute !important;
+        top: 8px !important;
+        right: 12px !important;
+        width: auto !important; 
         margin-left: 0 !important;
-        justify-content: space-between !important; 
-        padding: 8px 12px !important; 
+        justify-content: flex-end !important; 
+        padding: 0 !important; 
         height: auto !important;
+        flex: 0 0 auto !important;
+        z-index: 2;
       }
       .plan-switch-container { 
         flex: 0 0 auto !important; 
@@ -564,6 +569,14 @@
       .avatar-container { flex: 1 !important; display: flex !important; justify-content: flex-end !important; }
       .firm-name { display: none !important; }
       .logo-container { padding: 0 12px !important; }
+      .nav-links {
+        flex: 0 0 100% !important;
+        order: 3 !important;
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 12px !important;
+        padding: 0 0 4px !important;
+      }
       
       /* Section nav (document tabs) mobile scrolling */
       .section-nav { 
@@ -589,13 +602,22 @@
         border-right: none !important;
       }
       
-      /* MarketingNav links re-order to bottom */
-      [style*="gap: 28px"] { 
-        order: 3 !important; 
+      /* MarketingNav mobile layout */
+      .marketing-nav { position: sticky !important; top: 0 !important; overflow-x: visible !important; display: grid !important; grid-template-columns: auto 1fr auto !important; grid-template-areas: "brand . actions" "links links links" !important; align-items: center !important; gap: 8px 8px !important; padding: 10px 16px !important; }
+      .marketing-brand { grid-area: brand !important; flex: 0 0 auto !important; }
+      .marketing-brand .logo-lockup { font-size: 13px !important; gap: 4px !important; }
+      .marketing-brand .logo-mark { width: 26px !important; height: 26px !important; }
+      .marketing-brand .logo-mark img { transform: scale(1.05) !important; }
+      .marketing-actions { grid-area: actions !important; position: static !important; justify-self: end !important; margin-left: 0 !important; flex: 0 0 auto !important; gap: 6px !important; }
+      .marketing-actions .btn-sm { padding: 4px 6px !important; font-size: 10px !important; }
+      .marketing-links { 
+        grid-area: links !important;
+        flex: 0 0 100% !important; 
         width: 100% !important; 
+        order: 3 !important; 
         justify-content: center !important; 
-        margin-top: 12px !important; 
-        gap: 16px !important; 
+        margin-top: 8px !important; 
+        gap: 14px !important; 
       }
       
       /* Adjust border directions for stacked layouts like Settings sidebar */
@@ -604,6 +626,22 @@
         border-bottom: 1px solid var(--line-soft) !important;
       }
       
+      /* Footer mobile adjustments */
+      .footer-bar {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 24px 16px !important;
+        text-align: center !important;
+        overflow-x: hidden !important;
+      }
+      .footer-meta {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 6px 10px !important;
+      }
+
       /* Reduce container paddings */
       [style*="padding: 80px 32px"],
       [style*="padding: 60px 32px"],
@@ -827,14 +865,14 @@
     );
 
     const MarketingNav = ({ go }) => (
-      <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
-        <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
+      <div className="marketing-nav" style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
+        <div className="marketing-brand" onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
+        <div className="marketing-links" style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
           <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
           <a onClick={() => go("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
           <a onClick={() => go("/demo")} style={{ cursor: "pointer" }}>Demo</a>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="marketing-actions" style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button className="btn btn-sm" onClick={() => go("/deals")}>SIGN IN</button>
           <button className="btn btn-sm btn-primary" onClick={() => go("/deals/new")}>GET STARTED</button>
         </div>
@@ -1398,9 +1436,9 @@
 
         {/* FOOTER */}
         <Ticker compact />
-        <div style={{ padding: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+        <div className="footer-bar" style={{ padding: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
           <Logo size={12} />
-          <div style={{ display: "flex", gap: 24 }}>
+          <div className="footer-meta" style={{ display: "flex", gap: 24 }}>
             <span>EU/US DATA RESIDENCY</span>
             <span>·</span><span>HTTPS/TLS</span>
             <span>·</span><span>ENCRYPTION AT REST</span>
