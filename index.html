@@ -11,7 +11,7 @@
 
   <!-- ============ DESIGN TOKENS — full copy from CommodityOps/tokens.css ============ -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Aboreto&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap');
 
     :root {
       --font-ui: "Inter Tight", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -491,6 +491,39 @@
       transform: translateY(0);
     }
 
+    .hero-coming-soon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      padding: 10px 18px;
+      border-radius: var(--r-pill);
+      border: 1px solid color-mix(in oklch, var(--signal-amber) 30%, var(--line));
+      background: color-mix(in oklch, var(--signal-amber) 8%, var(--bg));
+      box-shadow: 0 1px 0 color-mix(in oklch, var(--signal-amber) 16%, transparent) inset;
+      font-family: "Aboreto", var(--font-display);
+      font-size: clamp(16px, 1.6vw, 20px);
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: none;
+      color: color-mix(in oklch, var(--signal-amber) 90%, var(--fg));
+      text-shadow: 0 1px 0 color-mix(in oklch, var(--signal-amber) 14%, transparent);
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    [data-mode="ink"] .hero-coming-soon {
+      background: color-mix(in oklch, var(--bg-2) 92%, var(--bg) 8%);
+      border-color: var(--signal-amber);
+      box-shadow: 0 1px 0 color-mix(in oklch, var(--signal-amber) 12%, transparent) inset;
+    }
+
+    .hero-coming-soon__label {
+      line-height: 1;
+      transform: translateY(0.01em);
+    }
+
     @media (max-width: 800px) {
       /* Typography Scaling */
       .display { font-size: clamp(28px, 8vw, 42px) !important; }
@@ -690,6 +723,13 @@
       [style*="padding: 16px 24px"] {
         padding-left: 16px !important;
         padding-right: 16px !important;
+      }
+
+      .hero-coming-soon {
+        font-size: 15px;
+        letter-spacing: 0.12em;
+        padding: 8px 14px;
+        margin-bottom: 20px;
       }
     }
   </style>
@@ -1335,18 +1375,18 @@
           <div style={{ position: "relative", maxWidth: 1100, margin: "0 auto" }}>
             <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
             </div>
+            <div className="hero-coming-soon" aria-label="Coming soon">
+              <span className="hero-coming-soon__label">Coming soon</span>
+            </div>
             <h1 className="display" style={{ fontSize: 72, margin: 0, color: "var(--fg)" }}>
               Agentic AI for<br /> <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span> Trading Operations
             </h1>
             <p style={{ marginTop: 16, fontSize: 16, color: "var(--fg-3)", maxWidth: 640, lineHeight: 1.6 }}>
-              Purpose-built AI that captures trade confirmations, validates documents, and manages the full trade lifecycle — from confirmation to delivery. No sales call. Immediate onboarding.
-            </p>
+              Purpose-built AI that handles the busywork in physical commodity trading operations.
+              </p>
             <div style={{ marginTop: 36, display: "flex", gap: 12 }}>
               <button className="btn btn-lg btn-primary" onClick={() => go("/deals/new")}>GET STARTED FREE →</button>
               <button className="btn btn-lg" onClick={() => go("/demo")}>SEE HOW IT WORKS</button>
-            </div>
-            <div style={{ marginTop: 48, display: "flex", gap: 32, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
-              <span>2 FREE ANALYSES · NO CARD</span>
             </div>
           </div>
         </div>
@@ -1356,7 +1396,6 @@
           <div style={{ maxWidth: 1280, margin: "0 auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
               <span className="eyebrow">THE TRADE LIFECYCLE · AUTOMATED END-TO-END</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>5 STAGES · 1 PLATFORM</span>
             </div>
             <div className="desktop-only" style={{ display: "block" }}>
               <LifecycleBar stage={2} />
@@ -1397,7 +1436,7 @@
           <div style={{ maxWidth: 1280, margin: "0 auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48 }}>
               <div>
-                <span className="eyebrow">THE STACK</span>
+                <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
                 <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>Three layers.<br />One operating system.</h2>
               </div>
               <p style={{ maxWidth: 380, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>
@@ -1519,8 +1558,8 @@
           <Ticker />
           <MarketingNav go={go} />
 
-          <div style={{ padding: "80px 32px 48px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
-            <span className="eyebrow">PRICING · PLAIN AS DAY</span>
+            <div style={{ padding: "80px 32px 48px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
+            <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
             <h1 className="display" style={{ fontSize: 96, margin: "16px 0 0" }}>$0 to start.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>No card required.</span></h1>
             <p style={{ maxWidth: 580, margin: "20px auto 0", color: "var(--fg-2)", fontSize: 16 }}>
               Free + Pro live today. Desk, Floor, and Enterprise rolling out as the lifecycle layers ship.
@@ -1604,7 +1643,7 @@
             <div style={{ maxWidth: 980, margin: "0 auto" }}>
               <h2 className="display" style={{ fontSize: 48, margin: "0 0 32px" }}>Frequent questions.</h2>
               {[
-                { q: "What counts as one analysis?", a: "Any document Claude extracts and the rule engine validates — a single trade confirmation, COA, LC, BL, or invoice. Re-running the same document does not consume an additional analysis." },
+                { q: "What counts as one analysis?", a: "Any document AI extracts and the rule engine validates — a single trade confirmation, COA, LC, BL, or invoice. Re-running the same document does not consume an additional analysis." },
                 { q: "Can I bring my own contract terms?", a: "Yes. Custom terms, standard terms (GAFTA / FOSFA / ICE / CME), and hybrid contracts that reference standard terms with amendments are all handled. Deal-specific exceptions stack on top of the reference library." },
                 { q: "Is my data used to train models?", a: "No. Customer data is never used for model training. Documents are processed in-flight and stored encrypted at rest in your chosen region." },
                 { q: "When are Desk, Floor, and Enterprise live?", a: "Desk is in private testing with three operations teams. Join the waitlist and we will reach out as your region opens up." },
@@ -1669,7 +1708,7 @@
           <MarketingNav go={go} />
           <div style={{ padding: "60px 32px 48px", borderBottom: "1px solid var(--line)" }} className="bg-grid">
             <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">PRODUCT · ALL LAYERS</span>
+              <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
               <h1 className="display" style={{ fontSize: 84, margin: "12px 0 0", maxWidth: 1100 }}>
                 From trade confirmation to delivery. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Automated.</span>
               </h1>
@@ -1680,7 +1719,6 @@
           </div>
           <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
             <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">THE STACK</span>
               <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
                 {[
                   { tag: "LIVE", l: "01", t: "Trade Capture", sub: "Trade conf · COA · Contract", b: "Email arrives or PDF is dropped. AI reads it. Every field surfaces in an editable card. Low-confidence values flagged. You hit Approve — the deal record is created and the lifecycle starts." },
@@ -1690,7 +1728,6 @@
                   <div key={c.l} style={{ background: "var(--bg)", padding: 24 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)" }}>LAYER {c.l}</span>
-                      <span className="tag tag-amber"><span className="dot dot-amber dot-pulse" />{c.tag}</span>
                     </div>
                     <h3 className="display" style={{ fontSize: 32, margin: "14px 0 4px" }}>{c.t}.</h3>
                     <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginBottom: 12 }}>{c.sub}</div>
@@ -1704,7 +1741,7 @@
           {/* Live mini-demo (Layer 1) — clickable feature switcher */}
           <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
             <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">LIVE · LAYER 1 IN ACTION</span>
+              <span className="eyebrow">LAYER 1 · TRADE CAPTURE</span>
               <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px", maxWidth: 900 }}>
                 Pick a document. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Watch it parse.</span>
               </h2>
@@ -2063,7 +2100,7 @@
                   { l: "DEAL NAME *", k: "name", ph: "Brazilian Soy 60kt → Qingdao" },
                   { l: "BUYER *", k: "buyer", ph: "Cofco Resources S.A." },
                   { l: "ORIGIN *", k: "origin", ph: "Santos, BR" },
-                  { l: "COMMODITY *", k: "cmd", ph: "Yellow Soybeans, Crop 2025/26", note: "Free text — Claude reconciles to your contract on extraction." },
+                  { l: "COMMODITY *", k: "cmd", ph: "Yellow Soybeans, Crop 2025/26", note: "Free text — AI reconciles to your contract on extraction." },
                   { l: "QUANTITY *", k: "qty", ph: "60,000 MT  ±5% buyer's option" },
                   { l: "DELIVERY MONTH", k: "deliv", ph: "May 2026", optional: true },
                 ].map(f => (
@@ -2080,7 +2117,7 @@
                 <div style={{ marginTop: 8, padding: 16, border: "1px dashed var(--line)", borderRadius: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <div style={{ fontSize: 14, color: "var(--fg)" }}>Receive documents automatically from your inbox</div>
-                    <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 4 }}>Forward to <span className="mono" style={{ color: "var(--signal-amber)" }}>soy-2604@in.commodityops.com</span> · Claude routes to this deal.</div>
+                    <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 4 }}>Forward to <span className="mono" style={{ color: "var(--signal-amber)" }}>soy-2604@in.commodityops.com</span> · AI routes to this deal.</div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span className="label">EMAIL INGEST</span>
@@ -2103,7 +2140,7 @@
                 {[
                   "Save draft — required fields can be filled later.",
                   "Hit Analyze to attach the trade confirmation PDF.",
-                  "Claude extracts every field. Edit inline.",
+                  "AI extracts every field. Edit inline.",
                   "Approve to advance the lifecycle to CONFIRMED.",
                 ].map((s, i) => (
                   <div key={i} style={{ display: "grid", gridTemplateColumns: "32px 1fr", gap: 12, padding: "10px 0", borderTop: i ? "1px solid var(--line-soft)" : "none" }}>
@@ -2115,7 +2152,7 @@
               <div style={{ marginTop: 20, padding: 16, border: "1px solid var(--line)", borderRadius: 2 }}>
                 <span className="eyebrow">TIP</span>
                 <p className="editorial" style={{ fontSize: 17, color: "var(--fg-2)", margin: "8px 0 0", lineHeight: 1.4 }}>
-                  Custom contracts and hybrid contracts that reference GAFTA, FOSFA, ICE or CME are all handled. Drop the contract once and Claude applies your exceptions on top.
+                  Custom contracts and hybrid contracts that reference GAFTA, FOSFA, ICE or CME are all handled. Drop the contract once and AI applies your exceptions on top.
                 </p>
               </div>
             </aside>
@@ -2457,7 +2494,7 @@
                 <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <div style={{ fontSize: 15, color: "var(--fg)" }}>Email ingestion</div>
-                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Forward to your inbox. Claude classifies and routes to the right deal.</div>
+                    <div style={{ fontSize: 13, color: "var(--fg-3)", marginTop: 2 }}>Forward to your inbox. AI classifies and routes to the right deal.</div>
                   </div>
                   <div onClick={() => setEmailIngest(!emailIngest)} style={{ width: 42, height: 22, borderRadius: 11, background: emailIngest ? "var(--signal-amber)" : "var(--bg-3)", position: "relative", cursor: "pointer", transition: "background 120ms" }}>
                     <div style={{ position: "absolute", top: 2, left: emailIngest ? 22 : 2, width: 18, height: 18, borderRadius: "50%", background: "var(--bg)", transition: "left 120ms" }} />
