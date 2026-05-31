@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CommodityOps — Interactive Prototype</title>
+  <link rel="icon" type="image/png" sizes="300x300" href="assets/commodityops300.png" />
 
   <!-- ============ DESIGN TOKENS — full copy from CommodityOps/tokens.css ============ -->
   <style>
@@ -377,6 +378,52 @@
       color: var(--fg-2);
     }
 
+    .logo-mark {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    .logo-lockup {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .logo-mark img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      transform-origin: center;
+      transform: scale(1.18);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .logo-mark--dark {
+      display: none;
+    }
+
+    [data-mode="ink"] .logo-mark--dark {
+      display: block;
+    }
+
+    [data-mode="ink"] .logo-mark--light {
+      display: none;
+    }
+
+    [data-mode="paper"] .logo-mark--light {
+      display: block;
+    }
+
+    [data-mode="paper"] .logo-mark--dark {
+      display: none;
+    }
+
     .ticker-cell {
       font-variant-numeric: tabular-nums;
       font-family: var(--font-mono);
@@ -738,9 +785,12 @@
   <!-- ============ SHARED CHROME · Logo, Ticker, MarketingNav, AppNav, LifecycleBar ============ -->
   <script type="text/babel">
     const Logo = ({ size = 14 }) => (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-ui)", fontWeight: 600, letterSpacing: "-0.02em", fontSize: size }}>
-        <span style={{ display: "inline-grid", placeItems: "center", width: size + 6, height: size + 6, background: "var(--fg)", color: "var(--bg)", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: size - 3, borderRadius: 2 }}>C</span>
-        CommodityOps
+      <span className="logo-lockup" style={{ display: "inline-flex", alignItems: "center", gap: size >= 18 ? 5 : 4, fontFamily: "var(--font-ui)", fontWeight: 600, letterSpacing: "-0.03em", fontSize: size, lineHeight: 1 }}>
+        <span className="logo-mark" aria-hidden="true" style={{ width: size + 18, height: size + 18, marginRight: 0 }}>
+          <img className="logo-mark--light" src="assets/edited-photo-2.png" alt="" draggable="false" />
+          <img className="logo-mark--dark" src="assets/edited-photo.png" alt="" draggable="false" />
+        </span>
+        <span style={{ lineHeight: 1 }}>CommodityOps</span>
       </span>
     );
 
@@ -775,7 +825,7 @@
     );
 
     const MarketingNav = ({ go }) => (
-      <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
         <div onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
         <div style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
           <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
@@ -1217,7 +1267,7 @@
             <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
             </div>
             <h1 className="display" style={{ fontSize: 72, margin: 0, color: "var(--fg)" }}>
-              Agentic AI for<br /> <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span> Trade Operations
+              Agentic AI for<br /> <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span> Trading Operations
             </h1>
             <p style={{ marginTop: 16, fontSize: 16, color: "var(--fg-3)", maxWidth: 640, lineHeight: 1.6 }}>
               Purpose-built AI that captures trade confirmations, validates documents, and manages the full trade lifecycle — from confirmation to delivery. No sales call. Immediate onboarding.
