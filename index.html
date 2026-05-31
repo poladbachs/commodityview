@@ -536,7 +536,7 @@
       }
       
       /* Allow main containers and cards to scroll their contents */
-      .surface > div { overflow-x: auto; max-width: 100vw; }
+      .surface > div:not(.app-nav) { overflow-x: auto; max-width: 100vw; }
       .card { overflow-x: auto; }
       
       .desktop-only { display: none !important; }
@@ -546,36 +546,69 @@
       [style*="align-items: stretch"] { overflow-x: auto; white-space: nowrap; flex-wrap: nowrap !important; }
 
       /* AppNav mobile adjustments */
-      .app-nav { position: relative !important; flex-direction: row !important; flex-wrap: wrap !important; align-items: flex-start !important; height: auto !important; }
-      .nav-primary { flex: 1 1 auto !important; min-width: 0 !important; border-bottom: none !important; flex-wrap: wrap !important; padding-right: 160px !important; }
-      .nav-utilities { 
-        position: absolute !important;
-        top: 8px !important;
-        right: 12px !important;
-        width: auto !important; 
+      .app-nav {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        justify-content: space-between;
+        grid-template-areas:
+          "brand avatar"
+          "plans plans"
+          "links links";
+        align-items: start !important;
+        gap: 8px 10px !important;
+        padding: 10px 12px !important;
+        height: auto !important;
+        overflow-x: visible !important;
+        max-width: none !important;
+      }
+      .logo-container {
+        grid-area: brand !important;
+        display: flex !important;
+        width: fit-content !important;
+        padding: 0 !important;
+        border-right: none !important;
+        min-width: 0 !important;
+        justify-self: start !important;
+      }
+      .nav-utilities {
+        grid-area: plans !important;
+        position: static !important;
+        width: 100% !important;
         margin-left: 0 !important;
-        justify-content: flex-end !important; 
-        padding: 0 !important; 
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        padding: 0 !important;
         height: auto !important;
         flex: 0 0 auto !important;
         z-index: 2;
       }
       .plan-switch-container { 
-        flex: 0 0 auto !important; 
-        display: flex !important; 
-        justify-content: center !important; 
-        white-space: nowrap !important;
-      }
-      .avatar-container { flex: 1 !important; display: flex !important; justify-content: flex-end !important; }
-      .firm-name { display: none !important; }
-      .logo-container { padding: 0 12px !important; }
-      .nav-links {
+        display: flex !important;
+        grid-area: plans !important;
+        order: 0 !important;
         flex: 0 0 100% !important;
-        order: 3 !important;
         width: 100% !important;
-        justify-content: center !important;
-        margin-top: 12px !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding-top: 2px !important;
+      }
+      .avatar-container { grid-area: avatar !important; flex: 0 0 auto !important; display: flex !important; justify-content: flex-end !important; margin-left: 0 !important; justify-self: end !important; width: auto !important; padding: 0 !important; }
+      .firm-name { display: none !important; }
+      .logo-lockup { font-size: 12px !important; gap: 3px !important; }
+      .logo-mark { width: 24px !important; height: 24px !important; }
+      .logo-mark img { transform: scale(1.02) !important; }
+      .nav-links {
+        grid-area: links !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        margin-top: 0 !important;
         padding: 0 0 4px !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        min-width: 0 !important;
       }
       
       /* Section nav (document tabs) mobile scrolling */
@@ -888,34 +921,34 @@
       ];
       return (
         <div className="app-nav" style={{ display: "flex", borderBottom: "1px solid var(--line)", background: "var(--bg)" }}>
-          <div className="nav-primary" style={{ display: "flex", alignItems: "stretch", borderBottom: "1px solid var(--line)" }}>
-            <div onClick={() => go("/home")} className="logo-container" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", borderRight: "1px solid var(--line)", cursor: "pointer", flexShrink: 0 }}>
-              <Logo size={14} />
-            </div>
-            <div className="nav-links" style={{ display: "flex", alignItems: "stretch", overflowX: "auto", flex: 1 }}>
-              {items.map(it => (
-                <div key={it.id} onClick={() => !it.lock && go(it.route)} style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "0 18px", height: 44,
-                  borderRight: "1px solid var(--line)",
-                  color: it.lock ? "var(--fg-4)" : (active === it.id ? "var(--fg)" : "var(--fg-2)"),
-                  background: active === it.id ? "var(--bg-2)" : "transparent",
-                  fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em",
-                  position: "relative", cursor: it.lock ? "not-allowed" : "pointer",
-                  flexShrink: 0,
-                }}>
-                  <span className="desktop-only">{it.label}</span>
-                  <span className="mobile-only" style={{ display: "none" }}>{it.label === "SETTINGS" ? "SETTINGS" : it.label}</span>
-                  {it.count != null && <span style={{ background: "var(--signal-amber)", color: "oklch(20% 0.05 75)", fontSize: 10, padding: "1px 5px", borderRadius: 2 }}>{it.count}</span>}
-                  {it.lock && <span style={{ fontSize: 10, color: "var(--fg-4)" }}>L3</span>}
-                  {active === it.id && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 1, background: "var(--signal-amber)" }} />}
-                </div>
-              ))}
-            </div>
+          <div onClick={() => go("/home")} className="logo-container" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", borderRight: "1px solid var(--line)", cursor: "pointer", flexShrink: 0 }}>
+            <Logo size={14} />
+          </div>
+          <div className="avatar-container" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", flex: "0 0 auto", padding: "0 20px", height: 40, order: 3 }}>
+            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)", flexShrink: 0 }}>RJ</span>
+          </div>
+          <div className="nav-links" style={{ display: "flex", alignItems: "stretch", overflowX: "auto", flex: 1, order: 1 }}>
+            {items.map(it => (
+              <div key={it.id} onClick={() => !it.lock && go(it.route)} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "0 18px", height: 44,
+                borderRight: "1px solid var(--line)",
+                color: it.lock ? "var(--fg-4)" : (active === it.id ? "var(--fg)" : "var(--fg-2)"),
+                background: active === it.id ? "var(--bg-2)" : "transparent",
+                fontFamily: "var(--font-mono)", fontSize: 11.5, letterSpacing: "0.1em",
+                position: "relative", cursor: it.lock ? "not-allowed" : "pointer",
+                flexShrink: 0,
+              }}>
+                <span className="desktop-only">{it.label}</span>
+                <span className="mobile-only" style={{ display: "none" }}>{it.label === "SETTINGS" ? "SETTINGS" : it.label}</span>
+                {it.count != null && <span style={{ background: "var(--signal-amber)", color: "oklch(20% 0.05 75)", fontSize: 10, padding: "1px 5px", borderRadius: 2 }}>{it.count}</span>}
+                {it.lock && <span style={{ fontSize: 10, color: "var(--fg-4)" }}>L3</span>}
+                {active === it.id && <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 1, background: "var(--signal-amber)" }} />}
+              </div>
+            ))}
           </div>
 
-          <div className="nav-utilities" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", height: 40, marginLeft: "auto" }}>
-            <div className="mobile-only" style={{ display: "none", flex: 1 }} />
+          <div className="nav-utilities" style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 20px", height: 40, order: 2 }}>
             <div className="plan-switch-container" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)", letterSpacing: "0.1em" }}>PLAN</span>
               <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 2, overflow: "hidden" }}>
@@ -936,9 +969,6 @@
               </div>
             </div>
             <span className="firm-name" style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>HARTLEY GRAIN · DESK</span>
-            <div className="avatar-container" style={{ display: "flex", justifyContent: "flex-end", flex: 1 }}>
-              <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--bg-3)", border: "1px solid var(--line)", fontSize: 10, fontFamily: "var(--font-mono)", display: "grid", placeItems: "center", color: "var(--fg-2)", flexShrink: 0 }}>RJ</span>
-            </div>
           </div>
         </div>
       );
@@ -1171,9 +1201,8 @@
         </div>
       </div>
     );
-
     const VesselTracker = () => (
-      <div className="card" style={{ overflow: "hidden" }}>
+      <>
         <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <span className="eyebrow">VESSEL · M/V FRONTIER ASTRA</span>
@@ -1210,7 +1239,7 @@
             </div>
           ))}
         </div>
-      </div>
+      </>
     );
 
     // BL extracted card · L2 deal-detail (interactive approve/reject)
@@ -2020,6 +2049,13 @@
           <AppNav active="deals" go={go} layer={state.layer} setLayer={l => dispatch({ type: "setLayer", l })} />
           <div style={{ padding: "32px 24px", display: "grid", gridTemplateColumns: "1fr 380px", gap: 32, maxWidth: 1400, margin: "0 auto" }}>
             <div>
+              <div className="card" style={{ padding: 16, marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                <div>
+                  <div className="eyebrow">EXAMPLE DEALS</div>
+                  <div style={{ marginTop: 6, fontSize: 14, color: "var(--fg-2)" }}>Browse the built-in deals list to see real sample records before you create a new one.</div>
+                </div>
+                <button className="btn btn-sm btn-primary" onClick={() => go("/deals")}>VIEW EXAMPLE DEALS</button>
+              </div>
               <span className="eyebrow">NEW DEAL · DRAFT</span>
               <h1 className="display" style={{ fontSize: 48, margin: "8px 0 32px" }}>Open a position.</h1>
               <div className="card" style={{ padding: 24 }}>
