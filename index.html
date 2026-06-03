@@ -524,6 +524,58 @@
       transform: translateY(0.01em);
     }
 
+    .hero-social-proof {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: var(--r-pill);
+      border: 1px solid rgba(10, 102, 194, 0.16);
+      background: rgba(10, 102, 194, 0.04);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+      color: #0A66C2;
+      text-decoration: none;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+      white-space: nowrap;
+    }
+
+    .hero-social-proof--icon-only {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      flex: 0 0 28px;
+    }
+
+    .hero-social-proof--cta {
+      gap: 7px;
+      padding-inline: 11px 14px;
+    }
+
+    .hero-social-proof:hover {
+      background: rgba(10, 102, 194, 0.08);
+      border-color: rgba(10, 102, 194, 0.22);
+    }
+
+    .hero-social-proof__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+    }
+
+    .hero-social-proof__icon svg {
+      display: block;
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
     @media (max-width: 800px) {
       /* Typography Scaling */
       .display { font-size: clamp(28px, 8vw, 42px) !important; }
@@ -1373,10 +1425,25 @@
             ))}
           </svg>
           <div style={{ position: "relative", maxWidth: 1100, margin: "0 auto" }}>
-            <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
-            </div>
-            <div className="hero-coming-soon" aria-label="Coming soon">
-              <span className="hero-coming-soon__label">Coming soon</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
+              <div className="hero-coming-soon" aria-label="Coming soon" style={{ margin: 0 }}>
+                <span className="hero-coming-soon__label">Coming soon</span>
+              </div>
+              <a
+                href="https://www.linkedin.com/company/commodityops"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="CommodityOps on LinkedIn"
+                title="Follow us now on LinkedIn"
+                className="hero-social-proof hero-social-proof--cta"
+              >
+                <span className="hero-social-proof__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.024-3.035-1.85-3.035-1.851 0-2.134 1.446-2.134 2.94v5.664H9.355V9.5h3.414v1.491h.048c.476-.9 1.637-1.85 3.367-1.85 3.601 0 4.265 2.37 4.265 5.456v5.855zM5.337 8.009a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124zM7.115 20.452H3.558V9.5h3.557v10.952zM22.225 0H1.771C.792 0 0 .77 0 1.724v20.553C0 23.23.792 24 1.771 24h20.451C23.2 24 24 23.23 24 22.277V1.724C24 .77 23.2 0 22.225 0z" />
+                  </svg>
+                </span>
+                <span>Follow us now</span>
+              </a>
             </div>
             <h1 className="display" style={{ fontSize: 72, margin: 0, color: "var(--fg)" }}>
               Agentic AI for<br /> <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span> Trading Operations
@@ -1505,7 +1572,21 @@
         {/* FOOTER */}
         <Ticker compact />
         <div className="footer-bar" style={{ padding: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
-          <Logo size={12} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Logo size={12} />
+            <a
+              href="https://www.linkedin.com/company/commodityops"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="CommodityOps on LinkedIn"
+              title="LinkedIn"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(10, 102, 194, 0.28)", background: "rgba(10, 102, 194, 0.08)", color: "#0A66C2", fontSize: 12, fontWeight: 600, letterSpacing: 0.2 }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ width: 14, height: 14, display: "block", fill: "currentColor" }}>
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.024-3.035-1.85-3.035-1.851 0-2.134 1.446-2.134 2.94v5.664H9.355V9.5h3.414v1.491h.048c.476-.9 1.637-1.85 3.367-1.85 3.601 0 4.265 2.37 4.265 5.456v5.855zM5.337 8.009a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124zM7.115 20.452H3.558V9.5h3.557v10.952zM22.225 0H1.771C.792 0 0 .77 0 1.724v20.553C0 23.23.792 24 1.771 24h20.451C23.2 24 24 23.23 24 22.277V1.724C24 .77 23.2 0 22.225 0z" />
+              </svg>
+            </a>
+          </div>
           <div className="footer-meta" style={{ display: "flex", gap: 24 }}>
             <span>EU/US DATA RESIDENCY</span>
             <span>·</span><span>HTTPS/TLS</span>
