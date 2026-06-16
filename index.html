@@ -1667,7 +1667,6 @@
                 <div style={{
                   fontFamily: "var(--font-mono)", fontSize: 52, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1,
                   color: phase >= 2 ? (checkCount === 24 ? "var(--signal-pass)" : "var(--signal-amber)") : "var(--fg-4)",
-                  transition: "color 0.4s ease",
                   opacity: phase >= 2 ? 1 : 0.2,
                   transition: "color 0.4s ease, opacity 0.4s ease",
                 }}>
@@ -2215,9 +2214,7 @@
           name: "Layer 1",
           price: "$99",
           sub: "/month",
-          cta: "Join Layer 1 
-          
-          ",
+          cta: "Join Layer 1 Waitlist",
           desc: "Trade capture and lifecycle backbone.",
           inc: ["Trade confirmation capture", "Editable structured fields", "Trade timeline", "Audit trail"],
           primary: true,
