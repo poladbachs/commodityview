@@ -2623,6 +2623,7 @@
     function App() {
       const [state, dispatch] = useReducer(reducer, null, loadState);
       const [tweaksOpen, setTweaksOpen] = useState(false);
+      const [scrollKey, setScrollKey] = useState(0);
 
       useEffect(() => saveState(state), [state]);
       useEffect(() => { document.documentElement.dataset.mode = state.mode; }, [state.mode]);
@@ -2643,7 +2644,7 @@
           return;
         }
         window.scrollTo(0, 0);
-      }, [state.route]);
+      }, [state.route, scrollKey]);
 
       // Toggle tweaks with "."
       useEffect(() => {
@@ -2659,6 +2660,7 @@
       const go = useCallback((route) => {
         const normalized = route === "/products" ? "/home#product" : route === "/pricing" ? "/home#pricing" : route;
         dispatch({ type: "go", route: normalized });
+        setScrollKey(k => k + 1);
       }, []);
 
       let screen;
