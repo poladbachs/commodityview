@@ -1242,7 +1242,7 @@
     ];
 
     const STAGE_LABELS = ["CONFIRMED", "IN SHIPMENT", "IN TRANSIT", "DELIVERED", "SETTLED"];
-    const HOLD_MS = 2800;
+    const HOLD_MS = 2000;
     const OUT_MS  = 380;
 
     const LifecycleStrip = () => {
@@ -1312,7 +1312,7 @@
 
           {/* ── stage labels row ── */}
           <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
-            <div style={{ display: "flex", paddingTop: 14, paddingBottom: 0 }}>
+            <div style={{ display: "flex", paddingTop: 10, paddingBottom: 0 }}>
               {STAGE_LABELS.map((s, i) => {
                 const passed = i < b.stage;
                 const active = i === b.stage;
@@ -1332,7 +1332,7 @@
 
             {/* ── cinematic center ── */}
             <div style={{
-              padding: "56px 0 60px",
+              padding: "28px 0 32px",
               display: "grid",
               gridTemplateColumns: "1fr auto",
               gap: 64,
@@ -1345,7 +1345,7 @@
                   display: "inline-flex", alignItems: "center", gap: 8,
                   fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.14em",
                   color: accent,
-                  marginBottom: 20,
+                  marginBottom: 12,
                   opacity: showing ? 1 : 0,
                   transform: showing ? "translateY(0)" : "translateY(-6px)",
                   transition: `opacity ${OUT_MS}ms ease, transform ${OUT_MS}ms ease`,
@@ -1361,7 +1361,7 @@
                 {/* headline — display scale */}
                 <div style={{
                   fontFamily: "var(--font-display, Georgia, serif)",
-                  fontSize: "clamp(36px, 5.5vw, 80px)",
+                  fontSize: "clamp(28px, 4vw, 56px)",
                   fontWeight: 400,
                   fontStyle: "italic",
                   letterSpacing: "-0.02em",
@@ -1377,8 +1377,8 @@
 
                 {/* sub */}
                 <div style={{
-                  marginTop: 16,
-                  fontFamily: "var(--font-mono)", fontSize: 13,
+                  marginTop: 10,
+                  fontFamily: "var(--font-mono)", fontSize: 12,
                   color: "var(--fg-3)", letterSpacing: "0.01em",
                   opacity: showing ? 1 : 0,
                   transform: showing ? "translateY(0)" : "translateY(10px)",
@@ -2804,7 +2804,7 @@
       useEffect(() => saveState(state), [state]);
       useEffect(() => { document.documentElement.dataset.mode = state.mode; }, [state.mode]);
       useEffect(() => {
-        if (state.notif) { const t = setTimeout(() => dispatch({ type: "clearNotif" }), 2800); return () => clearTimeout(t); }
+        if (state.notif) { const t = setTimeout(() => dispatch({ type: "clearNotif" }), 2000); return () => clearTimeout(t); }
       }, [state.notif]);
 
       // Scroll to section anchors on route change
