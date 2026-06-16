@@ -1580,307 +1580,391 @@
     ];
 
     const CompliancePipelineDemo = () => {
-      const [step, setStep] = useState(-1);
-      const [running, setRunning] = useState(false);
-      const [lineIdx, setLineIdx] = useState(0);
-      const timerRef = useRef(null);
+      const [phase, setPhase] = useState(0);
+      const [checkCount, setCheckCount] = useState(0);
+      const [scoreVisible, setScoreVisible] = useState(false);
+      const [exceptionVisible, setExceptionVisible] = useState(false);
+      const timers = useRef([]);
+      const rafRef = useRef(null);
 
-      const reset = () => {
-        clearTimeout(timerRef.current);
-        setStep(-1);
-        setRunning(false);
-        setLineIdx(0);
+      const clear = () => {
+        timers.current.forEach(t => { clearTimeout(t); clearInterval(t); });
+        timers.current = [];
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
       };
 
-      const run = () => {
-        reset();
-        setRunning(true);
-        let s = 0;
-        const advance = () => {
-          setStep(s);
-          setLineIdx(0);
-          // cycle through the 3 lines for the active step
-          let l = 0;
-          const lineTimer = setInterval(() => {
-            l++;
-            if (l < PIPELINE_STEPS[s].lines.length) {
-              setLineIdx(l);
-            } else {
-              clearInterval(lineTimer);
-              s++;
-              if (s < PIPELINE_STEPS.length) {
-                timerRef.current = setTimeout(advance, 300);
-              } else {
-                setRunning(false);
-              }
-            }
-          }, 420);
+      const animateChecks = () => {
+        const total = 24, dur = 1400, start = performance.now();
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 2);
+          setCheckCount(Math.round(total * ease));
+          if (p < 1) rafRef.current = requestAnimationFrame(tick);
         };
-        timerRef.current = setTimeout(advance, 200);
+        rafRef.current = requestAnimationFrame(tick);
       };
 
-      useEffect(() => { run(); return () => clearTimeout(timerRef.current); }, []);
+      const replay = () => {
+        clear();
+        setPhase(0);
+        setCheckCount(0);
+        setScoreVisible(false);
+        setExceptionVisible(false);
+        timers.current.push(setTimeout(() => setPhase(1), 300));
+        timers.current.push(setTimeout(() => { setPhase(2); animateChecks(); }, 1200));
+        timers.current.push(setTimeout(() => { setPhase(3); setScoreVisible(true); }, 2900));
+        timers.current.push(setTimeout(() => setExceptionVisible(true), 3500));
+      };
 
-      const done = step >= PIPELINE_STEPS.length - 1 && !running;
+      useEffect(() => { replay(); return clear; }, []);
+
+      const docs = [
+        { name: "COA_SOYBEANS_2604.pdf", pages: "4pp", color: "var(--signal-amber)" },
+        { name: "BILL_OF_LADING_MV-ATLAS.pdf", pages: "2pp", color: "var(--signal-amber)" },
+        { name: "LC_CITIBANK_REF9821.pdf", pages: "7pp", color: "var(--signal-amber)" },
+      ];
 
       return (
         <>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span className="eyebrow">LAYER 2 · COMPLIANCE PIPELINE</span>
-            <button
-              onClick={run}
-              className="btn btn-sm"
-              style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.08em" }}
-            >
-              {running ? "RUNNING…" : "↺ REPLAY"}
+            <button onClick={replay} className="btn btn-sm" style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.08em" }}>
+              {phase > 0 && phase < 3 ? "RUNNING…" : "↺ REPLAY"}
             </button>
           </div>
 
-          {/* Pipeline flow */}
-          <div style={{ padding: "32px 24px 24px", display: "flex", alignItems: "flex-start", gap: 0 }}>
-            {PIPELINE_STEPS.map((s, i) => {
-              const active = step === i;
-              const passed = step > i;
-              const isLast = i === PIPELINE_STEPS.length - 1;
-              const color = isLast
-                ? (passed || active ? "var(--signal-fail)" : "var(--fg-4)")
-                : (passed || active ? "var(--signal-amber)" : "var(--fg-4)");
-              const borderColor = active
-                ? (isLast ? "var(--signal-fail)" : "var(--signal-amber)")
-                : passed
-                  ? (isLast ? "color-mix(in oklch, var(--signal-fail) 40%, var(--line))" : "color-mix(in oklch, var(--signal-amber) 40%, var(--line))")
-                  : "var(--line)";
-              const bg = active
-                ? (isLast ? "color-mix(in oklch, var(--signal-fail) 6%, var(--bg-2))" : "color-mix(in oklch, var(--signal-amber) 6%, var(--bg-2))")
-                : "var(--bg-2)";
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 320 }}>
 
-              return (
-                <React.Fragment key={s.id}>
-                  {/* Step box — flex: 1 fills available space equally */}
-                  <div style={{ flex: 1, minWidth: 0, border: "1px dashed " + borderColor, background: bg, padding: "20px 18px", transition: "all 0.3s ease" }}>
-                    {/* Icon + label */}
-                    <div style={{ marginBottom: 14 }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 22, color, lineHeight: 1, display: "block", marginBottom: 8, transition: "color 0.3s" }}>{s.icon}</span>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", color, textTransform: "uppercase", transition: "color 0.3s" }}>{s.label}</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)", marginTop: 3 }}>{s.sub}</div>
+            {/* TOP-LEFT — Documents in */}
+            <div style={{ borderRight: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "20px 22px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>DOCUMENTS INGESTED</div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {docs.map((d, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 12px",
+                    border: "1px dashed var(--line)",
+                    background: "var(--bg-2)",
+                    opacity: phase > i ? 1 : 0,
+                    transform: phase > i ? "translateX(0)" : "translateX(-10px)",
+                    transition: `opacity 0.35s ease ${i * 0.18}s, transform 0.35s ease ${i * 0.18}s`,
+                  }}>
+                    <span style={{ fontSize: 16, lineHeight: 1 }}>📄</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: d.color, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", marginTop: 2 }}>{d.pages} · uploaded</div>
                     </div>
-                    {/* Line-by-line output */}
-                    <div style={{ minHeight: 60, display: "grid", gap: 5 }}>
-                      {s.lines.map((line, li) => {
-                        const visible = (active && li <= lineIdx) || passed;
-                        return (
-                          <div key={li} style={{
-                            fontFamily: "var(--font-mono)", fontSize: 11,
-                            color: (active && li === lineIdx) ? color : "var(--fg-3)",
-                            opacity: visible ? 1 : 0,
-                            transform: visible ? "translateY(0)" : "translateY(4px)",
-                            transition: "opacity 0.25s ease, transform 0.25s ease",
-                            overflow: "hidden", textOverflow: "ellipsis",
-                          }}>
-                            {visible ? (active && li === lineIdx ? "› " : "  ") : ""}{line}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {/* Status badge */}
-                    <div style={{ marginTop: 14, height: 20 }}>
-                      {active && (
-                        <span className="tag tag-amber" style={{ fontSize: 9, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                          <span className="dot dot-amber dot-pulse" />PROCESSING
-                        </span>
-                      )}
-                      {passed && !isLast && <span className="tag tag-pass" style={{ fontSize: 9 }}>DONE</span>}
-                      {passed && isLast && <span className="tag tag-fail" style={{ fontSize: 9 }}>2 EXCEPTIONS</span>}
-                    </div>
+                    <span className="tag tag-amber" style={{ fontSize: 8, flexShrink: 0 }}>IN</span>
                   </div>
-
-                  {/* Connector arrow */}
-                  {!isLast && (
-                    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", padding: "0 4px", paddingTop: 16, alignSelf: "flex-start" }}>
-                      <div style={{ width: 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                        <div style={{
-                          height: 1, width: "100%",
-                          background: step > i ? "var(--signal-amber)" : "var(--line)",
-                          transition: "background 0.4s ease",
-                        }} />
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: step > i ? "var(--signal-amber)" : "var(--fg-4)", lineHeight: 1, transition: "color 0.4s ease" }}>→</span>
-                      </div>
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-
-          {/* Result summary — appears when done */}
-          <div style={{
-            margin: "0 24px 24px",
-            padding: "14px 18px",
-            border: "1px dashed var(--line)",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr 1fr",
-            gap: 1,
-            background: "var(--bg)",
-            opacity: done ? 1 : 0,
-            transform: done ? "translateY(0)" : "translateY(6px)",
-            transition: "opacity 0.4s ease, transform 0.4s ease",
-          }}>
-            {[
-              { label: "DOCS PROCESSED", value: "3", sub: "COA · BL · LC" },
-              { label: "FIELDS CHECKED", value: "24", sub: "deterministic" },
-              { label: "PASSED", value: "22", sub: "auto-cleared", color: "var(--signal-pass)" },
-              { label: "EXCEPTIONS", value: "2", sub: "ops notified", color: "var(--signal-fail)" },
-            ].map((m, i) => (
-              <div key={i} style={{ padding: "10px 14px", borderRight: i < 3 ? "1px dashed var(--line)" : "none" }}>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", textTransform: "uppercase", marginBottom: 4 }}>{m.label}</div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 600, color: m.color || "var(--fg)", letterSpacing: "-0.02em" }}>{m.value}</div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", marginTop: 2 }}>{m.sub}</div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* TOP-RIGHT — Rule engine counter */}
+            <div style={{ borderBottom: "1px solid var(--line)", padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>RULE ENGINE</div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <div style={{
+                  fontFamily: "var(--font-mono)", fontSize: 52, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1,
+                  color: phase >= 2 ? (checkCount === 24 ? "var(--signal-pass)" : "var(--signal-amber)") : "var(--fg-4)",
+                  transition: "color 0.4s ease",
+                  opacity: phase >= 2 ? 1 : 0.2,
+                  transition: "color 0.4s ease, opacity 0.4s ease",
+                }}>
+                  {checkCount}<span style={{ fontSize: 18, color: "var(--fg-4)" }}>/24</span>
+                </div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)", letterSpacing: "0.08em" }}>CHECKS COMPLETE</div>
+              </div>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                opacity: phase >= 2 ? 1 : 0,
+                transition: "opacity 0.3s ease",
+              }}>
+                {phase >= 3 ? (
+                  <>
+                    <span className="tag tag-pass" style={{ fontSize: 9 }}>DONE · 22ms</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)" }}>deterministic · no ML</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="dot dot-amber dot-pulse" />
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-amber)" }}>CHECKING…</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* BOTTOM-LEFT — Score card */}
+            <div style={{ borderRight: "1px solid var(--line)", padding: "20px 22px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>COMPLIANCE SCORE</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12,
+                opacity: scoreVisible ? 1 : 0,
+                transform: scoreVisible ? "translateY(0)" : "translateY(8px)",
+                transition: "opacity 0.4s ease, transform 0.4s ease",
+              }}>
+                <div style={{ padding: "16px", border: "1px solid color-mix(in oklch, var(--signal-pass) 40%, var(--line))", background: "color-mix(in oklch, var(--signal-pass) 6%, var(--bg))", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 42, fontWeight: 700, color: "var(--signal-pass)", lineHeight: 1, letterSpacing: "-0.04em" }}>22</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--signal-pass)", marginTop: 6, letterSpacing: "0.1em" }}>PASSED</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", marginTop: 3 }}>auto-cleared</div>
+                </div>
+                <div style={{ padding: "16px", border: "1px solid color-mix(in oklch, var(--signal-fail) 40%, var(--line))", background: "color-mix(in oklch, var(--signal-fail) 6%, var(--bg))", textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 42, fontWeight: 700, color: "var(--signal-fail)", lineHeight: 1, letterSpacing: "-0.04em" }}>2</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--signal-fail)", marginTop: 6, letterSpacing: "0.1em" }}>EXCEPTIONS</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", marginTop: 3 }}>ops notified</div>
+                </div>
+              </div>
+            </div>
+
+            {/* BOTTOM-RIGHT — Critical exception */}
+            <div style={{ padding: "20px 22px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--signal-fail)", marginBottom: 14 }}>CRITICAL EXCEPTION</div>
+              <div style={{
+                opacity: exceptionVisible ? 1 : 0,
+                transform: exceptionVisible ? "translateY(0)" : "translateY(8px)",
+                transition: "opacity 0.4s ease, transform 0.4s ease",
+              }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-3)", marginBottom: 12 }}>DISCHARGE PORT MISMATCH</div>
+                <div style={{ display: "grid", gap: 6 }}>
+                  {[
+                    { label: "CONTRACT", value: "Qingdao, CN", ok: true },
+                    { label: "BILL OF LADING", value: "Tianjin, CN", ok: false },
+                  ].map((row, i) => (
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "8px 10px",
+                      border: `1px dashed ${row.ok ? "color-mix(in oklch, var(--signal-pass) 40%, var(--line))" : "color-mix(in oklch, var(--signal-fail) 40%, var(--line))"}`,
+                      background: row.ok ? "color-mix(in oklch, var(--signal-pass) 4%, var(--bg))" : "color-mix(in oklch, var(--signal-fail) 4%, var(--bg))",
+                    }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", letterSpacing: "0.08em" }}>{row.label}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: row.ok ? "var(--signal-pass)" : "var(--signal-fail)" }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{
+                  marginTop: 12, padding: "8px 10px",
+                  border: "1px solid color-mix(in oklch, var(--signal-fail) 50%, var(--line))",
+                  background: "color-mix(in oklch, var(--signal-fail) 8%, var(--bg))",
+                  fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-fail)", letterSpacing: "0.05em",
+                }}>
+                  ⚠ LC WILL NOT PAY — HOLD SHIPMENT
+                </div>
+              </div>
+            </div>
+
           </div>
         </>
       );
     };
 
     // ── Layer 1 · Trade Capture animation ──────────────────────────────────────
-    const CAPTURE_FIELDS = [
-      { k: "COMMODITY",   v: "Yellow Soybeans, BR origin" },
-      { k: "QUANTITY",    v: "60,000 MT ± 5%" },
-      { k: "PRICE",       v: "USD 432.50 / MT" },
-      { k: "INCOTERMS",  v: "FOB Santos · 2020" },
-      { k: "PAYMENT",     v: "LC at sight, Tier-1 bank" },
-      { k: "DELIVERY",    v: "May 2026, Santos → Qingdao" },
-    ];
-
     const TradeCaptureDemo = () => {
-      // phase: 0=idle, 1=email arriving, 2=extracting fields, 3=awaiting approval, 4=confirmed
       const [phase, setPhase] = useState(0);
-      const [visibleFields, setVisibleFields] = useState(0);
+      const [confidence, setConfidence] = useState(0);
+      const [fieldsVisible, setFieldsVisible] = useState(0);
+      const [auditVisible, setAuditVisible] = useState(0);
       const [approved, setApproved] = useState(false);
       const timers = useRef([]);
+      const rafRef = useRef(null);
 
-      const clear = () => { timers.current.forEach(clearTimeout); timers.current = []; };
+      const clear = () => {
+        timers.current.forEach(t => { clearTimeout(t); clearInterval(t); });
+        timers.current = [];
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      };
+
+      const animateConfidence = () => {
+        const target = 97, dur = 1200, start = performance.now();
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          setConfidence(Math.round(target * ease));
+          if (p < 1) rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+      };
 
       const replay = () => {
         clear();
-        setPhase(0);
-        setVisibleFields(0);
-        setApproved(false);
-        timers.current.push(setTimeout(() => setPhase(1), 200));
-        timers.current.push(setTimeout(() => setPhase(2), 1100));
-        // reveal fields one by one
-        CAPTURE_FIELDS.forEach((_, i) => {
-          timers.current.push(setTimeout(() => setVisibleFields(i + 1), 1500 + i * 340));
+        setPhase(0); setConfidence(0); setFieldsVisible(0); setAuditVisible(0); setApproved(false);
+        timers.current.push(setTimeout(() => setPhase(1), 300));
+        timers.current.push(setTimeout(() => { setPhase(2); animateConfidence(); }, 1000));
+        [0,1,2,3,4,5,6,7].forEach(i => {
+          timers.current.push(setTimeout(() => setFieldsVisible(i + 1), 1300 + i * 190));
         });
-        timers.current.push(setTimeout(() => setPhase(3), 1500 + CAPTURE_FIELDS.length * 340 + 200));
+        timers.current.push(setTimeout(() => setPhase(3), 2900));
+        [0,1,2].forEach(i => {
+          timers.current.push(setTimeout(() => setAuditVisible(i + 1), 3100 + i * 320));
+        });
+        timers.current.push(setTimeout(() => setPhase(4), 4100));
       };
 
       useEffect(() => { replay(); return clear; }, []);
 
-      const handleApprove = () => { setApproved(true); setPhase(4); };
+      const handleApprove = () => { setApproved(true); setPhase(5); };
+
+      const FIELDS = [
+        { k: "COMMODITY", v: "Yellow Soybeans, BR" },
+        { k: "QUANTITY", v: "60,000 MT ± 5%" },
+        { k: "PRICE", v: "USD 432.50 / MT" },
+        { k: "INCOTERMS", v: "FOB Santos · 2020" },
+        { k: "PAYMENT", v: "LC at sight · Tier-1" },
+        { k: "DELIVERY", v: "May 2026" },
+        { k: "ORIGIN", v: "Santos, Brazil" },
+        { k: "DESTINATION", v: "Qingdao, CN" },
+      ];
+
+      const AUDIT = [
+        { time: "09:42:07", actor: "SYSTEM", action: "Email received · attachment parsed" },
+        { time: "09:42:08", actor: "CLAUDE", action: "8 fields extracted · 97% confidence" },
+        { time: "09:42:09", actor: "PENDING", action: "Awaiting trader approval" },
+      ];
 
       return (
         <>
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span className="eyebrow">LAYER 1 · TRADE CAPTURE</span>
             <button onClick={replay} className="btn btn-sm" style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.08em" }}>
-              {phase < 3 && phase > 0 ? "RUNNING…" : "↺ REPLAY"}
+              {phase > 0 && phase < 4 ? "RUNNING…" : "↺ REPLAY"}
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 320 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 340 }}>
 
-            {/* LEFT — inbound email */}
-            <div style={{ borderRight: "1px solid var(--line)", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--fg-4)" }}>INBOUND EMAIL</div>
-
-              {/* Email card — slides in at phase 1 */}
+            {/* TOP-LEFT — Inbound email */}
+            <div style={{ borderRight: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "20px 22px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>INBOUND EMAIL</div>
               <div style={{
-                border: "1px dashed var(--line)",
-                background: "var(--bg-2)",
-                padding: "14px 16px",
+                border: "1px dashed var(--line)", background: "var(--bg-2)", padding: "14px 16px",
                 opacity: phase >= 1 ? 1 : 0,
-                transform: phase >= 1 ? "translateY(0)" : "translateY(10px)",
+                transform: phase >= 1 ? "translateY(0)" : "translateY(12px)",
                 transition: "opacity 0.45s ease, transform 0.45s ease",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-3)" }}>ops@cofco-resources.ch</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)" }}>09:42 UTC</span>
                 </div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-2)", marginBottom: 10 }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-2)", marginBottom: 10, fontWeight: 500 }}>
                   RE: Trade Confirmation 60kt FOB Santos
                 </div>
-                {/* Placeholder body lines */}
                 {[100, 88, 95, 72, 60].map((w, i) => (
-                  <div key={i} style={{ height: 7, background: "var(--line)", borderRadius: 2, marginBottom: 6, width: w + "%" }} />
+                  <div key={i} style={{ height: 6, background: "var(--line)", borderRadius: 2, marginBottom: 5, width: w + "%" }} />
                 ))}
                 <div style={{ marginTop: 10, display: "flex", gap: 6, alignItems: "center" }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-4)" }}>📎</span>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-amber)" }}>trade_confirmation.pdf</span>
                 </div>
               </div>
-
-              {/* AI reading indicator */}
               <div style={{
-                display: "flex", alignItems: "center", gap: 8,
-                opacity: phase >= 2 ? 1 : 0,
-                transition: "opacity 0.3s ease 0.2s",
+                marginTop: 12, display: "flex", alignItems: "center", gap: 8,
+                opacity: phase >= 2 ? 1 : 0, transition: "opacity 0.3s ease 0.2s",
               }}>
-                <span className="dot dot-amber dot-pulse" />
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-amber)" }}>
-                  {phase < 3 ? "CLAUDE EXTRACTING FIELDS…" : "EXTRACTION COMPLETE"}
-                </span>
+                {phase < 3
+                  ? <><span className="dot dot-amber dot-pulse" /><span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-amber)" }}>CLAUDE EXTRACTING…</span></>
+                  : <><span className="dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--signal-pass)", display: "inline-block" }} /><span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--signal-pass)" }}>EXTRACTION COMPLETE</span></>
+                }
               </div>
             </div>
 
-            {/* RIGHT — extracted fields + approve */}
-            <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 0 }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 12 }}>EXTRACTED FIELDS</div>
-
-              <div style={{ flex: 1, display: "grid", gap: 0 }}>
-                {CAPTURE_FIELDS.map((f, i) => (
+            {/* TOP-RIGHT — Confidence + extracted fields */}
+            <div style={{ borderBottom: "1px solid var(--line)", padding: "20px 22px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)" }}>EXTRACTED FIELDS</div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{
+                    fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1,
+                    color: confidence > 90 ? "var(--signal-pass)" : "var(--signal-amber)",
+                    opacity: phase >= 2 ? 1 : 0.2,
+                    transition: "color 0.4s ease, opacity 0.4s ease",
+                  }}>{confidence}<span style={{ fontSize: 13, color: "var(--fg-4)" }}>%</span></div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--fg-4)", letterSpacing: "0.08em", marginTop: 2 }}>CONFIDENCE</div>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+                {FIELDS.map((f, i) => (
                   <div key={f.k} style={{
-                    display: "grid", gridTemplateColumns: "1fr 1.4fr",
-                    padding: "9px 0",
+                    padding: "7px 0",
                     borderBottom: "1px solid var(--line-soft)",
-                    alignItems: "baseline",
-                    opacity: visibleFields > i ? 1 : 0,
-                    transform: visibleFields > i ? "translateX(0)" : "translateX(-8px)",
-                    transition: "opacity 0.3s ease, transform 0.3s ease",
+                    paddingRight: i % 2 === 0 ? 10 : 0,
+                    paddingLeft: i % 2 === 1 ? 10 : 0,
+                    borderLeft: i % 2 === 1 ? "1px solid var(--line-soft)" : "none",
+                    opacity: fieldsVisible > i ? 1 : 0,
+                    transform: fieldsVisible > i ? "translateY(0)" : "translateY(4px)",
+                    transition: "opacity 0.25s ease, transform 0.25s ease",
                   }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.08em", color: "var(--fg-4)", textTransform: "uppercase" }}>{f.k}</span>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: visibleFields === i + 1 && phase === 2 ? "var(--signal-amber)" : "var(--fg)" }}>{f.v}</span>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", color: "var(--fg-4)", textTransform: "uppercase" }}>{f.k}</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: fieldsVisible === i + 1 ? "var(--signal-amber)" : "var(--fg)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.v}</div>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Approve button — appears at phase 3 */}
-              <div style={{
-                marginTop: 16,
-                opacity: phase >= 3 ? 1 : 0,
-                transform: phase >= 3 ? "translateY(0)" : "translateY(6px)",
-                transition: "opacity 0.35s ease, transform 0.35s ease",
-              }}>
-                {!approved ? (
-                  <button
-                    onClick={handleApprove}
-                    className="btn btn-pass"
-                    style={{ width: "100%", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.08em" }}
-                  >
-                    APPROVE &amp; CREATE TRADE RECORD →
-                  </button>
-                ) : (
-                  <div style={{
-                    padding: "12px 16px", border: "1px solid color-mix(in oklch, var(--signal-pass) 40%, var(--line))",
-                    background: "color-mix(in oklch, var(--signal-pass) 6%, var(--bg))",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
+            {/* BOTTOM-LEFT — Audit trail */}
+            <div style={{ borderRight: "1px solid var(--line)", padding: "20px 22px" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>AUDIT TRAIL</div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {AUDIT.map((a, i) => (
+                  <div key={i} style={{
+                    display: "flex", gap: 10, alignItems: "flex-start",
+                    opacity: auditVisible > i ? 1 : 0,
+                    transform: auditVisible > i ? "translateX(0)" : "translateX(-8px)",
+                    transition: "opacity 0.3s ease, transform 0.3s ease",
                   }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--signal-pass)" }}>✓ TRADE RECORD CREATED</span>
-                    <span className="tag tag-pass" style={{ fontSize: 9 }}>SOY-2604</span>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", whiteSpace: "nowrap", paddingTop: 1 }}>{a.time}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.08em", color: "var(--signal-amber)", marginBottom: 2 }}>{a.actor}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-2)" }}>{a.action}</div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
+
+            {/* BOTTOM-RIGHT — Approve CTA */}
+            <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", color: "var(--fg-4)", marginBottom: 14 }}>TRADER ACTION</div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
+                <div style={{
+                  opacity: phase >= 4 ? 1 : 0,
+                  transform: phase >= 4 ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 0.4s ease, transform 0.4s ease",
+                }}>
+                  {!approved ? (
+                    <button
+                      onClick={handleApprove}
+                      className="btn btn-pass"
+                      style={{ width: "100%", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em" }}
+                    >
+                      APPROVE &amp; CREATE RECORD →
+                    </button>
+                  ) : (
+                    <div style={{
+                      padding: "14px 16px",
+                      border: "1px solid color-mix(in oklch, var(--signal-pass) 40%, var(--line))",
+                      background: "color-mix(in oklch, var(--signal-pass) 6%, var(--bg))",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--signal-pass)" }}>✓ TRADE RECORD CREATED</span>
+                        <span className="tag tag-pass" style={{ fontSize: 9 }}>SOY-2604</span>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                        {["CAPTURED", "VALIDATED", "BOOKED"].map((s, i) => (
+                          <div key={i} style={{ textAlign: "center", padding: "6px 0", borderTop: "2px solid var(--signal-pass)" }}>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--signal-pass)", letterSpacing: "0.08em" }}>{s}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div style={{
+                fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--fg-4)", letterSpacing: "0.05em",
+                opacity: phase >= 4 ? 1 : 0, transition: "opacity 0.4s ease 0.3s",
+              }}>
+                8 fields · 1.4s · full audit trail
+              </div>
+            </div>
+
           </div>
         </>
       );
@@ -2131,7 +2215,9 @@
           name: "Layer 1",
           price: "$99",
           sub: "/month",
-          cta: "Join Layer 1 Waitlist",
+          cta: "Join Layer 1 
+          
+          ",
           desc: "Trade capture and lifecycle backbone.",
           inc: ["Trade confirmation capture", "Editable structured fields", "Trade timeline", "Audit trail"],
           primary: true,
@@ -2375,8 +2461,7 @@
 
     const PricingPage = ({ go }) => <HomePage go={go} />;
 
-    // Sign up at formspree.io, create a form, and replace YOUR_FORMSPREE_ID below with your form ID
-    const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORMSPREE_ID";
+    const WAITLIST_ENDPOINT = "/api/waitlist";
     const SELECT_ARROW = "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23777777%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')";
     const SELECT_STYLE = { appearance: "none", backgroundImage: SELECT_ARROW, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px top 50%", backgroundSize: "10px auto", paddingRight: 30 };
 
@@ -2406,25 +2491,24 @@
         setSubmitting(true);
         setError(null);
         try {
-          const res = await fetch(FORMSPREE_ENDPOINT, {
+          const res = await fetch(WAITLIST_ENDPOINT, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              "First Name": form.firstName,
-              "Last Name": form.lastName,
-              "Email": form.email,
-              "Company": form.company,
-              "Business Type": form.businessType,
-              "Target Layer": form.targetLayer,
-              "Workflow Bottleneck": form.bottleneck || "—",
-              "_subject": `Waitlist: ${form.firstName} ${form.lastName} — ${form.company}`,
+              firstName: form.firstName,
+              lastName: form.lastName,
+              email: form.email,
+              company: form.company,
+              businessType: form.businessType,
+              targetLayer: form.targetLayer,
+              bottleneck: form.bottleneck || "",
             }),
           });
           if (res.ok) {
             setSubmitted(true);
           } else {
             const data = await res.json().catch(() => ({}));
-            setError(data?.errors?.[0]?.message || "Submission failed. Please email info@commodityops.com directly.");
+            setError(data?.error || "Submission failed. Please email info@commodityops.com directly.");
           }
         } catch {
           setError("Network error. Please email info@commodityops.com directly.");
@@ -2553,6 +2637,7 @@
       useEffect(() => {
         const route = state.route || "/home";
         const [path, hash] = route.split("#");
+        if (path === "/waitlist") { window.scrollTo(0, 0); return; }
         const target = path === "/products" ? "product" : path === "/pricing" ? "pricing" : hash;
         if (target) {
           requestAnimationFrame(() => {
