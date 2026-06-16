@@ -576,6 +576,60 @@
       fill: currentColor;
     }
 
+    @keyframes marketingNavEnter {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .marketing-nav {
+      animation: marketingNavEnter 420ms cubic-bezier(0.23, 1, 0.32, 1) both;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 1px 0 var(--line);
+      transition: box-shadow 180ms ease-out, background 180ms ease-out, backdrop-filter 180ms ease-out;
+    }
+
+    .marketing-links a,
+    .marketing-actions .btn {
+      transition: transform 160ms ease-out, color 160ms ease-out, background 160ms ease-out, border-color 160ms ease-out;
+    }
+
+    .marketing-links a:hover {
+      transform: translateY(-1px);
+      color: var(--fg);
+    }
+
+    .marketing-links a:active,
+    .marketing-actions .btn:active {
+      transform: scale(0.97);
+    }
+
+    .layer-card {
+      transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), border-color 180ms ease-out, background 180ms ease-out, box-shadow 180ms ease-out;
+    }
+
+    .layer-card:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in oklch, var(--signal-amber) 26%, var(--line));
+    }
+
+    .layer-card:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    .layer-card--active {
+      background: var(--bg-3) !important;
+      border-color: color-mix(in oklch, var(--signal-amber) 42%, var(--line)) !important;
+      box-shadow: 0 1px 0 color-mix(in oklch, var(--signal-amber) 10%, transparent) inset, 0 0 0 1px color-mix(in oklch, var(--signal-amber) 18%, transparent);
+    }
+
     @media (max-width: 800px) {
       /* Typography Scaling */
       .display { font-size: clamp(28px, 8vw, 42px) !important; }
@@ -745,6 +799,26 @@
       }
       
       /* Footer mobile adjustments */
+      footer {
+        padding: 16px !important;
+      }
+      footer > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+      }
+      footer > div > div:first-child {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+      footer > div > div:last-child {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        font-size: 11px !important;
+        gap: 6px !important;
+      }
       .footer-bar {
         flex-direction: column !important;
         align-items: center !important;
@@ -993,8 +1067,8 @@
       <div className="marketing-nav" style={{ position: "sticky", top: 0, zIndex: 1000, background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 32px", borderBottom: "1px solid var(--line)", flexWrap: "wrap", gap: 16 }}>
         <div className="marketing-brand" onClick={() => go("/home")} style={{ cursor: "pointer" }}><Logo size={20} /></div>
         <div className="marketing-links" style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: "var(--fg-2)" }}>
-          <a onClick={() => go("/products")} style={{ cursor: "pointer" }}>Product</a>
-          <a onClick={() => go("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
+          <a onClick={() => go("/home#product")} style={{ cursor: "pointer" }}>Product</a>
+          <a onClick={() => go("/home#pricing")} style={{ cursor: "pointer" }}>Pricing</a>
           <a onClick={() => go("/demo")} style={{ cursor: "pointer" }}>Demo</a>
         </div>
         <div className="marketing-actions" style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1409,8 +1483,77 @@
 
   <!-- ============ PAGE: 02 · MARKETING (Home, Pricing, Demo, Products) ============ -->
   <script type="text/babel">
-    const HomePage = ({ go }) => (
-      <div className="surface" style={{ minHeight: "100vh", fontFamily: "var(--font-ui)" }}>
+    const HomePage = ({ go }) => {
+      const [activeLayer, setActiveLayer] = useState("layer-1");
+
+      const layerCards = [
+        {
+          id: "layer-1",
+          num: "01",
+          title: "Trade Capture",
+          sub: "Draft → Confirmed",
+          body: "One-click Outlook capture turns trade confirmations into editable trade records with a full audit trail.",
+          chips: ["EMAIL INGEST", "AI EXTRACT", "APPROVE / REJECT"],
+        },
+        {
+          id: "layer-2",
+          num: "02",
+          title: "Compliance",
+          sub: "Confirmed → In Shipment",
+          body: "COA, LC, and BL documents are validated deterministically against contract terms and surfaced as exceptions.",
+          chips: ["RULE ENGINE", "PER-FIELD CHECKS", "EXCEPTIONS"],
+        },
+        {
+          id: "layer-3",
+          num: "03",
+          title: "Connected Intelligence",
+          sub: "In Shipment → Settled",
+          body: "Vessel tracking, counterparty risk, and market context stay attached to the trade timeline as it moves.",
+          chips: ["VESSEL LIVE", "COUNTERPARTY RISK", "POSITION SUMMARY"],
+        },
+      ];
+
+      const pricingPlans = [
+        {
+          name: "Layer 1",
+          price: "$99",
+          sub: "/month",
+          cta: "Start Layer 1",
+          desc: "Trade capture and lifecycle backbone.",
+          inc: ["Trade confirmation capture", "Editable structured fields", "Trade timeline", "Audit trail"],
+          primary: true,
+        },
+        {
+          name: "Layer 2",
+          price: "$199",
+          sub: "/month",
+          cta: "Join waitlist",
+          desc: "Validation and exception handling.",
+          inc: ["Deterministic rule engine", "COA/LC/BL cross-checks", "Per-field pass/fail", "Custom rules editor"],
+          soon: true,
+        },
+        {
+          name: "Layer 3",
+          price: "$499",
+          sub: "/month",
+          cta: "Join waitlist",
+          desc: "Reconciliation and intelligence.",
+          inc: ["Invoice reconciliation", "Counterparty intelligence", "Vessel tracking", "Market context"],
+          soon: true,
+        },
+        {
+          name: "Enterprise",
+          price: "$2,999",
+          sub: "/month",
+          cta: "Talk to us",
+          desc: "API access and custom integration.",
+          inc: ["API access for CTRM", "Custom rule templates", "Dedicated support", "Bring your own region"],
+          soon: true,
+        },
+      ];
+
+      return (
+        <div className="surface" style={{ minHeight: "100vh", fontFamily: "var(--font-ui)" }}>
         <Ticker />
         <MarketingNav go={go} />
 
@@ -1498,254 +1641,288 @@
           </div>
         </div>
 
-        {/* THREE LAYERS */}
-        <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
+        {/* PRODUCT */}
+        <div id="product" style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", scrollMarginTop: 72 }} className="bg-grid">
           <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48 }}>
-              <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48, gap: 24, flexWrap: "wrap" }}>
+              <div style={{ maxWidth: 820 }}>
                 <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
-                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>Three layers.<br />One operating system.</h2>
+                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>One system. One trade page.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Every layer lives inside it.</span></h2>
+                <p style={{ maxWidth: 640, margin: "18px 0 0", color: "var(--fg-2)", fontSize: 16, lineHeight: 1.6 }}>
+                  The product is the system of record. Trade capture, compliance, and intelligence are not separate apps — they are layers on the same lifecycle.
+                </p>
               </div>
-              <p style={{ maxWidth: 380, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>
-                Start with capture. Add operations when you ship. Add intelligence when the desk needs market awareness baked into every deal.
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+              {layerCards.map((layer, index) => (
+                <button
+                  key={layer.id}
+                  type="button"
+                  onClick={() => setActiveLayer(layer.id)}
+                  className={"layer-card " + (activeLayer === layer.id ? "layer-card--active" : "")}
+                  style={{
+                    background: "var(--bg)",
+                    padding: 24,
+                    border: "none",
+                    borderRight: index < layerCards.length - 1 ? "1px solid var(--line)" : "none",
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="mono" style={{ fontSize: 11, color: activeLayer === layer.id ? "var(--signal-amber)" : "var(--fg-3)" }}>LAYER {layer.num}</span>
+                    {activeLayer === layer.id && <span className="tag tag-amber">ACTIVE</span>}
+                  </div>
+                  <h3 className="display" style={{ fontSize: 32, margin: "14px 0 4px" }}>{layer.title}.</h3>
+                  <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginBottom: 12 }}>{layer.sub}</div>
+                  <p style={{ color: "var(--fg-3)", fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{layer.body}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 18 }}>
+                    {layer.chips.map((chip) => <span key={chip} className="tag">{chip}</span>)}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 28 }} className="card">
+              {activeLayer === "layer-1" && (
+                <>
+                  <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="eyebrow">LAYER 1 · TRADE CAPTURE</span>
+                    <span className="tag tag-amber">DRAFT → CONFIRMED</span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr" }}>
+                    <div style={{ borderRight: "1px solid var(--line)" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)" }}>
+                        <div className="label">TRADE CONFIRMATION</div>
+                        <div style={{ marginTop: 6, color: "var(--fg-2)", fontSize: 13 }}>Editable extraction from the inbound deal email.</div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+                        {TC_FIELDS.map((f, i) => (
+                          <div key={f.k} style={{ padding: "12px 18px", borderRight: i % 2 === 0 ? "1px solid var(--line-soft)" : "none", borderBottom: i < TC_FIELDS.length - 2 ? "1px solid var(--line-soft)" : "none" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span className="label">{f.k}</span>
+                              <span className="mono" style={{ fontSize: 10, color: f.low ? "var(--signal-warn)" : "var(--fg-4)" }}>{f.low && "⚠ "}{Math.round(f.conf * 100)}%</span>
+                            </div>
+                            <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--fg)" }}>{f.v}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ background: "var(--bg-2)" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)" }}>
+                        <div className="label">WHAT SHIPS</div>
+                        <div style={{ marginTop: 6, color: "var(--fg-2)", fontSize: 13 }}>Trade lifecycle, linked docs, and audit trail.</div>
+                      </div>
+                      <div style={{ padding: "14px 18px" }}>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
+                          {[
+                            "Approval creates the trade record.",
+                            "Documents attach to the same trade over time.",
+                            "Ops can edit fields inline before confirming.",
+                            "Every action is logged end-to-end.",
+                          ].map((item) => (
+                            <li key={item} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--fg-2)" }}>
+                              <span className="mono" style={{ color: "var(--signal-pass)" }}>◆</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeLayer === "layer-2" && (
+                <>
+                  <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="eyebrow">LAYER 2 · COMPLIANCE</span>
+                    <span className="tag tag-fail">DETERMINISTIC RULES</span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 0 }}>
+                    <div style={{ borderRight: "none" }}>
+                      <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
+                        {["PARAMETER", "EXTRACTED", "SPEC", "VERDICT"].map((h) => <span key={h} className="label">{h}</span>)}
+                      </div>
+                      {COA_PARAMS.map((r, i) => (
+                        <div key={r.p} style={{ borderBottom: i < COA_PARAMS.length - 1 ? "1px solid var(--line-soft)" : "none", background: r.pass ? "transparent" : "color-mix(in oklch, var(--signal-fail) 5%, transparent)" }}>
+                          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "10px 18px", alignItems: "center", fontSize: 13 }}>
+                            <span>{r.p}</span>
+                            <span className="mono">{r.e}</span>
+                            <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
+                            <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                          </div>
+                          <div className="mobile-only" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: "10px 12px", gap: 8, fontSize: 12 }}>
+                            <div>
+                              <div className="label">{r.p}</div>
+                              <div className="mono" style={{ marginTop: 4, color: "var(--fg)" }}>{r.e}</div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div className="mono" style={{ color: "var(--fg-2)", marginBottom: 4 }}>{r.c}</div>
+                              <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: "var(--bg-2)", marginTop: "0px" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", borderTop: "1px solid var(--line)" }}>
+                        <div className="label">CROSS-DOC RECONCILE</div>
+                        <div style={{ marginTop: 6, color: "var(--fg-2)", fontSize: 13 }}>LC, BL, and contract checked against each other.</div>
+                      </div>
+                      <div style={{ padding: "14px 18px", display: "grid", gap: 10 }}>
+                        {[
+                          ["Discharge port", "Qingdao", "Qingdao", "Qingdao", true],
+                          ["Quantity", "60,000 MT", "60,000 MT", "59,840 MT", true],
+                          ["Shipment by", "15 May", "15 May", "12 May", true],
+                          ["LC expiry", "30 May", "28 May", "—", false],
+                        ].map((row) => (
+                          <div key={row[0]} style={{ padding: "10px 12px", border: "1px solid var(--line)", display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 0.6fr", gap: 10, alignItems: "center" }}>
+                            <span style={{ color: "var(--fg)" }}>{row[0]}</span>
+                            <span className="mono" style={{ color: "var(--fg-2)" }}>{row[1]}</span>
+                            <span className="mono" style={{ color: "var(--fg-2)" }}>{row[2]}</span>
+                            <span className={row[4] ? "tag tag-pass" : "tag tag-fail"}>{row[4] ? "PASS" : "FAIL"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeLayer === "layer-3" && (
+                <>
+                  <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="eyebrow">LAYER 3 · CONNECTED INTELLIGENCE</span>
+                    <span className="tag tag-amber">VESSEL · MARKET · RISK</span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr" }}>
+                    <div style={{ borderRight: "1px solid var(--line)" }}>
+                      <PositionCard />
+                    </div>
+                    <div style={{ background: "var(--bg-2)" }}>
+                      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)" }}>
+                        <div className="label">COUNTERPARTY SIGNALS</div>
+                        <div style={{ marginTop: 6, color: "var(--fg-2)", fontSize: 13 }}>Risk context stays on the trade record.</div>
+                      </div>
+                      <div style={{ padding: "14px 18px" }}>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
+                          {[
+                            ["OpenSanctions", "No matches across OFAC, EU, UK, UN", "pass"],
+                            ["News", "Exports up 12% YoY", "info"],
+                            ["Credit", "Standard terms · LC at sight", "info"],
+                            ["Vessel", "Frontier Astra currently at sea", "pass"],
+                          ].map((row) => (
+                            <li key={row[0]} style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 14, paddingTop: 10, borderTop: "1px solid var(--line-soft)" }}>
+                              <span className="mono" style={{ fontSize: 11, color: row[2] === "pass" ? "var(--signal-pass)" : "var(--fg-3)" }}>{row[0].toUpperCase()}</span>
+                              <span style={{ fontSize: 13, color: "var(--fg-2)" }}>{row[1]}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* PRICING */}
+        <div id="pricing" style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", scrollMarginTop: 72 }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32, gap: 24, flexWrap: "wrap" }}>
+              <div>
+                <span className="eyebrow">PRICING PLANS</span>
+                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>Choose your layer.</h2>
+              </div>
+              <p style={{ maxWidth: 460, margin: 0, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>
+                Start with capture, then unlock validation, reconciliation, and intelligence as your workflow grows.
               </p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
-              {[
-                { n: "01", t: "Capture", sub: "Trade confirmation, COA, contract.", body: "AI reads the inbox. Every field extracted, every spec validated, every exception surfaced before approval.", chips: ["EMAIL INGEST", "AI EXTRACT", "DETERMINISTIC COMPLIANCE", "EDIT INLINE", "APPROVE / REJECT"] },
-                { n: "02", t: "Operations", sub: "LC, BL, invoice — full lifecycle.", body: "Cross-document validation runs simultaneously. LC port vs. contract port. BL date vs. LC deadline. Invoice quantity vs. delivered quantity.", chips: ["LC VALIDATION", "BL RECONCILE", "INVOICE MATCH", "LIFECYCLE TRACK", "AUDIT TRAIL"] },
-                { n: "03", t: "Intelligence", sub: "Vessel, market, counterparty.", body: "Live vessel position. Current price vs. your locked contract. Sanctions and risk signals on every counterparty, refreshed continuously.", chips: ["VESSEL LIVE", "MARKET CONTEXT", "COUNTERPARTY SCREEN"] },
-              ].map(l => (
-                <div key={l.n} style={{ background: "var(--bg)", padding: 32, position: "relative" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                    <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)", letterSpacing: "0.1em" }}>LAYER {l.n}</span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+              {pricingPlans.map((plan, index) => (
+                <div key={plan.name} style={{ background: plan.primary ? "var(--bg-2)" : "var(--bg)", padding: 24, position: "relative", borderRight: index < pricingPlans.length - 1 ? "1px solid var(--line)" : "none" }}>
+                  {plan.primary && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--signal-amber)" }} />}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: plan.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{plan.name}</span>
+                    {plan.soon && <span className="tag">SOON</span>}
+                    {plan.primary && <span className="tag tag-amber">LIVE</span>}
                   </div>
-                  <h3 className="display" style={{ fontSize: 40, margin: "20px 0 4px" }}>{l.t}.</h3>
-                  <div className="editorial" style={{ fontSize: 18, color: "var(--fg-2)", marginBottom: 20 }}>{l.sub}</div>
-                  <p style={{ color: "var(--fg-3)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{l.body}</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 24 }}>
-                    {l.chips.map(c => <span key={c} className="tag">{c}</span>)}
+                  <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginTop: 16, minHeight: 24 }}>{plan.desc}</div>
+                  <div style={{ marginTop: 12, display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span className="display" style={{ fontSize: 48 }}>{plan.price}</span>
+                    <span style={{ color: "var(--fg-3)", fontSize: 12, fontFamily: "var(--font-mono)" }}>{plan.sub}</span>
                   </div>
+                  <ul style={{ listStyle: "none", padding: 0, marginTop: 20, display: "grid", gap: 6, minHeight: 140 }}>
+                    {plan.inc.map((item) => (
+                      <li key={item} style={{ display: "flex", gap: 8, fontSize: 12.5, color: "var(--fg-2)" }}>
+                        <span style={{ color: "var(--signal-pass)" }}>+</span>{item}
+                      </li>
+                    ))}
+                  </ul>
+                  <button className={"btn " + (plan.primary ? "btn-primary" : "")} style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => go(plan.primary ? "/deals/new" : "/demo")}>{plan.cta}</button>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* PRICING TEASE */}
-        <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
-              <h2 className="display" style={{ fontSize: 56, margin: 0 }}>$0 to start.<br />No card required.</h2>
-              <button className="btn btn-lg" onClick={() => go("/pricing")}>SEE FULL PRICING →</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
-              {[
-                { name: "FREE", price: "$0", sub: "for the first analysis", inc: ["2 analyses lifetime", "Trade confirmation extract", "COA validation", "Inline edit, approve/reject"] },
-                { name: "PRO", price: "$99", sub: "/month, billed monthly", inc: ["Layer 1 unlimited", "Email ingestion", "Activity feed", "GAFTA/FOSFA/ICE/CME library"], primary: true },
-              ].map(p => (
-                <div key={p.name} style={{ padding: 32, background: p.primary ? "var(--bg-2)" : "var(--bg)", position: "relative" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: p.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{p.name}</span>
-                    {p.primary && <span className="tag tag-amber">RECOMMENDED</span>}
-                  </div>
-                  <div style={{ marginTop: 20, display: "flex", alignItems: "baseline", gap: 12 }}>
-                    <span className="display" style={{ fontSize: 72 }}>{p.price}</span>
-                    <span style={{ color: "var(--fg-3)", fontSize: 14 }}>{p.sub}</span>
-                  </div>
-                  <ul style={{ listStyle: "none", padding: 0, marginTop: 24, display: "grid", gap: 8 }}>
-                    {p.inc.map(i => (
-                      <li key={i} style={{ display: "flex", gap: 12, fontSize: 13.5, color: "var(--fg-2)" }}>
-                        <span style={{ color: "var(--signal-pass)" }}>+</span>{i}
-                      </li>
-                    ))}
-                  </ul>
-                  <button className={"btn btn-lg " + (p.primary ? "btn-primary" : "")} style={{ marginTop: 28, width: "100%", justifyContent: "center" }} onClick={() => go("/deals/new")}>
-                    {p.primary ? "START PRO" : "START FREE"}
-                  </button>
-                </div>
-              ))}
-            </div>
+        {/* CTA */}
+        <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
+          <span className="eyebrow">READY TO SEE IT LIVE</span>
+          <h2 className="display" style={{ fontSize: 64, margin: "12px 0 8px" }}>Start with capture.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Then add the rest.</span></h2>
+          <p style={{ margin: "0 auto", maxWidth: 620, color: "var(--fg-2)", fontSize: 16, lineHeight: 1.6 }}>
+            Book a walkthrough or jump straight into the demo. No free tier, no fake teaser — just the production path from trade confirmation to settlement.
+          </p>
+          <div style={{ marginTop: 28, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+            <button className="btn btn-lg btn-primary" onClick={() => go("/demo")}>SEE HOW IT WORKS</button>
+            <button className="btn btn-lg" onClick={() => go("/deals/new")}>TRY NOW →</button>
           </div>
         </div>
 
         {/* FOOTER */}
-        <Ticker compact />
-        <div className="footer-bar" style={{ padding: 32, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Logo size={12} />
-            <a
-              href="https://www.linkedin.com/company/commodityops"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="CommodityOps on LinkedIn"
-              title="LinkedIn"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(10, 102, 194, 0.28)", background: "rgba(10, 102, 194, 0.08)", color: "#0A66C2", fontSize: 12, fontWeight: 600, letterSpacing: 0.2 }}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ width: 14, height: 14, display: "block", fill: "currentColor" }}>
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.024-3.035-1.85-3.035-1.851 0-2.134 1.446-2.134 2.94v5.664H9.355V9.5h3.414v1.491h.048c.476-.9 1.637-1.85 3.367-1.85 3.601 0 4.265 2.37 4.265 5.456v5.855zM5.337 8.009a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124zM7.115 20.452H3.558V9.5h3.557v10.952zM22.225 0H1.771C.792 0 0 .77 0 1.724v20.553C0 23.23.792 24 1.771 24h20.451C23.2 24 24 23.23 24 22.277V1.724C24 .77 23.2 0 22.225 0z" />
-              </svg>
-            </a>
+        <footer style={{ padding: "28px 32px 32px", background: "var(--bg-2)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <Logo size={14} />
+              <a href="mailto:info@commodityops.com" style={{ color: "var(--fg)", fontSize: 14, fontWeight: 500 }}>info@commodityops.com</a>
+              <a
+                href="https://www.linkedin.com/company/commodityops"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="CommodityOps on LinkedIn"
+                title="LinkedIn"
+                className="hero-social-proof hero-social-proof--icon-only"
+              >
+                <span className="hero-social-proof__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.024-3.035-1.85-3.035-1.851 0-2.134 1.446-2.134 2.94v5.664H9.355V9.5h3.414v1.491h.048c.476-.9 1.637-1.85 3.367-1.85 3.601 0 4.265 2.37 4.265 5.456v5.855zM5.337 8.009a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124zM7.115 20.452H3.558V9.5h3.557v10.952zM22.225 0H1.771C.792 0 0 .77 0 1.724v20.553C0 23.23.792 24 1.771 24h20.451C23.2 24 24 23.23 24 22.277V1.724C24 .77 23.2 0 22.225 0z" />
+                  </svg>
+                </span>
+              </a>
+            </div>
+            <div style={{ display: "flex", gap: 12, fontSize: 12, color: "var(--fg-3)", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+              <a href="mailto:info@commodityops.com?subject=Privacy%20Policy" style={{ color: "var(--fg-2)" }}>Privacy</a>
+              <span>·</span>
+              <a href="mailto:info@commodityops.com?subject=Security" style={{ color: "var(--fg-2)" }}>Security</a>
+              <span>·</span>
+              <span style={{ color: "var(--fg-3)" }}>EU/US Data Residency</span>
+              <span>·</span>
+              <span style={{ color: "var(--fg-3)" }}>HTTPS/TLS</span>
+              <span>·</span>
+              <span style={{ color: "var(--fg-3)" }}>Encryption at Rest</span>
+              <span>·</span>
+              <span style={{ color: "var(--fg-3)" }}>Audit Logs</span>
+            </div>
           </div>
-          <div className="footer-meta" style={{ display: "flex", gap: 24 }}>
-            <span>EU/US DATA RESIDENCY</span>
-            <span>·</span><span>HTTPS/TLS</span>
-            <span>·</span><span>ENCRYPTION AT REST</span>
-            <span>·</span><span>AUDIT LOGS</span>
-          </div>
-          <span>commodityops.com · 2026</span>
-        </div>
+        </footer>
       </div>
-    );
-
-    const PricingPage = ({ go }) => {
-      const plans = [
-        { name: "FREE", price: "$0", sub: "lifetime", cta: "Start free", desc: "For your first mismatch.", inc: ["2 analyses (lifetime)", "Trade confirmation", "COA validation"] },
-        { name: "PRO", price: "$99", sub: "/month", cta: "Start Pro", desc: "For solo ops.", inc: ["Everything in Free", "Unlimited Layer 1", "Email ingestion", "Activity feed"], primary: true },
-        { name: "DESK", price: "$199", sub: "/month", cta: "Join waitlist", desc: "Full lifecycle.", inc: ["Everything in Pro", "LC validation", "BL reconcile", "Invoice matching", "Cross-document checks"], soon: true },
-        { name: "FLOOR", price: "$499", sub: "/month", cta: "Join waitlist", desc: "Market-aware desk.", inc: ["Everything in Desk", "Live vessel tracking", "Market intelligence", "Counterparty screening"], soon: true },
-        { name: "ENTERPRISE", price: "$3,000+", sub: "/month", cta: "Talk to us", desc: "Bespoke integration.", inc: ["Everything in Floor", "CTRM / ERP webhooks", "SSO / SAML", "API key management", "Bring your own region"], soon: true },
-      ];
-      const matrix = [
-        {
-          sec: "CAPTURE", rows: [
-            ["Trade confirmation extract", "2", "∞", "∞", "∞", "∞"],
-            ["COA validation", "2", "∞", "∞", "∞", "∞"],
-            ["Custom contract terms", "✓", "✓", "✓", "✓", "✓"],
-            ["Email ingestion", "—", "✓", "✓", "✓", "✓"],
-          ]
-        },
-        {
-          sec: "OPERATIONS", rows: [
-            ["LC validation", "—", "—", "✓", "✓", "✓"],
-            ["BL reconciliation", "—", "—", "✓", "✓", "✓"],
-            ["Invoice matching", "—", "—", "✓", "✓", "✓"],
-            ["Lifecycle tracking", "—", "—", "✓", "✓", "✓"],
-          ]
-        },
-        {
-          sec: "INTELLIGENCE", rows: [
-            ["Live vessel tracking", "—", "—", "—", "✓", "✓"],
-            ["Market position summary", "—", "—", "—", "✓", "✓"],
-            ["Counterparty screening", "—", "—", "—", "✓", "✓"],
-            ["CTRM / ERP webhooks", "—", "—", "—", "—", "✓"],
-            ["SSO / SAML", "—", "—", "—", "—", "✓"],
-          ]
-        },
-      ];
-
-      return (
-        <div className="surface" style={{ minHeight: "100vh" }}>
-          <Ticker />
-          <MarketingNav go={go} />
-
-            <div style={{ padding: "80px 32px 48px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
-            <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
-            <h1 className="display" style={{ fontSize: 96, margin: "16px 0 0" }}>$0 to start.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>No card required.</span></h1>
-            <p style={{ maxWidth: 580, margin: "20px auto 0", color: "var(--fg-2)", fontSize: 16 }}>
-              Free + Pro live today. Desk, Floor, and Enterprise rolling out as the lifecycle layers ship.
-            </p>
-          </div>
-
-          <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1380, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
-              {plans.map(p => (
-                <div key={p.name} style={{ background: p.primary ? "var(--bg-2)" : "var(--bg)", padding: 24, position: "relative" }}>
-                  {p.primary && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--signal-amber)" }} />}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: p.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{p.name}</span>
-                    {p.soon && <span className="tag">SOON</span>}
-                    {p.primary && <span className="tag tag-amber">LIVE</span>}
-                  </div>
-                  <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginTop: 16, minHeight: 24 }}>{p.desc}</div>
-                  <div style={{ marginTop: 12, display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span className="display" style={{ fontSize: 48 }}>{p.price}</span>
-                    <span style={{ color: "var(--fg-3)", fontSize: 12, fontFamily: "var(--font-mono)" }}>{p.sub}</span>
-                  </div>
-                  <ul style={{ listStyle: "none", padding: 0, marginTop: 20, display: "grid", gap: 6, minHeight: 160 }}>
-                    {p.inc.map(i => (
-                      <li key={i} style={{ display: "flex", gap: 8, fontSize: 12.5, color: "var(--fg-2)" }}>
-                        <span style={{ color: "var(--signal-pass)" }}>+</span>{i}
-                      </li>
-                    ))}
-                  </ul>
-                  <button className={"btn " + (p.primary ? "btn-primary" : "")} style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => go("/deals/new")}>{p.cta}</button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1380, margin: "0 auto" }}>
-              <span className="eyebrow">FEATURE MATRIX · WHAT'S IN EACH PLAN</span>
-              <h2 className="display" style={{ fontSize: 40, margin: "12px 0 32px" }}>Compare every line.</h2>
-              <div className="card" style={{ overflow: "hidden" }}>
-                <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "12px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
-                  <span className="label">FEATURE</span>
-                  {plans.map(p => <span key={p.name} className="label" style={{ textAlign: "center" }}>{p.name}</span>)}
-                </div>
-                {matrix.map(s => (
-                  <Fragment key={s.sec}>
-                    <div style={{ padding: "10px 18px", background: "var(--bg-2)", borderBottom: "1px solid var(--line-soft)" }}>
-                      <span className="mono" style={{ fontSize: 10.5, letterSpacing: "0.12em", color: "var(--signal-amber)" }}>{s.sec}</span>
-                    </div>
-                    {s.rows.map((r, i) => (
-                      <div key={i} style={{ borderBottom: "1px solid var(--line-soft)" }}>
-                        <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.4fr repeat(5, 1fr)", padding: "11px 18px", fontSize: 13 }}>
-                          <span style={{ color: "var(--fg)" }}>{r[0]}</span>
-                          {r.slice(1).map((v, j) => (
-                            <span key={j} className="mono" style={{ textAlign: "center", color: v === "—" ? "var(--fg-4)" : v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
-                          ))}
-                        </div>
-                        <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 10 }}>
-                          <span style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>{r[0]}</span>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
-                            {plans.map((p, j) => {
-                              const v = r[j+1];
-                              if (v === "—") return null;
-                              return (
-                                <div key={p.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 12 }}>
-                                  <span style={{ color: "var(--fg-3)" }}>{p.name}</span>
-                                  <span className="mono" style={{ color: v === "✓" ? "var(--signal-pass)" : "var(--fg)" }}>{v}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", background: "var(--bg-2)" }}>
-            <div style={{ maxWidth: 980, margin: "0 auto" }}>
-              <h2 className="display" style={{ fontSize: 48, margin: "0 0 32px" }}>Frequent questions.</h2>
-              {[
-                { q: "What counts as one analysis?", a: "Any document AI extracts and the rule engine validates — a single trade confirmation, COA, LC, BL, or invoice. Re-running the same document does not consume an additional analysis." },
-                { q: "Can I bring my own contract terms?", a: "Yes. Custom terms, standard terms (GAFTA / FOSFA / ICE / CME), and hybrid contracts that reference standard terms with amendments are all handled. Deal-specific exceptions stack on top of the reference library." },
-                { q: "Is my data used to train models?", a: "No. Customer data is never used for model training. Documents are processed in-flight and stored encrypted at rest in your chosen region." },
-                { q: "When are Desk, Floor, and Enterprise live?", a: "Desk is in private testing with three operations teams. Join the waitlist and we will reach out as your region opens up." },
-              ].map((f, i) => (
-                <div key={i} style={{ padding: "20px 0", borderTop: "1px solid var(--line)", display: "grid", gridTemplateColumns: "1fr 2fr", gap: 32 }}>
-                  <h3 style={{ margin: 0, fontSize: 18, color: "var(--fg)", letterSpacing: "-0.01em", fontWeight: 500 }}>{f.q}</h3>
-                  <p style={{ margin: 0, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>{f.a}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", textAlign: "center" }}>
-            <h2 className="display" style={{ fontSize: 64, margin: 0 }}>First analysis on us.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>The next mismatch won't be.</span></h2>
-            <button className="btn btn-lg btn-primary" style={{ marginTop: 28 }} onClick={() => go("/deals/new")}>TRY NOW →</button>
-          </div>
-
-          <Ticker compact />
-        </div>
       );
     };
+
+    const PricingPage = ({ go }) => <HomePage go={go} />;
 
     const DemoPage = ({ go }) => (
       <div className="surface" style={{ minHeight: "100vh" }}>
@@ -1780,249 +1957,7 @@
       </div>
     );
 
-    const ProductsPage = ({ go }) => {
-      const [activeFeature, setActiveFeature] = useState("tc");
-      return (
-        <div className="surface" style={{ minHeight: "100vh" }}>
-          <Ticker />
-          <MarketingNav go={go} />
-          <div style={{ padding: "60px 32px 48px", borderBottom: "1px solid var(--line)" }} className="bg-grid">
-            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
-              <h1 className="display" style={{ fontSize: 84, margin: "12px 0 0", maxWidth: 1100 }}>
-                From trade confirmation to delivery. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Automated.</span>
-              </h1>
-              <div style={{ marginTop: 20, fontSize: 17, color: "var(--fg-2)", maxWidth: 760, lineHeight: 1.5 }}>
-                Every document. Every validation. Every exception. One agentic stack that reads your inbox, validates against your contracts, and surfaces only the decisions a human needs to make.
-              </div>
-            </div>
-          </div>
-          <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
-                {[
-                  { tag: "LIVE", l: "01", t: "Trade Capture", sub: "Trade conf · COA · Contract", b: "Email arrives or PDF is dropped. AI reads it. Every field surfaces in an editable card. Low-confidence values flagged. You hit Approve — the deal record is created and the lifecycle starts." },
-                  { tag: "LIVE", l: "02", t: "Shipment Operations", sub: "LC · BL · Invoice", b: "Same extraction pattern, different prompts. The deterministic rule engine cross-checks LC port vs contract port, BL date vs LC deadline, invoice quantity vs delivered quantity — simultaneously, before a human sees it." },
-                  { tag: "LIVE", l: "03", t: "Connected Intelligence", sub: "Vessel · Market · Counterparty", b: "Live vessel position via MarineTraffic. Current price vs locked contract. OpenSanctions screening on every counterparty. AI generates a one-sentence position summary in plain English." },
-                ].map(c => (
-                  <div key={c.l} style={{ background: "var(--bg)", padding: 24 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)" }}>LAYER {c.l}</span>
-                    </div>
-                    <h3 className="display" style={{ fontSize: 32, margin: "14px 0 4px" }}>{c.t}.</h3>
-                    <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginBottom: 12 }}>{c.sub}</div>
-                    <p style={{ color: "var(--fg-3)", fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{c.b}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Live mini-demo (Layer 1) — clickable feature switcher */}
-          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">LAYER 1 · TRADE CAPTURE</span>
-              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px", maxWidth: 900 }}>
-                Pick a document. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Watch it parse.</span>
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 24 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
-                  {[
-                    { id: "tc", l: "TRADE CONFIRMATION", b: "Counterparty terms" },
-                    { id: "coa", l: "CERTIFICATE OF ANALYSIS", b: "Quality vs spec" },
-                    { id: "ctr", l: "CONTRACT", b: "GAFTA · FOSFA · custom" },
-                  ].map(it => (
-                    <div key={it.id} onClick={() => setActiveFeature(it.id)}
-                      style={{ background: activeFeature === it.id ? "var(--bg-3)" : "var(--bg)", padding: "14px 16px", cursor: "pointer", borderLeft: activeFeature === it.id ? "2px solid var(--signal-amber)" : "2px solid transparent" }}>
-                      <div className="mono" style={{ fontSize: 11, color: activeFeature === it.id ? "var(--signal-amber)" : "var(--fg-3)" }}>{it.l}</div>
-                      <div style={{ fontSize: 13, color: "var(--fg-2)", marginTop: 3 }}>{it.b}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="card" style={{ minHeight: 340 }}>
-                  {activeFeature === "tc" && (
-                    <>
-                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
-                        <span className="eyebrow">TRADE CONFIRMATION · trade_conf.pdf</span>
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                        {TC_FIELDS.slice(0, 6).map((f, i) => (
-                          <div key={f.k} style={{ padding: "12px 18px", borderRight: i % 2 === 0 ? "1px solid var(--line-soft)" : "none", borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                              <span className="label">{f.k}</span>
-                              <span className="mono" style={{ fontSize: 10, color: f.low ? "var(--signal-warn)" : "var(--fg-4)" }}>{f.low && "⚠ "}{Math.round(f.conf * 100)}%</span>
-                            </div>
-                            <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--fg)" }}>{f.v}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {activeFeature === "coa" && (
-                    <>
-                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
-                        <span className="eyebrow">COA · DETERMINISTIC RULE ENGINE</span>
-                        <div style={{ display: "flex", gap: 6 }}><span className="tag tag-fail">2 FAIL</span><span className="tag tag-pass">6 PASS</span></div>
-                      </div>
-                      <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
-                        {["PARAMETER", "EXTRACTED", "SPEC", "VERDICT"].map(h => <span key={h} className="label">{h}</span>)}
-                      </div>
-                      {COA_PARAMS.slice(0, 5).map((r, i) => (
-                        <div key={i} style={{ borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.pass ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent" }}>
-                          <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.9fr 0.7fr", padding: "10px 18px", alignItems: "center", fontSize: 13 }}>
-                            <span>{r.p}</span>
-                            <span className="mono">{r.e}</span>
-                            <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
-                            <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
-                          </div>
-                          <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 6 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <span style={{ fontSize: 14, fontWeight: 500 }}>{r.p}</span>
-                              <span className={r.pass ? "tag tag-pass" : "tag tag-fail"}>{r.pass ? "PASS" : "FAIL"}</span>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                              <span style={{ color: "var(--fg-3)" }}>Extracted: <span className="mono" style={{ color: !r.pass ? "var(--signal-fail)" : "var(--fg)" }}>{r.e}</span></span>
-                              <span style={{ color: "var(--fg-3)" }}>Spec: <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span></span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  {activeFeature === "ctr" && (
-                    <>
-                      <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
-                        <span className="eyebrow">CONTRACT · STANDARD + EXCEPTIONS</span>
-                        <span className="tag tag-amber">GAFTA 122 · 4 OVERRIDES</span>
-                      </div>
-                      <div style={{ padding: "18px 18px 8px" }}>
-                        <div className="label">REFERENCE LIBRARY</div>
-                        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                          {["GAFTA", "FOSFA", "ICE", "CME"].map(s => <span key={s} className="tag">{s}</span>)}
-                        </div>
-                      </div>
-                      <div style={{ padding: "8px 18px 18px" }}>
-                        <div className="label" style={{ marginTop: 14 }}>DEAL-SPECIFIC OVERRIDES</div>
-                        <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 6 }}>
-                          {["Moisture max raised to 14.5%", "Discharge port: Qingdao only", "Payment: LC at sight, confirmed", "Demurrage: USD 18,000/day"].map(s =>
-                            <li key={s} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--fg-2)" }}><span className="mono" style={{ color: "var(--signal-amber)" }}>◆</span>{s}</li>
-                          )}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Layer 2 cross-doc */}
-          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">LAYER 2 · CROSS-DOCUMENT VALIDATION</span>
-              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px", maxWidth: 900 }}>
-                One mismatch. <span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Caught before the bank sees it.</span>
-              </h2>
-              <div className="card">
-                <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
-                  <span className="eyebrow">CROSS-DOC CHECK · LC ↔ BL ↔ CONTRACT</span>
-                  <span className="tag tag-fail">1 EXCEPTION</span>
-                </div>
-                <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "8px 18px", background: "var(--bg)", borderBottom: "1px solid var(--line)" }}>
-                  {["FIELD", "CONTRACT", "LETTER OF CREDIT", "BILL OF LADING"].map(h => <span key={h} className="label">{h}</span>)}
-                </div>
-                {[
-                  { f: "Discharge port", a: "Qingdao", b: "Qingdao", c: "Qingdao", ok: true },
-                  { f: "Quantity (MT)", a: "60,000 ±5%", b: "60,000 ±5%", c: "59,840", ok: true },
-                  { f: "Shipment by", a: "15 May 2026", b: "15 May 2026", c: "12 May 2026", ok: true },
-                  { f: "LC expiry", a: "30 May 2026", b: "28 May 2026", c: "—", ok: false, note: "LC expires 2 days before contract window — discrepancy" },
-                  { f: "Description", a: "Yellow Soybeans, FOB Santos", b: "Yellow Soybeans, FOB Santos", c: "Yellow Soybeans, FOB Santos", ok: true },
-                ].map((r, i) => (
-                  <div key={i} style={{ borderBottom: i < 4 ? "1px solid var(--line-soft)" : "none", background: !r.ok ? "color-mix(in oklch, var(--signal-fail) 6%, transparent)" : "transparent" }}>
-                    <div className="desktop-only" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", padding: "10px 18px", alignItems: "center", fontSize: 13 }}>
-                      <span style={{ color: "var(--fg-2)", display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ color: r.ok ? "var(--signal-pass)" : "var(--signal-fail)" }}>{r.ok ? "✓" : "✗"}</span>{r.f}
-                      </span>
-                      <span className="mono">{r.a}</span>
-                      <span className="mono">{r.b}</span>
-                      <span className="mono">{r.c}</span>
-                      {!r.ok && <div style={{ gridColumn: "1 / -1", padding: "6px 0 0", color: "var(--signal-fail)", fontSize: 12 }}>↳ {r.note}</div>}
-                    </div>
-                    
-                    <div className="mobile-only" style={{ display: "none", flexDirection: "column", padding: "12px 16px", gap: 8 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>{r.f}</span>
-                        {r.ok ? <span className="tag tag-pass">MATCH</span> : <span className="tag tag-fail">EXCEPTION</span>}
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span style={{ color: "var(--fg-3)" }}>Contract</span>
-                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.a}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span style={{ color: "var(--fg-3)" }}>LC</span>
-                          <span className="mono" style={{ color: !r.ok ? "var(--signal-fail)" : "var(--fg-2)" }}>{r.b}</span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span style={{ color: "var(--fg-3)" }}>BL</span>
-                          <span className="mono" style={{ color: "var(--fg-2)" }}>{r.c}</span>
-                        </div>
-                      </div>
-                      {!r.ok && <div style={{ color: "var(--signal-fail)", fontSize: 12, marginTop: 2 }}>↳ {r.note}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Layer 3 strip */}
-          <div style={{ padding: "60px 32px", borderBottom: "1px solid var(--line)" }}>
-            <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-              <span className="eyebrow">LAYER 3 · MARKET-AWARE</span>
-              <h2 className="display" style={{ fontSize: 48, margin: "10px 0 24px" }}>
-                Position. Vessel. Counterparty.
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
-                <PositionCard />
-                <div className="card">
-                  <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between" }}>
-                    <span className="eyebrow">COUNTERPARTY · COFCO RESOURCES S.A.</span>
-                    <span className="tag tag-pass">SANCTIONS CLEAR</span>
-                  </div>
-                  <div style={{ padding: "14px 18px" }}>
-                    <div className="label">RISK SIGNALS · CLAUDE WEB</div>
-                    <ul style={{ margin: "10px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-                      {[
-                        { t: "OpenSanctions", v: "No matches across OFAC, EU, UK, UN", k: "pass" },
-                        { t: "News (30 days)", v: "Q1 earnings beat · soybean exports up 12% YoY", k: "info" },
-                        { t: "Litigation", v: "No active disputes flagged", k: "pass" },
-                        { t: "Credit", v: "Standard terms · LC at sight, confirmed Tier-1 bank", k: "info" },
-                      ].map((s, i) => (
-                        <li key={i} style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 14, padding: "6px 0", borderTop: i ? "1px solid var(--line-soft)" : "none" }}>
-                          <span className="mono" style={{ fontSize: 11, color: s.k === "pass" ? "var(--signal-pass)" : "var(--fg-3)" }}>{s.t.toUpperCase()}</span>
-                          <span style={{ fontSize: 13, color: "var(--fg-2)" }}>{s.v}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style={{ padding: "80px 32px", textAlign: "center" }}>
-            <span className="eyebrow">START NOW</span>
-            <h2 className="display" style={{ fontSize: 64, margin: "12px 0 8px" }}>2 free analyses.</h2>
-            <div className="editorial" style={{ fontSize: 24, color: "var(--fg-2)" }}>No card. No setup.</div>
-            <div style={{ marginTop: 28, display: "flex", justifyContent: "center", gap: 12 }}>
-              <button className="btn btn-lg btn-primary" onClick={() => go("/deals/new")}>TRY NOW →</button>
-              <button className="btn btn-lg" onClick={() => go("/pricing")}>SEE PRICING</button>
-            </div>
-          </div>
-          <Ticker compact />
-        </div>
-      );
-    };
+    const ProductsPage = ({ go }) => <HomePage go={go} />;
 
     Object.assign(window, { HomePage, PricingPage, DemoPage, ProductsPage });
   </script>
@@ -2665,8 +2600,17 @@
         if (state.notif) { const t = setTimeout(() => dispatch({ type: "clearNotif" }), 2800); return () => clearTimeout(t); }
       }, [state.notif]);
 
-      // Scroll to top on route change
+      // Scroll to section anchors on route change
       useEffect(() => {
+        const route = state.route || "/home";
+        const [path, hash] = route.split("#");
+        const target = path === "/products" ? "product" : path === "/pricing" ? "pricing" : hash;
+        if (target) {
+          requestAnimationFrame(() => {
+            document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+          return;
+        }
         window.scrollTo(0, 0);
       }, [state.route]);
 
@@ -2682,23 +2626,23 @@
       }, []);
 
       const go = useCallback((route) => {
-        if (route.startsWith("/deals/") && route !== "/deals/new") {
-          const id = route.split("/")[2];
+        const normalized = route === "/products" ? "/home#product" : route === "/pricing" ? "/home#pricing" : route;
+        if (normalized.startsWith("/deals/") && normalized !== "/deals/new") {
+          const id = normalized.split("/")[2];
           dispatch({ type: "goDeal", id });
-        } else dispatch({ type: "go", route });
+        } else dispatch({ type: "go", route: normalized });
       }, []);
 
       let screen;
       const r = state.route || "/home";
-      if (r === "/home") screen = <HomePage go={go} />;
-      else if (r === "/products") screen = <ProductsPage go={go} />;
-      else if (r === "/pricing") screen = <PricingPage go={go} />;
-      else if (r === "/demo") screen = <DemoPage go={go} />;
-      else if (r === "/deals") screen = <DealsListPage go={go} />;
-      else if (r === "/deals/new") screen = <NewDealPage go={go} />;
-      else if (r === "/inbox") screen = <InboxScreen go={go} />;
-      else if (r === "/settings") screen = <SettingsScreen go={go} />;
-      else if (r.startsWith("/deals/")) screen = <DealDetailPage go={go} />;
+      const [routePath] = r.split("#");
+      if (routePath === "/home" || routePath === "/products" || routePath === "/pricing") screen = <HomePage go={go} />;
+      else if (routePath === "/demo") screen = <DemoPage go={go} />;
+      else if (routePath === "/deals") screen = <DealsListPage go={go} />;
+      else if (routePath === "/deals/new") screen = <NewDealPage go={go} />;
+      else if (routePath === "/inbox") screen = <InboxScreen go={go} />;
+      else if (routePath === "/settings") screen = <SettingsScreen go={go} />;
+      else if (routePath.startsWith("/deals/")) screen = <DealDetailPage go={go} />;
       else screen = <HomePage go={go} />;
 
       return (
@@ -2753,8 +2697,8 @@
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                   {[
                     { l: "Home", r: "/home" },
-                    { l: "Products", r: "/products" },
-                    { l: "Pricing", r: "/pricing" },
+                    { l: "Products", r: "/home#product" },
+                    { l: "Pricing", r: "/home#pricing" },
                     { l: "Demo", r: "/demo" },
                     { l: "Deals", r: "/deals" },
                     { l: "New Deal", r: "/deals/new" },
