@@ -1226,6 +1226,219 @@
     Object.assign(window, { Logo, Ticker, MarketingNav, AppNav, LifecycleBar });
   </script>
 
+  <!-- ============ LIFECYCLE STRIP ============ -->
+  <script type="text/babel">
+    const BEATS = [
+      { stage: 0, kind: "pass", headline: "Trade Confirmation",  event: "TRADE CONFIRMATION",   sub: "Email received · 8 fields extracted in 1.4s" },
+      { stage: 0, kind: "pass", headline: "Audit Trail Started", event: "TRADE RECORD CREATED",  sub: "Draft status · every action logged from here" },
+      { stage: 1, kind: "pass", headline: "Bill of Lading",      event: "DOCUMENT INGESTED",     sub: "Vessel linked · Santos → Qingdao" },
+      { stage: 1, kind: "warn", headline: "Exception Flagged",   event: "⚠  RULE ENGINE",        sub: "COA grade mismatch · surfaced automatically" },
+      { stage: 2, kind: "pass", headline: "Exception Resolved",  event: "OPS APPROVED",          sub: "Override recorded · note added to audit trail" },
+      { stage: 2, kind: "pass", headline: "Vessel In Transit",   event: "TRACKING ACTIVE",       sub: "Position live · ETA recalculated continuously" },
+      { stage: 3, kind: "pass", headline: "LC Cleared",          event: "LETTER OF CREDIT",      sub: "All terms matched · no exceptions" },
+      { stage: 3, kind: "pass", headline: "Cargo Delivered",     event: "DESTINATION CONFIRMED", sub: "Discharge port matched · BL reconciled" },
+      { stage: 4, kind: "pass", headline: "Invoice Reconciled",  event: "AMOUNTS MATCHED",       sub: "Quantity chain validated · LC, BL, contract aligned" },
+      { stage: 4, kind: "done", headline: "Trade Settled",       event: "LIFECYCLE COMPLETE",    sub: "Full audit trail saved · zero manual steps" },
+    ];
+
+    const STAGE_LABELS = ["CONFIRMED", "IN SHIPMENT", "IN TRANSIT", "DELIVERED", "SETTLED"];
+    const HOLD_MS = 2800;
+    const OUT_MS  = 380;
+
+    const LifecycleStrip = () => {
+      const [beat, setBeat]       = useState(0);
+      const [phase, setPhase]     = useState("in"); // "in" | "out"
+      const timers = useRef([]);
+
+      const clear = () => {
+        timers.current.forEach(t => clearTimeout(t));
+        timers.current = [];
+      };
+
+      const tick = (idx) => {
+        setPhase("in");
+        timers.current.push(setTimeout(() => {
+          setPhase("out");
+          timers.current.push(setTimeout(() => {
+            const next = (idx + 1) % BEATS.length;
+            setBeat(next);
+            tick(next);
+          }, OUT_MS));
+        }, HOLD_MS));
+      };
+
+      useEffect(() => { tick(0); return clear; }, []);
+
+      const b       = BEATS[beat];
+      const isWarn  = b.kind === "warn";
+      const isDone  = b.kind === "done";
+      const accent  = isWarn ? "var(--signal-amber)" : "var(--signal-pass)";
+      const showing = phase === "in";
+
+      // progress: fraction of total beats completed for the sweeping line
+      const lineW = ((b.stage) / (STAGE_LABELS.length - 1)) * 100;
+
+      return (
+        <div style={{
+          borderBottom: "1px solid var(--line)",
+          background: isWarn
+            ? "color-mix(in oklch, var(--signal-amber) 4%, var(--bg-2))"
+            : isDone
+              ? "color-mix(in oklch, var(--signal-pass) 4%, var(--bg-2))"
+              : "var(--bg-2)",
+          transition: "background 0.8s ease",
+          overflow: "hidden",
+        }}>
+
+          {/* ── sweeping progress line ── */}
+          <div style={{ position: "relative", height: 2, background: "var(--line)" }}>
+            <div style={{
+              position: "absolute", left: 0, top: 0, bottom: 0,
+              width: isDone ? "100%" : lineW + "%",
+              background: accent,
+              transition: "width 0.9s cubic-bezier(0.4,0,0.2,1), background 0.6s ease",
+            }} />
+            {/* stage tick marks */}
+            {STAGE_LABELS.map((_, i) => (
+              <div key={i} style={{
+                position: "absolute", top: -3, width: 8, height: 8, borderRadius: "50%",
+                left: `calc(${(i / 4) * 100}% - 4px)`,
+                background: i <= b.stage ? accent : "var(--bg-2)",
+                border: `1.5px solid ${i <= b.stage ? accent : "var(--line)"}`,
+                transition: "background 0.4s ease, border-color 0.4s ease",
+              }} />
+            ))}
+          </div>
+
+          {/* ── stage labels row ── */}
+          <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
+            <div style={{ display: "flex", paddingTop: 14, paddingBottom: 0 }}>
+              {STAGE_LABELS.map((s, i) => {
+                const passed = i < b.stage;
+                const active = i === b.stage;
+                return (
+                  <div key={i} style={{
+                    flex: 1,
+                    fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.12em",
+                    color: passed ? "var(--signal-pass)" : active ? accent : "var(--fg-4)",
+                    transition: "color 0.4s ease",
+                    textAlign: i === 0 ? "left" : i === 4 ? "right" : "center",
+                  }}>
+                    {passed ? "✓ " : ""}{s}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── cinematic center ── */}
+            <div style={{
+              padding: "56px 0 60px",
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: 64,
+              alignItems: "center",
+            }}>
+              {/* Left — the big moment */}
+              <div>
+                {/* event chip */}
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.14em",
+                  color: accent,
+                  marginBottom: 20,
+                  opacity: showing ? 1 : 0,
+                  transform: showing ? "translateY(0)" : "translateY(-6px)",
+                  transition: `opacity ${OUT_MS}ms ease, transform ${OUT_MS}ms ease`,
+                }}>
+                  <span style={{
+                    display: "inline-block", width: 5, height: 5, borderRadius: "50%",
+                    background: accent,
+                    boxShadow: isWarn ? "0 0 6px 2px color-mix(in oklch, var(--signal-amber) 60%, transparent)" : isDone ? "0 0 6px 2px color-mix(in oklch, var(--signal-pass) 60%, transparent)" : "none",
+                  }} />
+                  {b.event}
+                </div>
+
+                {/* headline — display scale */}
+                <div style={{
+                  fontFamily: "var(--font-display, Georgia, serif)",
+                  fontSize: "clamp(36px, 5.5vw, 80px)",
+                  fontWeight: 400,
+                  fontStyle: "italic",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                  color: isWarn ? "var(--signal-amber)" : isDone ? "var(--signal-pass)" : "var(--fg)",
+                  transition: "color 0.5s ease",
+                  opacity: showing ? 1 : 0,
+                  transform: showing ? "translateY(0)" : "translateY(16px)",
+                  transition: `color 0.5s ease, opacity ${OUT_MS}ms ease, transform ${OUT_MS}ms ease`,
+                }}>
+                  {b.headline}
+                </div>
+
+                {/* sub */}
+                <div style={{
+                  marginTop: 16,
+                  fontFamily: "var(--font-mono)", fontSize: 13,
+                  color: "var(--fg-3)", letterSpacing: "0.01em",
+                  opacity: showing ? 1 : 0,
+                  transform: showing ? "translateY(0)" : "translateY(10px)",
+                  transition: `opacity ${OUT_MS}ms ease 60ms, transform ${OUT_MS}ms ease 60ms`,
+                }}>
+                  {b.sub}
+                </div>
+              </div>
+
+              {/* Right — beat progress pips */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 20 }}>
+                <div style={{
+                  fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.14em",
+                  color: "var(--fg-4)", textAlign: "right",
+                }}>
+                  {beat + 1} / {BEATS.length}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {BEATS.map((_, i) => (
+                    <div key={i} style={{
+                      height: i === beat ? 20 : 4,
+                      width: 3,
+                      borderRadius: 2,
+                      background: i === beat ? accent : i < beat ? "color-mix(in oklch, var(--signal-pass) 50%, var(--line))" : "var(--line)",
+                      transition: "height 0.35s ease, background 0.35s ease",
+                    }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile */}
+            <div className="mobile-only" style={{ display: "none", paddingBottom: 32, flexDirection: "column", gap: 0 }}>
+              {STAGE_LABELS.map((s, i) => {
+                const passed = i < b.stage;
+                const active = i === b.stage;
+                return (
+                  <div key={i} style={{
+                    padding: "16px 0", borderTop: "1px solid var(--line)",
+                    display: "flex", alignItems: "center", gap: 14,
+                  }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: passed ? "var(--signal-pass)" : active ? accent : "var(--line)", transition: "color 0.4s" }}>
+                      {passed ? "✓" : active ? "●" : "○"}
+                    </span>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: active ? accent : passed ? "var(--fg-2)" : "var(--fg-4)", fontWeight: active ? 600 : 400 }}>{s}</div>
+                      {active && <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--fg-3)", marginTop: 3 }}>{b.sub}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    Object.assign(window, { LifecycleStrip });
+  </script>
+
   <!-- ============ INTERACTIVE COMPONENTS ============ -->
   <script type="text/babel">
     // Editable extracted card · interactive (edits TC fields, approve/reject)
@@ -2297,44 +2510,7 @@
         </div>
 
         {/* LIFECYCLE STRIP */}
-        <div style={{ padding: "48px 32px", borderBottom: "1px solid var(--line)" }}>
-          <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
-              <span className="eyebrow">THE TRADE LIFECYCLE · AUTOMATED END-TO-END</span>
-            </div>
-            <div className="desktop-only" style={{ display: "block" }}>
-              <LifecycleBar stage={2} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", marginTop: 16, gap: 12 }}>
-                {[
-                  "Trade confirmation captured from inbound email",
-                  "Documents validated, dispatch instructions issued",
-                  "Vessel tracked, ETA recalculated continuously",
-                  "BL reconciled against LC and contract on arrival",
-                  "Invoice matched, exceptions flagged for ops",
-                ].map((t, i) => (
-                  <div key={i} style={{ fontSize: 12.5, color: "var(--fg-3)", lineHeight: 1.5, padding: "0 8px" }}>{t}</div>
-                ))}
-              </div>
-            </div>
-            <div className="mobile-only" style={{ display: "none", flexDirection: "column", gap: 12 }}>
-              {[
-                "Trade confirmation captured from inbound email",
-                "Documents validated, dispatch instructions issued",
-                "Vessel tracked, ETA recalculated continuously",
-                "BL reconciled against LC and contract on arrival",
-                "Invoice matched, exceptions flagged for ops",
-              ].map((t, i) => (
-                <div key={i} className="card" style={{ padding: "16px 20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", color: i < 2 ? "var(--signal-pass)" : i === 2 ? "var(--signal-amber)" : "var(--fg-4)", marginBottom: 8 }}>
-                    <span style={{ fontSize: 11 }}>{i < 2 ? "✓" : "0" + (i + 1)}</span>
-                    <span style={{ color: i < 2 || i === 2 ? "var(--fg-2)" : "var(--fg-4)" }}>STAGE {i + 1} · {STAGES[i]}</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--fg-3)", lineHeight: 1.5 }}>{t}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <LifecycleStrip />
 
         {/* PRODUCT */}
         <div id="product" style={{ padding: "80px 32px", borderBottom: "1px solid var(--line)", scrollMarginTop: 72 }} className="bg-grid">
