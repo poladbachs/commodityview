@@ -1542,7 +1542,7 @@
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
               {[
                 { name: "FREE", price: "$0", sub: "for the first analysis", inc: ["2 analyses lifetime", "Trade confirmation extract", "COA validation", "Inline edit, approve/reject"] },
-                { name: "PRO", price: "$199", sub: "/month, billed monthly", inc: ["Layer 1 unlimited", "Email ingestion", "Activity feed", "GAFTA/FOSFA/ICE/CME library"], primary: true },
+                { name: "PRO", price: "$99", sub: "/month, billed monthly", inc: ["Layer 1 unlimited", "Email ingestion", "Activity feed", "GAFTA/FOSFA/ICE/CME library"], primary: true },
               ].map(p => (
                 <div key={p.name} style={{ padding: 32, background: p.primary ? "var(--bg-2)" : "var(--bg)", position: "relative" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -1601,10 +1601,10 @@
     const PricingPage = ({ go }) => {
       const plans = [
         { name: "FREE", price: "$0", sub: "lifetime", cta: "Start free", desc: "For your first mismatch.", inc: ["2 analyses (lifetime)", "Trade confirmation", "COA validation"] },
-        { name: "PRO", price: "$199", sub: "/month", cta: "Start Pro", desc: "For solo ops.", inc: ["Everything in Free", "Unlimited Layer 1", "Email ingestion", "Activity feed"], primary: true },
-        { name: "DESK", price: "$499", sub: "/month", cta: "Join waitlist", desc: "Full lifecycle.", inc: ["Everything in Pro", "LC validation", "BL reconcile", "Invoice matching", "Cross-document checks"], soon: true },
-        { name: "FLOOR", price: "$999", sub: "/month", cta: "Join waitlist", desc: "Market-aware desk.", inc: ["Everything in Desk", "Live vessel tracking", "Market intelligence", "Counterparty screening"], soon: true },
-        { name: "ENTERPRISE", price: "$2,500+", sub: "/month", cta: "Talk to us", desc: "Bespoke integration.", inc: ["Everything in Floor", "CTRM / ERP webhooks", "SSO / SAML", "API key management", "Bring your own region"], soon: true },
+        { name: "PRO", price: "$99", sub: "/month", cta: "Start Pro", desc: "For solo ops.", inc: ["Everything in Free", "Unlimited Layer 1", "Email ingestion", "Activity feed"], primary: true },
+        { name: "DESK", price: "$199", sub: "/month", cta: "Join waitlist", desc: "Full lifecycle.", inc: ["Everything in Pro", "LC validation", "BL reconcile", "Invoice matching", "Cross-document checks"], soon: true },
+        { name: "FLOOR", price: "$499", sub: "/month", cta: "Join waitlist", desc: "Market-aware desk.", inc: ["Everything in Desk", "Live vessel tracking", "Market intelligence", "Counterparty screening"], soon: true },
+        { name: "ENTERPRISE", price: "$3,000+", sub: "/month", cta: "Talk to us", desc: "Bespoke integration.", inc: ["Everything in Floor", "CTRM / ERP webhooks", "SSO / SAML", "API key management", "Bring your own region"], soon: true },
       ];
       const matrix = [
         {
