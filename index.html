@@ -649,18 +649,35 @@
 
     .hero-glass-panel .hero-social-proof svg { fill: oklch(82% 0.10 235); }
 
-    .hero-glass-panel .btn-primary {
-      background: oklch(100% 0 0 / 0.92);
-      color: oklch(14% 0.01 240);
-      border-color: oklch(100% 0 0 / 0.92);
+    /* Unified amber liquid glass CTA — same material as site glass panels */
+    .hero-glass-panel .btn-primary,
+    .cta-scene-content .btn-primary,
+    .waitlist-glass .btn-primary {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, oklch(72% 0.155 75 / 0.38) 0%, oklch(68% 0.155 75 / 0.24) 100%);
+      color: oklch(97% 0 0);
+      border: 1px solid oklch(78% 0.155 75 / 0.50);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.50),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.06),
+        0 4px 16px oklch(72% 0.155 75 / 0.22);
       transition: background 160ms ease-out, transform 160ms ease-out;
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .hero-glass-panel .btn-primary:hover { background: oklch(96% 0 0 / 0.96); }
+      .hero-glass-panel .btn-primary:hover,
+      .cta-scene-content .btn-primary:hover,
+      .waitlist-glass .btn-primary:hover {
+        background: linear-gradient(145deg, oklch(72% 0.155 75 / 0.50) 0%, oklch(68% 0.155 75 / 0.36) 100%);
+      }
     }
 
-    .hero-glass-panel .btn-primary:active { transform: scale(0.97); }
+    .hero-glass-panel .btn-primary:active,
+    .cta-scene-content .btn-primary:active,
+    .waitlist-glass .btn-primary:active { transform: scale(0.97); }
 
     @media (max-width: 860px) {
       /* Hero: image becomes a full-screen cover, panel overlays it */
@@ -736,18 +753,6 @@
       text-transform: uppercase;
     }
 
-    .cta-scene-content .btn-primary {
-      background: #fff;
-      color: oklch(13% 0.004 240);
-      border-color: #fff;
-      transition: background 160ms ease-out, transform 160ms ease-out;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .cta-scene-content .btn-primary:hover { background: oklch(90% 0 0); }
-    }
-
-    .cta-scene-content .btn-primary:active { transform: scale(0.97); }
 
     @keyframes marketingNavEnter {
       from {
@@ -1427,7 +1432,7 @@
       const textColor = onLight ? 'oklch(14% 0.005 240)' : 'oklch(92% 0 0)';
       const navBg = onLight
         ? 'linear-gradient(145deg, oklch(100% 0 0 / 0.82) 0%, oklch(100% 0 0 / 0.68) 100%)'
-        : 'linear-gradient(145deg, oklch(10% 0.012 230 / 0.48) 0%, oklch(10% 0.012 230 / 0.32) 100%)';
+        : 'linear-gradient(145deg, oklch(10% 0.012 230 / 0.28) 0%, oklch(10% 0.012 230 / 0.18) 100%)';
       const borderColor = onLight ? 'oklch(0% 0 0 / 0.10)' : 'oklch(100% 0 0 / 0.12)';
       return (
         <div className="marketing-nav" data-light={onLight ? "true" : undefined} style={{
@@ -1444,7 +1449,19 @@
             <a onClick={() => go("/home#pricing")} style={{ cursor: "pointer" }}>Pricing</a>
           </div>
           <div className="marketing-actions" style={{ display: "flex", alignItems: "center", gap: 8, justifySelf: "end" }}>
-            <button className="btn btn-sm btn-primary" onClick={() => go("/waitlist")}>Join Waitlist</button>
+            <button className="btn btn-sm" onClick={() => go("/waitlist")} style={{
+              background: onLight
+                ? 'oklch(14% 0.005 240)'
+                : 'linear-gradient(145deg, oklch(100% 0 0 / 0.22) 0%, oklch(100% 0 0 / 0.12) 100%)',
+              color: onLight ? 'oklch(100% 0 0)' : 'oklch(96% 0 0)',
+              border: onLight
+                ? '1px solid oklch(14% 0.005 240)'
+                : '1px solid oklch(100% 0 0 / 0.28)',
+              backdropFilter: onLight ? undefined : 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: onLight ? undefined : 'blur(20px) saturate(160%)',
+              boxShadow: onLight ? undefined : 'inset 0 1px 0 oklch(100% 0 0 / 0.50), inset 0 -1px 0 oklch(0% 0 0 / 0.06)',
+              transition: 'background 500ms cubic-bezier(0.23,1,0.32,1), color 500ms cubic-bezier(0.23,1,0.32,1), border-color 500ms cubic-bezier(0.23,1,0.32,1)',
+            }}>Join Waitlist</button>
           </div>
         </div>
       );
@@ -2948,7 +2965,7 @@
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: plan.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{plan.name}</span>
                     {plan.soon && <span className="tag">SOON</span>}
-                    {plan.primary && <span className="tag tag-amber">LIVE</span>}
+                    {plan.primary && <span className="tag tag-amber">SOON</span>}
                   </div>
                   <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginTop: 16, minHeight: 24 }}>{plan.desc}</div>
                   <div style={{ marginTop: 12, display: "flex", alignItems: "baseline", gap: 6 }}>
