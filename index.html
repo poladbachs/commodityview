@@ -602,7 +602,7 @@
       z-index: 1;
       background:
         linear-gradient(100deg, oklch(6% 0.012 230 / 0.70) 0%, oklch(6% 0.012 230 / 0.24) 38%, transparent 62%),
-        linear-gradient(to bottom, oklch(6% 0.012 230 / 0.40) 0%, transparent 25%);
+        linear-gradient(to bottom, oklch(6% 0.012 230 / 0.72) 0%, oklch(6% 0.012 230 / 0.42) 10%, transparent 32%);
       pointer-events: none;
     }
 
@@ -663,13 +663,29 @@
     .hero-glass-panel .btn-primary:active { transform: scale(0.97); }
 
     @media (max-width: 860px) {
-      .hero-glass-panel {
+      /* Hero: image becomes a full-screen cover, panel overlays it */
+      .hero-fullbleed {
+        min-height: 100svh;
+        min-height: 100vh; /* fallback for old Safari */
         position: relative;
-        top: auto; left: auto;
-        width: auto;
-        margin: 40px 20px 0;
-        padding: 32px 28px;
-        border-radius: 18px;
+      }
+      .hero-bg-img {
+        position: absolute !important;
+        inset: 0;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        object-position: center top;
+      }
+      .hero-glass-panel {
+        position: absolute !important;
+        top: 72px !important;
+        left: 16px !important;
+        right: 16px !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 24px 20px 28px !important;
+        border-radius: 18px !important;
       }
     }
 
@@ -938,8 +954,8 @@
         border-right: none !important;
       }
       
-      /* MarketingNav mobile layout */
-      .marketing-nav { position: sticky !important; top: 0 !important; overflow-x: visible !important; display: grid !important; grid-template-columns: auto 1fr auto !important; grid-template-areas: "brand links actions" !important; align-items: center !important; gap: 8px 12px !important; padding: 10px 16px !important; }
+      /* MarketingNav mobile layout — keep position:fixed (set via JS inline style) */
+      .marketing-nav { overflow-x: visible !important; display: grid !important; grid-template-columns: auto 1fr auto !important; grid-template-areas: "brand links actions" !important; align-items: center !important; gap: 8px 12px !important; padding: 10px 16px !important; }
       .marketing-brand { grid-area: brand !important; flex: 0 0 auto !important; }
       .marketing-brand .logo-lockup { font-size: 13px !important; gap: 4px !important; }
       .marketing-brand .logo-mark { width: 26px !important; height: 26px !important; }
@@ -963,26 +979,57 @@
         border-bottom: 1px solid var(--line-soft) !important;
       }
       
-      /* Footer mobile adjustments */
+      /* Footer mobile */
       footer {
-        padding: 16px !important;
+        padding: 24px 16px 28px !important;
       }
       footer > div {
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 16px !important;
+        gap: 0 !important;
       }
       footer > div > div:first-child {
-        width: 100% !important;
-        justify-content: flex-start !important;
-        flex-wrap: wrap !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
         gap: 8px !important;
+        width: 100% !important;
+        padding-bottom: 16px !important;
+      }
+      footer > div > div:first-child > span:first-child {
+        align-self: center !important;
+        display: inline-flex !important;
+      }
+      footer .logo-lockup {
+        display: inline-flex !important;
+        font-size: 20px !important;
+        gap: 4px !important;
+        align-items: center !important;
+      }
+      footer .logo-mark {
+        width: 32px !important;
+        height: 32px !important;
+      }
+      footer > div > div:first-child > a:not(.hero-social-proof) {
+        font-size: 13px !important;
+        opacity: 0.6 !important;
+      }
+      footer > div > div:first-child > a.hero-social-proof {
+        width: auto !important;
+        flex: unset !important;
       }
       footer > div > div:last-child {
         width: 100% !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
         font-size: 11px !important;
-        gap: 6px !important;
+        gap: 6px 14px !important;
+        border-top: 1px solid oklch(28% 0.005 240 / 0.7) !important;
+        padding-top: 16px !important;
+      }
+      /* hide dot separators on mobile (they're always even children) */
+      footer > div > div:last-child > :nth-child(even) {
+        display: none !important;
       }
       .footer-bar {
         flex-direction: column !important;
@@ -1044,6 +1091,110 @@
       .layer-grid-left {
         border-right: none !important;
         border-bottom: 1px solid var(--line) !important;
+      }
+    }
+
+    /* ── MARKETING PAGE: mobile-specific fixes ── */
+    @media (max-width: 768px) {
+      /* Hero — clamp the h1 so it doesn't flood the glass panel */
+      .hero-glass-panel h1.display {
+        font-size: clamp(28px, 8vw, 68px) !important;
+        line-height: 1.05 !important;
+      }
+
+      /* Section headings */
+      #product h2.display,
+      #pricing h2.display {
+        font-size: clamp(26px, 7.5vw, 48px) !important;
+        line-height: 1.0 !important;
+      }
+
+      /* Hero panel: tighten internal spacing on mobile so button stays visible */
+      /* badge row */
+      .hero-glass-panel > div:first-child { margin-bottom: 14px !important; }
+      /* paragraph */
+      .hero-glass-panel p { font-size: 14px !important; line-height: 1.5 !important; margin: 10px 0 0 !important; }
+      /* button wrapper — last div child */
+      .hero-glass-panel > div:last-of-type { margin-top: 20px !important; }
+      .hero-glass-panel .hero-coming-soon { font-size: 13px !important; padding: 7px 12px !important; }
+
+      /* LifecycleStrip — restore bottom breathing room (overrides generic padding selector) */
+      #lifecycle-strip {
+        padding: 48px 16px 180px !important;
+      }
+      /* Decorative background image: shrink and keep bottom-right */
+      #lifecycle-strip > img[aria-hidden] {
+        width: 90% !important;
+        right: -2% !important;
+      }
+      /* Card wrapper: full width on mobile */
+      .lifecycle-card-wrapper {
+        max-width: 100% !important;
+      }
+      /* Inner grid: single column */
+      .lifecycle-inner-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+      }
+      /* Reduce glass card inner padding */
+      .lifecycle-card-wrapper > div {
+        padding: 28px 24px 36px !important;
+      }
+
+      /* Waitlist — reduce glass card padding on narrow screens */
+      .waitlist-glass {
+        padding: 28px 20px 36px !important;
+        border-radius: 16px !important;
+      }
+      /* Name row: stack first/last fields */
+      .waitlist-name-row {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* CTA content: tighter side padding */
+      .cta-scene-content {
+        padding: 16px 20px 48px !important;
+      }
+
+      /* Product layer cards: ensure chips wrap cleanly */
+      .layer-card { padding: 16px !important; }
+
+      /* Pricing: reduce card padding */
+      #pricing > div > div > div { padding: 18px 16px !important; }
+    }
+
+    /* ── LinkedIn button: blue glass in footers (mirrors hero-glass-panel treatment) ── */
+    footer .hero-social-proof {
+      background: oklch(56% 0.18 235 / 0.18) !important;
+      border-color: oklch(56% 0.18 235 / 0.38) !important;
+      color: oklch(82% 0.10 235) !important;
+    }
+    footer .hero-social-proof svg {
+      fill: oklch(82% 0.10 235) !important;
+    }
+    footer .hero-social-proof:hover {
+      background: oklch(56% 0.18 235 / 0.28) !important;
+      border-color: oklch(56% 0.18 235 / 0.55) !important;
+    }
+
+    /* ── Pricing: 1 column on phones so buttons don't overflow ── */
+    @media (max-width: 560px) {
+      [style*="repeat(4, 1fr);"],
+      [style*="repeat(4,1fr);"] {
+        grid-template-columns: 1fr !important;
+      }
+      /* Allow buttons to wrap on mobile so they don't blow out layout */
+      .btn { white-space: normal !important; }
+    }
+
+    /* ── Very narrow screens: collapse nav links ── */
+    @media (max-width: 380px) {
+      .marketing-links {
+        display: none !important;
+      }
+      .marketing-nav {
+        grid-template-columns: auto auto !important;
+        grid-template-areas: "brand actions" !important;
       }
     }
   </style>
@@ -1275,8 +1426,8 @@
       const textColor = onLight ? 'oklch(14% 0.005 240)' : 'oklch(92% 0 0)';
       const navBg = onLight
         ? 'linear-gradient(145deg, oklch(100% 0 0 / 0.82) 0%, oklch(100% 0 0 / 0.68) 100%)'
-        : 'linear-gradient(145deg, oklch(100% 0 0 / 0.14) 0%, oklch(100% 0 0 / 0.06) 100%)';
-      const borderColor = onLight ? 'oklch(0% 0 0 / 0.10)' : 'oklch(100% 0 0 / 0.20)';
+        : 'linear-gradient(145deg, oklch(10% 0.012 230 / 0.48) 0%, oklch(10% 0.012 230 / 0.32) 100%)';
+      const borderColor = onLight ? 'oklch(0% 0 0 / 0.10)' : 'oklch(100% 0 0 / 0.12)';
       return (
         <div className="marketing-nav" data-light={onLight ? "true" : undefined} style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
@@ -1286,7 +1437,7 @@
           padding: "12px 32px", gap: 16,
           transition: "background 500ms cubic-bezier(0.23,1,0.32,1), border-color 500ms cubic-bezier(0.23,1,0.32,1)"
         }}>
-          <div className="marketing-brand" onClick={() => go("/home")} style={{ cursor: "pointer", justifySelf: "start", color: textColor, transition: "color 500ms cubic-bezier(0.23,1,0.32,1)" }}><Logo size={20} /></div>
+          <div className="marketing-brand" onClick={() => go("/home")} style={{ cursor: "pointer", justifySelf: "start", alignSelf: "center", display: "flex", alignItems: "center", color: textColor, transition: "color 500ms cubic-bezier(0.23,1,0.32,1)" }}><Logo size={20} /></div>
           <div className="marketing-links" style={{ display: "flex", alignItems: "center", gap: 28, fontSize: 16, color: textColor, transition: "color 500ms cubic-bezier(0.23,1,0.32,1)" }}>
             <a onClick={() => go("/home#product")} style={{ cursor: "pointer" }}>Product</a>
             <a onClick={() => go("/home#pricing")} style={{ cursor: "pointer" }}>Pricing</a>
@@ -1499,7 +1650,7 @@
           <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto" }}>
 
             {/* ── glass card — left-anchored so right side of image shows unblurred ── */}
-            <div style={{ maxWidth: "62%", position: "relative", zIndex: 1 }}>
+            <div className="lifecycle-card-wrapper" style={{ maxWidth: "62%", position: "relative", zIndex: 1 }}>
             <div style={{
               background: "linear-gradient(145deg, oklch(100% 0 0 / 0.14) 0%, oklch(100% 0 0 / 0.06) 100%)",
               backdropFilter: "blur(20px) saturate(160%)",
@@ -1528,7 +1679,7 @@
                 </div>
               </div>
 
-              <div style={{
+              <div className="lifecycle-inner-grid" style={{
                 display: "grid",
                 gridTemplateColumns: "1.7fr 1fr",
                 gap: 64,
@@ -2699,7 +2850,7 @@
                 <span>Follow us now</span>
               </a>
             </div>
-            <h1 className="display" style={{ fontSize: 68, margin: 0, color: "#fff", lineHeight: 1 }}>
+            <h1 className="display" style={{ fontSize: "clamp(28px, 7.5vw, 68px)", margin: 0, color: "#fff", lineHeight: 1.05 }}>
               Agentic AI for<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Commodity </span>Trading
             </h1>
             <p style={{ marginTop: 18, fontSize: 16, color: "oklch(100% 0 0 / 0.72)", maxWidth: 460, lineHeight: 1.65, margin: "18px 0 0" }}>
@@ -2720,7 +2871,7 @@
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48, gap: 24, flexWrap: "wrap" }}>
               <div style={{ maxWidth: 820 }}>
                 <span className="eyebrow"><span className="hero-coming-soon" aria-label="Coming soon"><span className="hero-coming-soon__label">Coming soon</span></span></span>
-                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>One system. One trade page.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Every layer lives inside it.</span></h2>
+                <h2 className="display" style={{ fontSize: "clamp(26px, 5.5vw, 56px)", margin: "12px 0 0" }}>One system. One trade page.<br /><span className="editorial" style={{ color: "var(--signal-amber)", fontWeight: 400 }}>Every layer lives inside it.</span></h2>
                 <p style={{ maxWidth: 640, margin: "18px 0 0", color: "var(--fg-2)", fontSize: 16, lineHeight: 1.6 }}>
                   The product is the system of record. Trade capture, compliance, and intelligence are not separate apps — they are layers on the same lifecycle.
                 </p>
@@ -2783,7 +2934,7 @@
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32, gap: 24, flexWrap: "wrap" }}>
               <div>
                 <span className="eyebrow">PRICING PLANS</span>
-                <h2 className="display" style={{ fontSize: 56, margin: "12px 0 0" }}>Choose your layer.</h2>
+                <h2 className="display" style={{ fontSize: "clamp(26px, 5.5vw, 56px)", margin: "12px 0 0" }}>Choose your layer.</h2>
               </div>
               <p style={{ maxWidth: 460, margin: 0, color: "var(--fg-2)", fontSize: 14, lineHeight: 1.6 }}>
                 Start with trade capture, then unlock validation, reconciliation, and intelligence as your workflow grows.
@@ -2938,7 +3089,7 @@
             <BgImg />
             <MarketingNav go={go} />
             <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "96px 24px 64px" }}>
-              <div style={{ ...glassCard, maxWidth: 480, textAlign: "center" }}>
+              <div className="waitlist-glass" style={{ ...glassCard, maxWidth: 480, textAlign: "center" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "oklch(100% 0 0 / 0.08)", border: "1px solid oklch(100% 0 0 / 0.18)", borderRadius: 100, padding: "5px 14px", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.12em", color: "var(--signal-pass)", marginBottom: 24 }}>
                   ✓ SUCCESSFULLY REGISTERED
                 </div>
@@ -2959,7 +3110,7 @@
           <BgImg />
           <MarketingNav go={go} />
           <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "96px 24px 64px" }}>
-            <div style={glassCard}>
+            <div className="waitlist-glass" style={glassCard}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.14em", color: "var(--signal-amber)" }}>WAITLIST</span>
               <h1 className="display" style={{ fontSize: 38, margin: "10px 0 8px", color: "#fff", lineHeight: 1.05 }}>Join the waitlist.</h1>
               <p style={{ color: "oklch(100% 0 0 / 0.60)", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
@@ -2967,7 +3118,7 @@
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div className="waitlist-name-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div>
                     <label style={glLabel}>First Name *</label>
                     <input type="text" style={glInput} required placeholder="Jane" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />

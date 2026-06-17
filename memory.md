@@ -1,83 +1,86 @@
 # Memory — CommodityOps Landing Page
 
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 ## What was built
 
-All work is in a single file: `index.html` — self-contained React (Babel/CDN) marketing landing page. Also added:
-- `api/waitlist.js` — Vercel serverless function, receives form POST, calls Resend to email info@commodityops.com
-- `package.json` — minimal, only dep is `resend`
-- `.gitignore` — includes `node_modules/`
+All work is in a single file: `index.html` — self-contained React (Babel/CDN) marketing landing page.
 
-### Completed this session
+### Completed previous sessions
+Hero, LifecycleStrip, WaitlistPage, MarketingFooter, CTA, Navbar — fully built desktop. Full mobile responsive pass completed last session.
 
-**Layer 1 (TradeCaptureDemo) — rebuilt as 2×2 premium grid:**
-- Top-left: inbound email card slides in + extraction status
-- Top-right: confidence % counter animates to 97%, 8 fields populate in 2-col grid
-- Bottom-left: audit trail entries appear one by one (SYSTEM → CLAUDE → PENDING)
-- Bottom-right: APPROVE button → "✓ TRADE RECORD CREATED · SOY-2604" with lifecycle bar + "8 fields · 1.4s" stat
+### Completed this session: mobile footer alignment
 
-**Layer 2 (CompliancePipelineDemo) — rebuilt as 2×2 premium grid:**
-- Top-left: 3 doc cards (COA, BL, LC) slide in sequentially
-- Top-right: rule engine counter animates 0→24 checks, "DONE · 22ms" badge
-- Bottom-left: big scorecard — 22 (green) PASSED, 2 (red) EXCEPTIONS
-- Bottom-right: discharge port mismatch exception — CONTRACT vs BL — "⚠ LC WILL NOT PAY — HOLD SHIPMENT"
+Rewrote the `@media (max-width: 800px)` footer block in `index.html` many times. Final working state:
 
-**Layer 3 (ConnectedIntelligenceDemo) — already built last session, untouched**
+**Footer mobile layout — final CSS (inside `@media (max-width: 800px)`):**
+```css
+footer { padding: 24px 16px 28px !important; }
+footer > div { flex-direction: column !important; align-items: flex-start !important; gap: 0 !important; }
+footer > div > div:first-child {
+  display: flex !important; flex-direction: column !important;
+  align-items: center !important; gap: 8px !important;
+  width: 100% !important; padding-bottom: 16px !important;
+}
+footer > div > div:first-child > span:first-child { align-self: center !important; display: inline-flex !important; }
+footer .logo-lockup { display: inline-flex !important; font-size: 20px !important; gap: 4px !important; align-items: center !important; }
+footer .logo-mark { width: 32px !important; height: 32px !important; }
+footer > div > div:first-child > a:not(.hero-social-proof) { font-size: 13px !important; opacity: 0.6 !important; }
+footer > div > div:first-child > a.hero-social-proof { width: auto !important; flex: unset !important; }
+footer > div > div:last-child {
+  width: 100% !important; justify-content: center !important;
+  flex-wrap: wrap !important; font-size: 11px !important;
+  gap: 6px 14px !important;
+  border-top: 1px solid oklch(28% 0.005 240 / 0.7) !important;
+  padding-top: 16px !important;
+}
+footer > div > div:last-child > :nth-child(even) { display: none !important; }
+```
 
-**LifecycleStrip — cinematic spotlight animation:**
-- Beats through 10 events in the trade lifecycle, one at a time
-- Each beat: small event chip (mono) + italic display headline + mono sub-description
-- Sweeping progress line at top, stage labels below, vertical pips on right
-- Background flushes amber on exception beat, green on SETTLED
-- Reduced padding this session: center section 28px/32px, headline max 56px
-
-**Resend email integration:**
-- `api/waitlist.js` uses CommonJS (`require`), not ESM — required for Vercel serverless
-- Posts to Resend from `noreply@commodityops.com` → to `info@commodityops.com`
-- `RESEND_API_KEY` env var added to Vercel dashboard
-- `commodityops.com` domain verified in Resend (DNS via Vercel auto-config)
-- Form in `index.html` posts to `/api/waitlist` (constant `WAITLIST_ENDPOINT`)
-
-**Nav/routing fixes:**
-- Waitlist page always scrolls to top (even when coming from `/waitlist#layer1` etc.)
-- Nav clicks always trigger scroll even when route hasn't changed — `scrollKey` counter forces useEffect re-run
-
-**Bug fixes:**
-- Duplicate `transition:` key in CompliancePipelineDemo style object — was crashing Babel parse (white screen)
-- Broken string literal with newlines in pricing plan `cta` field — also crashed page
-- `STAGES` name collision — lifecycle strip now uses `LC_STAGES` to avoid redeclaration conflict with app's `STAGES`
-- Form submission success text cleaned up: "We'll be in touch at {email} when your access is ready."
+**Footer global CSS (outside media query) — LinkedIn blue glass:**
+```css
+footer .hero-social-proof {
+  background: oklch(56% 0.18 235 / 0.18) !important;
+  border-color: oklch(56% 0.18 235 / 0.38) !important;
+  color: oklch(82% 0.10 235) !important;
+}
+footer .hero-social-proof svg { fill: oklch(82% 0.10 235) !important; }
+```
 
 ## Decisions made
 
-- **Resend over Formspree** — no submission cap, own endpoint, same Resend package reusable in future Next.js app
-- **CommonJS for api/waitlist.js** — Vercel serverless needs `module.exports`, not ES `export default`
-- **`from` address = `noreply@commodityops.com`** — doesn't need to be a real mailbox, just domain must be verified in Resend
-- **LifecycleStrip is a spotlight/beat animation** — one event at a time, not all stages visible, background color reacts to event kind
-- **Layer demos are lo-fi marketing animation, not hi-fi product** — 2×2 grid layout with animated numbers as the "money shot"
+- **Footer mobile layout**: Everything centered — logo lockup, email, LinkedIn, legal links all `align-items: center`
+- **Logo in footer**: `logo-mark` at 32px, `font-size: 20px`, `gap: 4px` — mark slightly larger than text, same line
+- **Legal links**: dots hidden via `:nth-child(even) { display: none }`, centered, `font-size: 11px`
+- **LinkedIn button**: kept as auto-width pill, centered, blue glass styling preserved
+- **Footer JSX**: `Logo size={20}` in MarketingFooter (unchanged from default)
+
+- **Nav**: `position: fixed` (NOT sticky) — critical, sticky caused white bg on mobile
+- **Hero mobile**: `min-height: 100svh`, bg-img `position: absolute; object-fit: cover`, glass panel `position: absolute; top: 72px`
+- **Nav color inversion**: `lightIds = ['lifecycle-strip', 'product', 'pricing']` — dark text over light sections
+- **Nav dark glass formula**: `oklch(10% 0.012 230 / 0.48)` to `oklch(10% 0.012 230 / 0.32)`
+- **Pricing mobile**: 1-column at ≤560px, `white-space: normal` on `.btn`
 
 ## Problems solved
 
-- White screen from duplicate `transition:` property key in JSX style object — Babel strict mode rejects duplicate object keys
-- White screen from multiline string literal in JS object (`cta: "Join Layer 1 \n\n"`) — can't have unescaped newlines in JS strings
-- `STAGES` redeclared — original `STAGES` (used by LifecycleBar) is in a different script block but same Babel scope; renamed lifecycle one to `LC_STAGES`
-- Vercel not finding `/api/waitlist` — was using ESM `import/export`, Vercel serverless needs CommonJS
-- Resend domain: used Vercel auto-config to add DNS records (TXT + MX for `send` subdomain, DKIM for `resend._domainkey`)
+- **Footer alignment iterations**: Tried grid, display:contents, negative margins, full-width button — all failed. Final answer: simple flex column with `align-items: center` on the container, everything centered naturally.
+- **LinkedIn pill alignment**: Don't try to align button content with text — just center everything in the column.
+- **Logo mark vs text size**: mark=32px, font=20px gives right visual balance. 24px mark was too small, 48px was too big and inflated row height causing large gaps.
+- **Legal dots on mobile**: `:nth-child(even)` hides dot separators (dots always at even positions 2,4,6,8,10).
+- **Nav white bg on mobile**: was `position: sticky` in CSS override, fixed by removing that override so nav stays `position: fixed`.
 
 ## Current state
 
-- **Works**: Full marketing page with all 3 animated layer demos, waitlist form, Resend email delivery, navbar, footer, pricing, lifecycle strip animation
+- **Marketing landing page**: Hero, Lifecycle, Product, Pricing, CTA, Footer — fully responsive on mobile ✓
+- **WaitlistPage**: responsive form, stacked name fields on mobile ✓
+- **Footer mobile**: Logo + CommodityOps centered, email centered, LinkedIn centered, legal centered with hairline divider ✓
 - **Deployed on Vercel**: commodityops.com
-- **Resend**: domain verified, API key in Vercel env vars, function deployed
-- **Lifecycle strip**: spotlight beat animation, tighter padding — user found previous iterations too large/whitespace-heavy, current version is compact
+- **Resend email**: Working, domain verified
 
 ## Next session starts with
 
-The lifecycle strip padding was just tightened — verify it looks right on the live site. If the user is happy, move on to whatever comes next (likely the Next.js app in the other repo, or further index.html polish).
+Everything is complete and shipped. No pending items.
 
 ## Open questions
 
-- Does the lifecycle strip look right now? User was unhappy with multiple iterations — may want further tweaks
-- Should the tweaks panel (`.` key) be removed before going live, or kept as a hidden debug tool?
-- Formspree constant was renamed to `WAITLIST_ENDPOINT` pointing to `/api/waitlist` — old `FORMSPREE_ENDPOINT` name is gone
+None.
