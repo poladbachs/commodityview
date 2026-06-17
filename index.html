@@ -652,7 +652,8 @@
     /* Unified amber liquid glass CTA — same material as site glass panels */
     .hero-glass-panel .btn-primary,
     .cta-scene-content .btn-primary,
-    .waitlist-glass .btn-primary {
+    .waitlist-glass .btn-primary,
+    #active-layer-interactive .btn-primary {
       position: relative;
       overflow: hidden;
       background: linear-gradient(145deg, oklch(72% 0.155 75 / 0.38) 0%, oklch(68% 0.155 75 / 0.24) 100%);
@@ -670,14 +671,16 @@
     @media (hover: hover) and (pointer: fine) {
       .hero-glass-panel .btn-primary:hover,
       .cta-scene-content .btn-primary:hover,
-      .waitlist-glass .btn-primary:hover {
+      .waitlist-glass .btn-primary:hover,
+      #active-layer-interactive .btn-primary:hover {
         background: linear-gradient(145deg, oklch(72% 0.155 75 / 0.50) 0%, oklch(68% 0.155 75 / 0.36) 100%);
       }
     }
 
     .hero-glass-panel .btn-primary:active,
     .cta-scene-content .btn-primary:active,
-    .waitlist-glass .btn-primary:active { transform: scale(0.97); }
+    .waitlist-glass .btn-primary:active,
+    #active-layer-interactive .btn-primary:active { transform: scale(0.97); }
 
     @media (max-width: 860px) {
       /* Hero: image becomes a full-screen cover, panel overlays it */
@@ -813,6 +816,97 @@
       background: var(--bg-3) !important;
       border-color: color-mix(in oklch, var(--signal-amber) 42%, var(--line)) !important;
       box-shadow: 0 1px 0 color-mix(in oklch, var(--signal-amber) 10%, transparent) inset, 0 0 0 1px color-mix(in oklch, var(--signal-amber) 18%, transparent);
+    }
+
+    /* Glass treatment for product layer cards — same material as lifecycle glass panel */
+    #product .layer-card {
+      background: linear-gradient(145deg, oklch(100% 0 0 / 0.82) 0%, oklch(100% 0 0 / 0.68) 100%) !important;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid oklch(100% 0 0 / 0.55) !important;
+      border-radius: 16px !important;
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.90),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.06),
+        0 8px 24px oklch(0% 0 0 / 0.08),
+        0 2px 6px oklch(0% 0 0 / 0.06);
+    }
+
+    #product .layer-card--active {
+      background: linear-gradient(145deg, oklch(100% 0 0 / 0.92) 0%, oklch(100% 0 0 / 0.78) 100%) !important;
+      border-color: color-mix(in oklch, var(--signal-amber) 55%, oklch(100% 0 0 / 0.60)) !important;
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.95),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.06),
+        0 0 0 1px color-mix(in oklch, var(--signal-amber) 22%, transparent),
+        0 8px 24px oklch(0% 0 0 / 0.10) !important;
+    }
+
+    #active-layer-interactive {
+      background: linear-gradient(145deg, oklch(100% 0 0 / 0.82) 0%, oklch(100% 0 0 / 0.68) 100%) !important;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid oklch(100% 0 0 / 0.55) !important;
+      border-radius: 16px !important;
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.90),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.06),
+        0 12px 36px oklch(0% 0 0 / 0.10),
+        0 4px 10px oklch(0% 0 0 / 0.07);
+    }
+
+    /* Dark liquid glass buttons in pricing cards */
+    .plan-card-btn {
+      background: linear-gradient(145deg, oklch(18% 0.012 230 / 0.88) 0%, oklch(12% 0.008 230 / 0.78) 100%);
+      color: oklch(96% 0 0) !important;
+      border: 1px solid oklch(100% 0 0 / 0.14) !important;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.22),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.18),
+        0 4px 16px oklch(0% 0 0 / 0.14);
+      transition: background 160ms ease-out, transform 160ms ease-out;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .plan-card-btn:hover {
+        background: linear-gradient(145deg, oklch(30% 0.014 230 / 0.94) 0%, oklch(22% 0.010 230 / 0.88) 100%);
+        border-color: oklch(100% 0 0 / 0.24) !important;
+        box-shadow:
+          inset 0 1px 0 oklch(100% 0 0 / 0.30),
+          inset 0 -1px 0 oklch(0% 0 0 / 0.18),
+          0 6px 20px oklch(0% 0 0 / 0.20);
+      }
+    }
+    .plan-card-btn:active { transform: scale(0.97); }
+
+    /* Nav waitlist button hover lift */
+    .nav-waitlist-btn { transition: background 500ms cubic-bezier(0.23,1,0.32,1), transform 160ms ease-out, box-shadow 160ms ease-out !important; }
+    @media (hover: hover) and (pointer: fine) {
+      .nav-waitlist-btn--light:hover {
+        background: linear-gradient(145deg, oklch(30% 0.014 230 / 0.94) 0%, oklch(22% 0.010 230 / 0.88) 100%) !important;
+        border-color: oklch(100% 0 0 / 0.24) !important;
+        box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.30), inset 0 -1px 0 oklch(0% 0 0 / 0.18), 0 6px 20px oklch(0% 0 0 / 0.20) !important;
+      }
+      .nav-waitlist-btn--dark:hover {
+        background: linear-gradient(145deg, oklch(100% 0 0 / 0.32) 0%, oklch(100% 0 0 / 0.20) 100%) !important;
+        box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.60), inset 0 -1px 0 oklch(0% 0 0 / 0.06), 0 6px 20px oklch(0% 0 0 / 0.18) !important;
+      }
+    }
+    .nav-waitlist-btn:active { transform: scale(0.97); }
+
+    /* Glass treatment for pricing plan cards */
+    #pricing .plan-card {
+      background: linear-gradient(145deg, oklch(100% 0 0 / 0.82) 0%, oklch(100% 0 0 / 0.68) 100%) !important;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid oklch(100% 0 0 / 0.55) !important;
+      border-radius: 16px !important;
+      box-shadow:
+        inset 0 1px 0 oklch(100% 0 0 / 0.90),
+        inset 0 -1px 0 oklch(0% 0 0 / 0.06),
+        0 8px 24px oklch(0% 0 0 / 0.08),
+        0 2px 6px oklch(0% 0 0 / 0.06);
     }
 
     @media (max-width: 800px) {
@@ -1449,18 +1543,20 @@
             <a onClick={() => go("/home#pricing")} style={{ cursor: "pointer" }}>Pricing</a>
           </div>
           <div className="marketing-actions" style={{ display: "flex", alignItems: "center", gap: 8, justifySelf: "end" }}>
-            <button className="btn btn-sm" onClick={() => go("/waitlist")} style={{
+            <button className={"btn btn-sm nav-waitlist-btn" + (onLight ? " nav-waitlist-btn--light" : " nav-waitlist-btn--dark")} onClick={() => go("/waitlist")} style={{
               background: onLight
-                ? 'oklch(14% 0.005 240)'
+                ? 'linear-gradient(145deg, oklch(18% 0.012 230 / 0.88) 0%, oklch(12% 0.008 230 / 0.78) 100%)'
                 : 'linear-gradient(145deg, oklch(100% 0 0 / 0.22) 0%, oklch(100% 0 0 / 0.12) 100%)',
-              color: onLight ? 'oklch(100% 0 0)' : 'oklch(96% 0 0)',
+              color: 'oklch(96% 0 0)',
               border: onLight
-                ? '1px solid oklch(14% 0.005 240)'
+                ? '1px solid oklch(100% 0 0 / 0.14)'
                 : '1px solid oklch(100% 0 0 / 0.28)',
-              backdropFilter: onLight ? undefined : 'blur(20px) saturate(160%)',
-              WebkitBackdropFilter: onLight ? undefined : 'blur(20px) saturate(160%)',
-              boxShadow: onLight ? undefined : 'inset 0 1px 0 oklch(100% 0 0 / 0.50), inset 0 -1px 0 oklch(0% 0 0 / 0.06)',
-              transition: 'background 500ms cubic-bezier(0.23,1,0.32,1), color 500ms cubic-bezier(0.23,1,0.32,1), border-color 500ms cubic-bezier(0.23,1,0.32,1)',
+              backdropFilter: 'blur(20px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+              boxShadow: onLight
+                ? 'inset 0 1px 0 oklch(100% 0 0 / 0.22), inset 0 -1px 0 oklch(0% 0 0 / 0.18), 0 4px 16px oklch(0% 0 0 / 0.14)'
+                : 'inset 0 1px 0 oklch(100% 0 0 / 0.50), inset 0 -1px 0 oklch(0% 0 0 / 0.06)',
+              transition: 'background 500ms cubic-bezier(0.23,1,0.32,1), color 500ms cubic-bezier(0.23,1,0.32,1), border-color 500ms cubic-bezier(0.23,1,0.32,1), box-shadow 500ms cubic-bezier(0.23,1,0.32,1)',
             }}>Join Waitlist</button>
           </div>
         </div>
@@ -2896,7 +2992,7 @@
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
               {layerCards.map((layer, index) => (
                 <button
                   key={layer.id}
@@ -2914,17 +3010,14 @@
                   }}
                   className={"layer-card " + (activeLayer === layer.id ? "layer-card--active" : "")}
                   style={{
-                    background: "var(--bg)",
                     padding: 24,
                     border: "none",
-                    borderRight: index < layerCards.length - 1 ? "1px solid var(--line)" : "none",
                     textAlign: "left",
                     cursor: "pointer",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span className="mono" style={{ fontSize: 11, color: activeLayer === layer.id ? "var(--signal-amber)" : "var(--fg-3)" }}>LAYER {layer.num}</span>
-                    {activeLayer === layer.id && <span className="tag tag-amber">ACTIVE</span>}
                   </div>
                   <h3 className="display" style={{ fontSize: 32, margin: "14px 0 4px" }}>{layer.title}.</h3>
                   <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginBottom: 12 }}>{layer.sub}</div>
@@ -2958,14 +3051,12 @@
                 Start with trade capture, then unlock validation, reconciliation, and intelligence as your workflow grows.
               </p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: "var(--line)", border: "1px solid var(--line)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
               {pricingPlans.map((plan, index) => (
-                <div key={plan.name} style={{ background: plan.primary ? "var(--bg-2)" : "var(--bg)", padding: 24, position: "relative", borderRight: index < pricingPlans.length - 1 ? "1px solid var(--line)" : "none" }}>
-                  {plan.primary && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--signal-amber)" }} />}
+                <div key={plan.name} className="plan-card" style={{ padding: 24, position: "relative" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: plan.primary ? "var(--signal-amber)" : "var(--fg-3)" }}>{plan.name}</span>
-                    {plan.soon && <span className="tag">SOON</span>}
-                    {plan.primary && <span className="tag tag-amber">SOON</span>}
+                    <span className="mono" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--fg-3)" }}>{plan.name}</span>
+                    {(plan.soon || plan.primary) && <span className="tag">SOON</span>}
                   </div>
                   <div className="editorial" style={{ fontSize: 16, color: "var(--fg-2)", marginTop: 16, minHeight: 24 }}>{plan.desc}</div>
                   <div style={{ marginTop: 12, display: "flex", alignItems: "baseline", gap: 6 }}>
@@ -2979,7 +3070,7 @@
                       </li>
                     ))}
                   </ul>
-                  <button className={"btn " + (plan.primary ? "btn-primary" : "")} style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => go("/waitlist#" + plan.name.toLowerCase().replace(" ", "-"))}>{plan.cta}</button>
+                  <button className="btn plan-card-btn" style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => go("/waitlist#" + plan.name.toLowerCase().replace(" ", "-"))}>{plan.cta}</button>
                 </div>
               ))}
             </div>
