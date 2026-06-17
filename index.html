@@ -1304,12 +1304,19 @@
       </svg>
     );
 
-    const MarketingFooter = ({ go }) => (
-      <footer data-mode="ink" style={{ padding: "28px 24px 32px", background: "oklch(13% 0.004 240)", borderTop: "1px solid oklch(22% 0.005 240)" }}>
+    const MarketingFooter = ({ go, glass }) => (
+      <footer data-mode="ink" style={{
+        padding: "28px 24px 32px",
+        background: glass ? "linear-gradient(145deg, oklch(100% 0 0 / 0.10) 0%, oklch(100% 0 0 / 0.04) 100%)" : "oklch(13% 0.004 240)",
+        borderTop: glass ? "1px solid oklch(100% 0 0 / 0.18)" : "1px solid oklch(22% 0.005 240)",
+        backdropFilter: glass ? "blur(20px) saturate(160%)" : undefined,
+        WebkitBackdropFilter: glass ? "blur(20px) saturate(160%)" : undefined,
+        position: glass ? "relative" : undefined, zIndex: glass ? 1 : undefined,
+      }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", color: "oklch(88% 0.005 90)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", color: glass ? "oklch(88% 0 0)" : "oklch(88% 0.005 90)" }}>
             <span style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }} onClick={() => go("/home")}><Logo size={20} /></span>
-            <a href="mailto:info@commodityops.com" style={{ color: "oklch(82% 0.005 240)", fontSize: 14, fontWeight: 500, display: "inline-flex", alignItems: "center" }}>info@commodityops.com</a>
+            <a href="mailto:info@commodityops.com" style={{ color: glass ? "oklch(82% 0 0)" : "oklch(82% 0.005 240)", fontSize: 14, fontWeight: 500, display: "inline-flex", alignItems: "center" }}>info@commodityops.com</a>
             <a
               href="https://www.linkedin.com/company/commodityops"
               target="_blank"
@@ -1321,10 +1328,10 @@
               <span>Follow us on LinkedIn</span>
             </a>
           </div>
-          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "oklch(48% 0.005 240)", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
-            <a href="mailto:info@commodityops.com?subject=Privacy%20Policy" style={{ color: "oklch(62% 0.005 240)" }}>Privacy</a>
+          <div style={{ display: "flex", gap: 12, fontSize: 12, color: glass ? "oklch(72% 0 0)" : "oklch(48% 0.005 240)", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+            <a href="mailto:info@commodityops.com?subject=Privacy%20Policy" style={{ color: glass ? "oklch(68% 0 0)" : "oklch(62% 0.005 240)" }}>Privacy</a>
             <span>·</span>
-            <a href="mailto:info@commodityops.com?subject=Security" style={{ color: "oklch(62% 0.005 240)" }}>Security</a>
+            <a href="mailto:info@commodityops.com?subject=Security" style={{ color: glass ? "oklch(68% 0 0)" : "oklch(62% 0.005 240)" }}>Security</a>
             <span>·</span>
             <span>EU/US Data Residency</span>
             <span>·</span>
@@ -2891,63 +2898,99 @@
         }
       };
 
+      const wlScene = {
+        position: "relative", minHeight: "100vh",
+        display: "flex", flexDirection: "column",
+        background: "oklch(14% 0.020 230)", overflow: "hidden",
+      };
+      const glassCard = {
+        maxWidth: 560, width: "100%",
+        background: "linear-gradient(145deg, oklch(100% 0 0 / 0.14) 0%, oklch(100% 0 0 / 0.06) 100%)",
+        backdropFilter: "blur(20px) saturate(160%)",
+        WebkitBackdropFilter: "blur(20px) saturate(160%)",
+        border: "1px solid oklch(100% 0 0 / 0.28)",
+        borderBottomColor: "oklch(100% 0 0 / 0.10)",
+        borderRightColor: "oklch(100% 0 0 / 0.14)",
+        borderRadius: 24,
+        boxShadow: "0 1px 0 oklch(100% 0 0 / 0.50) inset, 0 -1px 0 oklch(100% 0 0 / 0.06) inset, 0 24px 48px oklch(0% 0 0 / 0.28), 0 4px 10px oklch(0% 0 0 / 0.14)",
+        padding: "40px 44px 48px",
+      };
+      const glInput = {
+        display: "block", width: "100%", boxSizing: "border-box",
+        background: "oklch(100% 0 0 / 0.09)", border: "1px solid oklch(100% 0 0 / 0.20)",
+        borderRadius: 8, color: "#fff", fontSize: 14, padding: "10px 14px",
+        fontFamily: "var(--font-ui)", outline: "none",
+        transition: "border-color 150ms ease, background 150ms ease",
+      };
+      const glLabel = { display: "block", marginBottom: 6, fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.10em", color: "oklch(100% 0 0 / 0.55)", textTransform: "uppercase" };
+
+      const BgImg = () => (
+        <img src="assets/background.png" aria-hidden="true" style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center top",
+          opacity: 0.50, pointerEvents: "none", userSelect: "none",
+        }} />
+      );
+
       if (submitted) {
         return (
-          <div className="surface" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-    
+          <div className="surface" style={wlScene}>
+            <BgImg />
             <MarketingNav go={go} />
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }} className="bg-grid">
-              <div className="card" style={{ maxWidth: 540, width: "100%", padding: 40, textAlign: "center" }}>
-                <span className="tag tag-pass" style={{ margin: "0 auto 16px", display: "inline-block" }}>SUCCESSFULLY REGISTERED</span>
-                <h2 className="display" style={{ fontSize: 36, margin: "0 0 16px" }}>You're on the list.</h2>
-                <p style={{ color: "var(--fg-2)", fontSize: 15, lineHeight: 1.6, margin: 0 }}>
-                  We'll be in touch at <span className="mono" style={{ color: "var(--fg)", fontWeight: 500 }}>{form.email}</span> when your access is ready.
+            <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "96px 24px 64px" }}>
+              <div style={{ ...glassCard, maxWidth: 480, textAlign: "center" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "oklch(100% 0 0 / 0.08)", border: "1px solid oklch(100% 0 0 / 0.18)", borderRadius: 100, padding: "5px 14px", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.12em", color: "var(--signal-pass)", marginBottom: 24 }}>
+                  ✓ SUCCESSFULLY REGISTERED
+                </div>
+                <h2 className="display" style={{ fontSize: 36, margin: "0 0 12px", color: "#fff" }}>You're on the list.</h2>
+                <p style={{ color: "oklch(100% 0 0 / 0.65)", fontSize: 15, lineHeight: 1.6, margin: "0 0 28px" }}>
+                  We'll be in touch at <span className="mono" style={{ color: "oklch(100% 0 0 / 0.90)", fontWeight: 500 }}>{form.email}</span> when your access is ready.
                 </p>
-                <button className="btn" style={{ marginTop: 24, marginLeft: "auto", marginRight: "auto" }} onClick={() => go("/home")}>Back to Homepage</button>
+                <button className="btn" style={{ background: "oklch(100% 0 0 / 0.14)", border: "1px solid oklch(100% 0 0 / 0.28)", color: "#fff", margin: "0 auto" }} onClick={() => go("/home")}>Back to Homepage</button>
               </div>
             </div>
-            <MarketingFooter go={go} />
+            <MarketingFooter go={go} glass />
           </div>
         );
       }
 
       return (
-        <div className="surface" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-  
+        <div className="surface" style={wlScene}>
+          <BgImg />
           <MarketingNav go={go} />
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 24px" }} className="bg-grid">
-            <div className="card" style={{ maxWidth: 540, width: "100%", padding: 32 }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--signal-amber)" }}>WAITLIST</span>
-              <h1 className="display" style={{ fontSize: 40, margin: "8px 0 8px" }}>Join the waitlist.</h1>
-              <p style={{ color: "var(--fg-3)", fontSize: 14, lineHeight: 1.5, marginBottom: 28 }}>
+          <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "96px 24px 64px" }}>
+            <div style={glassCard}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.14em", color: "var(--signal-amber)" }}>WAITLIST</span>
+              <h1 className="display" style={{ fontSize: 38, margin: "10px 0 8px", color: "#fff", lineHeight: 1.05 }}>Join the waitlist.</h1>
+              <p style={{ color: "oklch(100% 0 0 / 0.60)", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
                 No enterprise sales calls, no implementation projects. Join the queue for early access.
               </p>
 
-              <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div>
-                    <label className="label" style={{ display: "block", marginBottom: 6 }}>First Name *</label>
-                    <input type="text" className="input" required placeholder="Jane" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+                    <label style={glLabel}>First Name *</label>
+                    <input type="text" style={glInput} required placeholder="Jane" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="label" style={{ display: "block", marginBottom: 6 }}>Last Name *</label>
-                    <input type="text" className="input" required placeholder="Doe" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+                    <label style={glLabel}>Last Name *</label>
+                    <input type="text" style={glInput} required placeholder="Doe" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
                   </div>
                 </div>
 
                 <div>
-                  <label className="label" style={{ display: "block", marginBottom: 6 }}>Work Email *</label>
-                  <input type="email" className="input" required placeholder="jane@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  <label style={glLabel}>Work Email *</label>
+                  <input type="email" style={glInput} required placeholder="jane@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </div>
 
                 <div>
-                  <label className="label" style={{ display: "block", marginBottom: 6 }}>Company Name *</label>
-                  <input type="text" className="input" required placeholder="Global Trading Corp" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                  <label style={glLabel}>Company Name *</label>
+                  <input type="text" style={glInput} required placeholder="Global Trading Corp" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
                 </div>
 
                 <div>
-                  <label className="label" style={{ display: "block", marginBottom: 6 }}>Business Type *</label>
-                  <select className="input" value={form.businessType} style={SELECT_STYLE} onChange={(e) => setForm({ ...form, businessType: e.target.value })}>
+                  <label style={glLabel}>Business Type *</label>
+                  <select style={{ ...glInput, ...SELECT_STYLE }} value={form.businessType} onChange={(e) => setForm({ ...form, businessType: e.target.value })}>
                     <option value="trading">Physical Commodity Trading Firm</option>
                     <option value="finance">Trade Finance Institution / Bank</option>
                     <option value="brokerage">Brokerage / Intermediary</option>
@@ -2957,8 +3000,8 @@
                 </div>
 
                 <div>
-                  <label className="label" style={{ display: "block", marginBottom: 6 }}>Target Layer *</label>
-                  <select className="input" value={form.targetLayer} style={SELECT_STYLE} onChange={(e) => setForm({ ...form, targetLayer: e.target.value })}>
+                  <label style={glLabel}>Target Layer *</label>
+                  <select style={{ ...glInput, ...SELECT_STYLE }} value={form.targetLayer} onChange={(e) => setForm({ ...form, targetLayer: e.target.value })}>
                     <option value="layer1">Layer 1 — Trade Capture ($99/mo)</option>
                     <option value="layer2">Layer 2 — Compliance ($199/mo)</option>
                     <option value="layer3">Layer 3 — Connected Intelligence ($499/mo)</option>
@@ -2967,23 +3010,23 @@
                 </div>
 
                 <div>
-                  <label className="label" style={{ display: "block", marginBottom: 6 }}>Workflow bottleneck to solve <span style={{ color: "var(--fg-4)" }}>(optional)</span></label>
-                  <textarea className="input" rows="3" style={{ height: "auto", fontFamily: "var(--font-mono)", resize: "vertical" }} placeholder="E.g., manual cross-checking of bills of lading against letters of credit..." value={form.bottleneck} onChange={(e) => setForm({ ...form, bottleneck: e.target.value })} />
+                  <label style={glLabel}>Workflow bottleneck <span style={{ color: "oklch(100% 0 0 / 0.35)", textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+                  <textarea style={{ ...glInput, height: "auto", resize: "vertical", fontFamily: "var(--font-mono)", fontSize: 13 }} rows="3" placeholder="E.g., manual cross-checking of bills of lading…" value={form.bottleneck} onChange={(e) => setForm({ ...form, bottleneck: e.target.value })} />
                 </div>
 
                 {error && (
-                  <div style={{ padding: "10px 14px", border: "1px solid color-mix(in oklch, var(--signal-fail) 40%, var(--line))", background: "color-mix(in oklch, var(--signal-fail) 8%, var(--bg))", borderRadius: 2, fontSize: 13, color: "var(--signal-fail)" }}>
+                  <div style={{ padding: "10px 14px", border: "1px solid oklch(100% 0 0 / 0.15)", background: "color-mix(in oklch, var(--signal-fail) 20%, oklch(0% 0 0 / 0.20))", borderRadius: 8, fontSize: 13, color: "oklch(85% 0.12 25)" }}>
                     {error}
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-primary" disabled={submitting} style={{ marginTop: 8, justifyContent: "center", opacity: submitting ? 0.7 : 1 }}>
+                <button type="submit" className="btn btn-lg btn-primary" disabled={submitting} style={{ marginTop: 4, justifyContent: "center", opacity: submitting ? 0.7 : 1, transition: "opacity 160ms ease, transform 160ms ease" }}>
                   {submitting ? "Submitting…" : "Submit Registration →"}
                 </button>
               </form>
             </div>
           </div>
-          <MarketingFooter go={go} />
+          <MarketingFooter go={go} glass />
         </div>
       );
     };
