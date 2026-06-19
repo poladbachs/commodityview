@@ -3267,8 +3267,8 @@
                   <label style={glLabel}>Target Plan *</label>
                   <select style={{ ...glInput, ...SELECT_STYLE }} value={form.targetLayer} onChange={(e) => setForm({ ...form, targetLayer: e.target.value })}>
                     <option value="layer1">Trade Capture ($99/mo)</option>
-                    <option value="layer2">Adds Document Compliance & Validation ($199/mo)</option>
-                    <option value="layer3">Adds Intelligence & Reconciliation ($499/mo)</option>
+                    <option value="layer2">+Compliance & Validation ($199/mo)</option>
+                    <option value="layer3">+Intelligence & Reconciliation ($499/mo)</option>
                     <option value="enterprise">Enterprise API Access ($2,999+/mo)</option>
                   </select>
                 </div>
@@ -3321,9 +3321,9 @@
         if (path === "/waitlist") { window.scrollTo(0, 0); return; }
         const target = path === "/products" ? "product" : path === "/pricing" ? "pricing" : hash;
         if (target) {
-          requestAnimationFrame(() => {
+          setTimeout(() => {
             document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-          });
+          }, 80);
           return;
         }
         window.scrollTo(0, 0);
