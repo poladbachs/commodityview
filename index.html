@@ -1297,6 +1297,10 @@
         grid-template-areas: "brand actions" !important;
       }
     }
+  .waitlist-glass input::placeholder,
+  .waitlist-glass textarea::placeholder {
+    color: oklch(100% 0 0 / 0.50);
+  }
   </style>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
@@ -2911,7 +2915,7 @@
           sub: "/month",
           cta: "Join Layer 2 Waitlist",
           desc: "Validation and exception handling.",
-          inc: ["Deterministic rule engine", "COA/LC/BL cross-checks", "Per-field pass/fail", "Custom rules editor"],
+          inc: ["Compliance rule engine", "COA/LC/BL validation checks", "Per-field pass/fail", "Custom rules editor"],
           soon: true,
         },
         {
@@ -2920,7 +2924,7 @@
           sub: "/month",
           cta: "Join Layer 3 Waitlist",
           desc: "Reconciliation and intelligence.",
-          inc: ["Invoice reconciliation", "Counterparty intelligence", "Vessel tracking", "Market context"],
+          inc: ["Invoice reconciliation", "Market intelligence", "Counterparty intelligence", "Vessel tracking"],
           soon: true,
         },
         {
@@ -2928,8 +2932,8 @@
           price: "$2,999+",
           sub: "/month",
           cta: "Join Enterprise Waitlist",
-          desc: "API access and custom integration.",
-          inc: ["API access for CTRM", "Custom rule templates", "Dedicated support", "Bring your own region"],
+          desc: "API access, when you need it.",
+          inc: ["API access", "EU/US data residency", "[Contact us]"],
           soon: true,
         },
       ];
@@ -3260,18 +3264,18 @@
                 </div>
 
                 <div>
-                  <label style={glLabel}>Target Layer *</label>
+                  <label style={glLabel}>Target Plan *</label>
                   <select style={{ ...glInput, ...SELECT_STYLE }} value={form.targetLayer} onChange={(e) => setForm({ ...form, targetLayer: e.target.value })}>
-                    <option value="layer1">Layer 1 — Trade Capture ($99/mo)</option>
-                    <option value="layer2">Layer 2 — Compliance ($199/mo)</option>
-                    <option value="layer3">Layer 3 — Connected Intelligence ($499/mo)</option>
-                    <option value="enterprise">Enterprise ($2,999+/mo)</option>
+                    <option value="layer1">Trade Capture ($99/mo)</option>
+                    <option value="layer2">Adds document compliance & validation ($199/mo)</option>
+                    <option value="layer3">Adds intelligence & reconciliation ($499/mo)</option>
+                    <option value="enterprise">Enterprise API access ($2,999+/mo)</option>
                   </select>
                 </div>
 
                 <div>
                   <label style={glLabel}>Workflow bottleneck <span style={{ color: "oklch(100% 0 0 / 0.35)", textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-                  <textarea style={{ ...glInput, height: "auto", resize: "vertical", fontFamily: "var(--font-mono)", fontSize: 13 }} rows="3" placeholder="E.g., manual cross-checking of bills of lading…" value={form.bottleneck} onChange={(e) => setForm({ ...form, bottleneck: e.target.value })} />
+                  <textarea style={{ ...glInput, height: "auto", resize: "vertical", fontFamily: "var(--font-mono)", fontSize: 13 }} rows="3" placeholder="What do you want to solve?" value={form.bottleneck} onChange={(e) => setForm({ ...form, bottleneck: e.target.value })} />
                 </div>
 
                 {error && (
