@@ -3267,14 +3267,14 @@
                   <label style={glLabel}>Target Plan *</label>
                   <select style={{ ...glInput, ...SELECT_STYLE }} value={form.targetLayer} onChange={(e) => setForm({ ...form, targetLayer: e.target.value })}>
                     <option value="layer1">Trade Capture ($99/mo)</option>
-                    <option value="layer2">Adds document compliance & validation ($199/mo)</option>
-                    <option value="layer3">Adds intelligence & reconciliation ($499/mo)</option>
-                    <option value="enterprise">Enterprise API access ($2,999+/mo)</option>
+                    <option value="layer2">Adds Document Compliance & Validation ($199/mo)</option>
+                    <option value="layer3">Adds Intelligence & Reconciliation ($499/mo)</option>
+                    <option value="enterprise">Enterprise API Access ($2,999+/mo)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={glLabel}>Workflow bottleneck <span style={{ color: "oklch(100% 0 0 / 0.35)", textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+                  <label style={glLabel}>Workflow Bottleneck <span style={{ color: "oklch(100% 0 0 / 0.35)", textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
                   <textarea style={{ ...glInput, height: "auto", resize: "vertical", fontFamily: "var(--font-mono)", fontSize: 13 }} rows="3" placeholder="What do you want to solve?" value={form.bottleneck} onChange={(e) => setForm({ ...form, bottleneck: e.target.value })} />
                 </div>
 
