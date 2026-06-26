@@ -155,6 +155,11 @@ export default defineSchema({
     documentType: v.string(),
     extractedData: v.optional(v.any()),
     validationResult: v.optional(v.any()),
+    validationStatus: v.optional(v.union(
+      v.literal("auto_cleared"),
+      v.literal("exception"),
+      v.literal("needs_review"),
+    )),
     tradeId: v.optional(v.id("trades")),
     status: v.string(),
     source: v.string(),
@@ -164,6 +169,16 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_tradeId", ["tradeId"])
     .index("by_emailMessageId", ["emailMessageId"]),
+
+  userSettings: defineTable({
+    userId: v.string(),
+    quantityTolerancePercent: v.number(),
+    amountTolerancePercent: v.number(),
+    confidenceThreshold: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"]),
 
   // ... other tables follow same pattern
 });
@@ -272,7 +287,7 @@ export async function classifyDocument(
     temperature: 0,
     system: `You classify physical commodity trade documents.
 Return JSON only: { "type": "...", "confidence": 0.0-1.0 }
-Types: trade_confirmation, coa, letter_of_credit, bill_of_lading, invoice, unknown
+Types: trade_confirmation, coa, coq, letter_of_credit, bill_of_lading, invoice, unknown
 If unsure, return unknown with low confidence.`,
     messages: [{ role: "user", content: text }],
   });
@@ -326,9 +341,49 @@ Never invent data — only extract what is explicitly stated.`,
 | ------------------- | ------------------------------------------------------------------- | ---------- |
 | trade_confirmation  | commodity, counterparty, quantity, price, delivery, exchange, terms  | 1000       |
 | coa                 | commodity, grade, parameters (array), lab, date, certificate number | 800        |
+| coq                 | commodity, grade, parameters (array — varies by commodity, e.g. moisture/protein/test weight for grains, ICUMSA/colour/pol for sugar), lab, date, certificate number | 800 |
 | letter_of_credit    | beneficiary, applicant, amount, currency, expiry, terms, bank       | 800        |
 | bill_of_lading      | vessel, port_loading, port_discharge, quantity, dates, shipper      | 800        |
 | invoice             | line_items (array), total, currency, references, due_date           | 800        |
+
+### COQ Extraction
+
+```typescript
+export async function extractCOQ(
+  text: string,
+): Promise<COQExtractionResult> {
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 800,
+    temperature: 0,
+    system: `You extract structured data from Certificate of Quality (COQ) documents for physical commodity trading.
+Return JSON only with these fields:
+{
+  "commodity": "string — commodity name",
+  "grade": "string — quality grade designation",
+  "parameters": [{ "name": "string", "value": "string", "unit": "string" }],
+  "lab": "string — laboratory or issuing body name",
+  "date": "string — certificate date",
+  "certificateNumber": "string — certificate reference number",
+  "confidence": {
+    "commodity": 0.0-1.0,
+    "grade": 0.0-1.0,
+    "parameters": 0.0-1.0,
+    "lab": 0.0-1.0,
+    "date": 0.0-1.0,
+    "certificateNumber": 0.0-1.0
+  }
+}
+Parameters vary by commodity — e.g. moisture/protein/test weight for grains, ICUMSA/colour/pol for sugar.
+If a field is not found, set it to null with confidence 0.
+Never invent data — only extract what is explicitly stated.`,
+    messages: [{ role: "user", content: text }],
+  });
+  return JSON.parse(
+    response.content[0].type === "text" ? response.content[0].text : "{}",
+  );
+}
+```
 
 **Rules:**
 
@@ -339,6 +394,59 @@ Never invent data — only extract what is explicitly stated.`,
 - Always wrap JSON.parse in try/catch — return fallback empty extraction on parse failure
 - Never invent data — if Claude can't find a field, it returns null with confidence 0
 - Per-field confidence scores enable the low-confidence UI highlight (amber border on fields below 0.9)
+
+---
+
+## OpenSanctions API
+
+### Counterparty Screening
+
+```typescript
+export async function screenCounterparty(
+  name: string,
+): Promise<{ matched: boolean; matches: SanctionsMatch[] }> {
+  const response = await fetch(
+    `https://api.opensanctions.org/search/default?q=${encodeURIComponent(name)}`,
+  );
+  const data = await response.json();
+  // Filter results by relevance score threshold before returning
+  return parseOpenSanctionsResponse(data);
+}
+```
+
+**Rules:**
+
+- Free tier, no API key required for basic search endpoint — confirm current rate limits before relying on it in production
+- Called from a Convex action only — never from a query or mutation
+- Always handle empty/no-match results as a normal case, not an error
+- Store the raw match payload alongside the parsed summary in case manual review is needed later
+
+---
+
+## Nasdaq Data Link (Market Prices)
+
+### Fetch Current Commodity Price
+
+```typescript
+export async function fetchCommodityPrice(
+  datasetCode: string,
+): Promise<{ price: number; date: string } | null> {
+  const response = await fetch(
+    `https://data.nasdaq.com/api/v3/datasets/${datasetCode}/data.json?rows=1&api_key=${process.env.NASDAQ_DATA_LINK_API_KEY}`,
+  );
+  if (!response.ok) return null;
+  const data = await response.json();
+  // Parse latest row — confirm exact response shape against live API before relying on field order
+  return parseLatestPriceRow(data);
+}
+```
+
+**Rules:**
+
+- Free tier available — confirm current dataset codes for ICE No.11 sugar, CBOT wheat, NYMEX crude before implementation, as dataset codes can change
+- Called from a Convex action only
+- Cache results — do not fetch on every render, only on trade detail page load with a short TTL
+- If fetch fails or commodity has no mapped dataset, fall back to manual price entry — never block the page on a failed price fetch
 
 ---
 

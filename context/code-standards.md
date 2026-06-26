@@ -191,6 +191,7 @@ All environment variables defined in `.env.local` for development. Never hardcod
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`| Clerk React provider    |
 | `CLERK_SECRET_KEY`                 | Clerk server-side       |
 | `ANTHROPIC_API_KEY`                | lib/claude.ts           |
+| `NASDAQ_DATA_LINK_API_KEY`         | lib/marketData.ts       |
 
 `NEXT_PUBLIC_` prefix means the variable is exposed to the browser. Never add `NEXT_PUBLIC_` to secret keys.
 

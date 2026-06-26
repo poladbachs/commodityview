@@ -62,8 +62,8 @@
 │   │       ├── page.tsx                       → General settings
 │   │       ├── add-in/
 │   │       │   └── page.tsx                   → Add-in installation instructions
-│   │       ├── rules/
-│   │       │   └── page.tsx                   → Validation rules editor
+│   │       ├── validation/
+│   │       │   └── page.tsx                   → Tolerance and confidence threshold settings
 │   │       └── billing/
 │   │           └── page.tsx                   → Clerk Customer Portal redirect
 │   └── api/
@@ -73,7 +73,7 @@
 │   ├── schema.ts                              → Convex schema definition
 │   ├── documents.ts                           → Document mutations and queries
 │   ├── trades.ts                              → Trade mutations and queries
-│   ├── rules.ts                               → Validation rule queries and mutations
+│   ├── userSettings.ts                        → Tolerance and confidence threshold queries and mutations
 │   ├── activity.ts                            → Activity log mutations and queries
 │   ├── _generated/                            → Convex auto-generated types
 │   └── lib/
@@ -105,7 +105,7 @@
 │   │   └── TradeActions.tsx
 │   ├── settings/
 │   │   ├── AddInSetup.tsx
-│   │   └── RuleEditor.tsx
+│   │   └── ValidationSettings.tsx
 │   └── billing/
 │       └── TierGate.tsx                       → Feature gate wrapper — checks plan, shows upgrade prompt
 ├── lib/
@@ -223,6 +223,7 @@ Convex functions check tier via Clerk user identity
 | documentType     | string             | trade_confirmation, coa, letter_of_credit, bill_of_lading, invoice, unknown |
 | extractedData    | object (any)       | Structured JSON from Claude extraction                                      |
 | validationResult | object (optional)  | Rule engine output — pass/fail per field (Layer 2)                          |
+| validationStatus | string (optional)  | auto_cleared, exception, or needs_review (Layer 2)                          |
 | tradeId          | Id<"trades"> (opt) | Linked trade if applicable                                                  |
 | status           | string             | pending_review, approved, rejected, exception                               |
 | source           | string             | addin, upload                                                               |
@@ -248,28 +249,24 @@ Convex functions check tier via Clerk user identity
 | createdAt       | number               | Timestamp                                                    |
 | updatedAt       | number               | Timestamp                                                    |
 
-### `rules`
+### `userSettings`
 
-| Field         | Type              | Notes                                                                        |
-| ------------- | ----------------- | ---------------------------------------------------------------------------- |
-| userId        | string            | Clerk user ID                                                                |
-| name          | string            | Human-readable rule name                                                     |
-| documentType  | string            | Which document type this rule applies to                                     |
-| commodity     | string            | Which commodity (or "all")                                                   |
-| field         | string            | The extracted field to check                                                 |
-| operator      | string            | equals, not_equals, greater_than, less_than, within_range, contains          |
-| expectedValue | string            | The value or range to check against                                          |
-| tolerance     | number (optional) | Acceptable deviation percentage                                              |
-| isActive      | boolean           | Whether rule is currently enforced                                           |
-| createdAt     | number            | Timestamp                                                                    |
+| Field                      | Type    | Notes                                            |
+| -------------------------- | ------- | ------------------------------------------------- |
+| userId                     | string  | Clerk user ID                                     |
+| quantityTolerancePercent   | number  | Acceptable quantity deviation, e.g. 5             |
+| amountTolerancePercent     | number  | Acceptable amount deviation, e.g. 5               |
+| confidenceThreshold        | number  | Default 0.9 — controls auto_cleared vs needs_review |
+| createdAt                  | number  | Timestamp                                         |
+| updatedAt                  | number  | Timestamp                                         |
 
 ### `activity`
 
 | Field      | Type   | Notes                                                                                                                                          |
 | ---------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | userId     | string | Clerk user ID                                                                                                                                  |
-| action     | string | document_uploaded, document_captured, document_classified, trade_created, trade_approved, trade_rejected, exception_flagged, rule_created |
-| entityType | string | document, trade, rule                                                                                                                     |
+| action     | string | document_uploaded, document_captured, document_classified, trade_created, trade_approved, trade_rejected, exception_flagged, settings_updated |
+| entityType | string | document, trade, settings                                                                                                                  |
 | entityId   | string | ID of the related record                                                                                                                       |
 | details    | string | Human-readable description                                                                                                                     |
 | createdAt  | number | Timestamp                                                                                                                                      |

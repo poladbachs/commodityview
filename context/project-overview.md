@@ -46,9 +46,9 @@ CommodityOps replaces the spreadsheets and email threads with a proper system. U
 /trades/[id]             → Individual trade detail — documents, timeline, actions
 /documents               → Document inbox — all ingested documents + manual upload
 /documents/[id]          → Individual document detail — extracted data, validation
-/settings                → Account settings, add-in setup, rules config
+/settings                → Account settings, add-in setup, validation settings
 /settings/add-in         → Add-in installation instructions and status
-/settings/rules          → Custom validation rules editor
+/settings/validation     → Tolerance and confidence threshold settings
 /settings/billing        → Clerk Customer Portal redirect
 ```
 
@@ -104,7 +104,7 @@ Two entry points, one pipeline:
 - Same extraction pipeline runs
 
 Both paths produce the same result:
-- Document classified by type: trade_confirmation, coa, letter_of_credit, bill_of_lading, invoice, unknown
+- Document classified by type: trade_confirmation, coa, coq, letter_of_credit, bill_of_lading, invoice, unknown
 - Claude AI extracts structured fields based on document type
 - Document record created with status: pending_review
 
@@ -131,18 +131,18 @@ Both paths produce the same result:
 ### Validation Rule Engine
 
 - Deterministic — never AI for compliance verdicts
-- Rules defined per commodity type and document type
-- Example rules:
-  - COA grade must match contract grade
-  - LC amount must be within 5% of contract value
-  - BL quantity must match trade quantity ± tolerance
-  - Delivery date must fall within contract window
-- Users can add custom rules in Settings → Rules
-- Rule violations surface as exceptions on the document card
+- Comparison baseline is the trade's own contract fields, captured once at trade creation
+- Example checks, derived automatically from contract fields:
+  - COA grade compared against contract grade
+  - LC amount compared against contract value, within tolerance
+  - BL quantity compared against trade quantity, within tolerance
+  - Delivery date compared against contract window
+- Users adjust tolerance percentages and the confidence threshold in Settings → Validation
+- Violations surface as exceptions on the document card
 
 ### Dashboard
 
-- Stats bar: Documents Processed, Trades Captured, Exceptions Flagged, Pending Review
+- Stats bar: Documents Processed, Trades Captured, Exceptions Flagged, Pending Review, and Straight-Through Rate (Layer 2+ only)
 - Recent activity feed — last 10 actions
 - Pending items — documents awaiting review
 - Exception summary — open exceptions by type
@@ -157,9 +157,9 @@ Both paths produce the same result:
 - Clerk Customer Portal for managing subscription (cancel, update card, invoices)
 - Four tiers enforced by feature gating:
   - **Layer 1 — Trade Capture**: $99/mo — trade lifecycle system of record, all document types captured and linked (trade confirmation, COA, LC, BL, invoice), full trade timeline, audit trail
-  - **Layer 2 — Compliance**: $199/mo — full deterministic rule engine, COA/LC/BL cross-validation against contract terms, per-field exception flagging, custom rules editor
-  - **Layer 3 — Connected Intelligence**: $499/mo — invoice reconciliation across full trade lifecycle, counterparty risk screening, vessel tracking
-  - **Enterprise**: $2,999/mo — API access for CTRM integration, custom rule templates, dedicated support
+  - **Layer 2 — Compliance**: $199/mo — full deterministic rule engine, COA/LC/BL cross-validation against contract terms, per-field exception flagging, tolerance and threshold settings
+  - **Layer 3 — Connected Intelligence**: $499/mo — invoice reconciliation and AP matching across full trade lifecycle, sanctions/counterparty screening, market position and unrealised P&L, on-demand Trade Brief, draft invoice generation, vessel tracking
+  - **Enterprise**: $2,999/mo — API access, EU or US data residency
 - Tier checked via `user.subscription.plan` — no separate subscriptions table
 - Upgrade prompts shown when user hits tier limit or accesses gated feature
 
@@ -180,11 +180,11 @@ Both paths produce the same result:
 - Accumulates linked documents over its lifecycle (confirmation → COA → LC → BL → invoice)
 - Status progresses: draft → confirmed → in_shipment → delivered → settled
 
-### Rules
+### User Settings
 
-- User-defined validation rules per workspace
-- Applied deterministically — never by AI
-- Stored as structured rule definitions, not code
+- Tolerance percentages (quantity, amount) and confidence threshold, per user
+- Applied deterministically against the trade's own contract fields — never by AI
+- A small fixed settings object, not an open-ended rules table
 
 ---
 
@@ -198,7 +198,7 @@ Example — one sugar trade flowing through CommodityOps:
 2. **Confirmed** — ops reviews the extracted data, edits if needed, approves. Trade is now official in the system.
 3. **In Shipment** — BL arrives, vessel name extracted, Marine Traffic shows cargo position (vessel tracking). COA arrives, rule engine checks grade against contract — "ICUMSA 60 but contract says Max 45" → exception flagged (compliance).
 4. **Delivered** — BL confirms arrival at destination port.
-5. **Settled** — invoice arrives, system checks amounts against contract and LC terms (reconciliation). Counterparty intel shows risk signals about the counterparty on the trade detail page.
+5. **Settled** — invoice arrives, system checks amounts against contract and LC terms, vendor invoices matched against shipment (reconciliation). Counterparty intel shows sanctions/risk signals. Market position shows unrealised P&L against current price. Trade Brief available on demand summarizing the full position.
 
 One system. One trade page. Features activate as documents arrive and the trade progresses through its lifecycle.
 
@@ -214,7 +214,7 @@ Layer 1 is a complete system of record. Not a teaser. Every document type captur
 - Clerk Billing (paid plans)
 - Outlook Add-in for one-click document capture from Outlook (single + batch)
 - Manual document upload (PDF, images) as fallback
-- Document classification via Claude AI — all types: trade_confirmation, coa, letter_of_credit, bill_of_lading, invoice, unknown
+- Document classification via Claude AI — all types: trade_confirmation, coa, coq, letter_of_credit, bill_of_lading, invoice, unknown
 - Document extraction via Claude AI — structured fields per document type
 - Document inbox page with status filters
 - Document detail page — side-by-side original file + extracted data
@@ -238,22 +238,26 @@ Layer 2 is where the manual cross-checking work gets automated. The rule engine 
 - LC: amount, currency, terms, expiry checked against trade contract
 - BL: vessel, port, quantity, dates cross-referenced against trade and LC
 - Per-field pass/fail with exception reason
-- Custom validation rules editor in Settings → Rules
+- Tolerance and confidence threshold settings in Settings → Validation
 - Exception summary on dashboard — open exceptions by type
 - Exception badge on document cards and trade timeline
 
 ## Features In Scope (Layer 3 — $499/mo)
 
 - Invoice reconciliation — quantity chain and amount chain validated across full trade lifecycle
-- Counterparty intelligence — public risk signals surfaced on trade detail page
-- Multi-commodity rule templates
+- AP vendor invoice matching — inspection/surveyor/freight forwarder invoices matched against shipments
+- Counterparty intelligence — sanctions screening (OFAC/EU/UN/UK via OpenSanctions) and risk signals surfaced on trade detail page
+- Market position — live market price vs. contract price, unrealised gain/loss per trade
+- Trade Brief — on-demand Claude-generated summary synthesizing vessel position, market position, and counterparty risk
+- Draft provisional invoice generation from trade data
+- Multi-commodity tolerance presets
+- Draft outbound email generation (confirm terms, chase missing document, status update)
 - Vessel tracking via Marine Traffic embed on trade detail page
 
 ## Features In Scope (Enterprise — $2,999/mo)
 
-- API access for CTRM integration
-- Custom rule templates
-- Dedicated support
+- API access (self-serve, documented, same for every account — not custom per-client integration work)
+- EU or US data residency (one-time deployment setup per account, not an ongoing service)
 
 ---
 
@@ -276,7 +280,7 @@ Layer 2 is where the manual cross-checking work gets automated. The rule engine 
 
 ## Target User
 
-An operations analyst, trade ops manager, or trader at a small-to-mid-size commodity trading firm who:
+An operations analyst, trade ops manager, or trader at a physical commodity trading firm — of any size — who:
 
 - Processes trade documents manually today (email → spreadsheet)
 - Handles 10-100+ trades per month across energy, metals, or agriculture

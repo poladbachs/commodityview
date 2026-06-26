@@ -67,7 +67,7 @@ All Convex tables created before any data is written.
 
 - `documents` table with all columns from architecture.md
 - `trades` table with all columns
-- `rules` table with all columns
+- `userSettings` table — tolerance percentages and confidence threshold per user
 - `activity` table with all columns
 - Basic queries: list, get by ID (always scoped to userId)
 - Basic mutations: create, update status
@@ -107,7 +107,7 @@ Clerk Billing integration for subscription management.
 - Subscription status enforced — check active plan in Convex mutations before processing
 - TierGate checks:
   - Layer 1: trade capture, document ingestion (all types), trade timeline, audit log
-  - Layer 2: rule engine execution, COA/LC/BL cross-validation, exception flagging, custom rules editor
+  - Layer 2: rule engine execution, COA/LC/BL cross-validation, exception flagging, tolerance/threshold settings
   - Layer 3: invoice reconciliation, counterparty screening, vessel tracking
 
 ---
@@ -126,6 +126,7 @@ Build the document upload and inbox UI with mock data.
 - Extracted data panel shows key-value pairs in an editable card layout
 - Status badge: pending_review (amber), approved (green), rejected (red), exception (red outline)
 - Empty state when no documents
+- "Export CSV" button above the document inbox list — exports currently filtered/visible documents
 
 ---
 
@@ -151,10 +152,11 @@ Claude AI classifies and extracts structured data from uploaded documents.
 
 - Convex action triggered after document upload
 - Step 1: Extract text from PDF (pdf-parse or Convex-compatible alternative)
-- Step 2: Claude API classifies document type (trade_confirmation, coa, letter_of_credit, bill_of_lading, invoice, unknown)
+- Step 2: Claude API classifies document type (trade_confirmation, coa, coq, letter_of_credit, bill_of_lading, invoice, unknown)
 - Step 3: Claude API extracts structured fields based on document type
 - Trade confirmation extraction fields: commodity, counterparty, quantity, price, delivery terms, contract month, exchange, differential
 - COA extraction fields: commodity, grade, specs, test results
+- COQ extraction fields: commodity, grade, parameters (array, commodity-dependent), lab, date, certificate number
 - LC extraction fields: beneficiary, amount, currency, terms, expiry date
 - BL extraction fields: vessel name, port of loading, port of discharge, quantity, dates
 - Invoice extraction fields: line items, amounts, references, due date
@@ -221,6 +223,12 @@ Build the trade list page with mock data.
 - Status filter tabs: All, Draft, Confirmed, In Shipment, Delivered
 - Each row clickable → trade detail page
 - Empty state when no trades
+- "Export CSV" button above the trade list table — exports currently filtered view (respects active status filter tab)
+
+**Logic:**
+
+- Export action generates CSV client-side from the already-loaded trade list query result — no new Convex query needed
+- Column order matches the visible table columns
 
 ---
 
@@ -273,7 +281,7 @@ Build the complete dashboard with mock data.
 **UI:**
 
 - Setup checklist at top if add-in not installed — "Install the Outlook Add-in to start capturing trades"
-- Four stat cards: Documents Processed, Trades Captured, Exceptions Flagged, Pending Review
+- Stat cards: Documents Processed, Trades Captured, Exceptions Flagged, Pending Review, and Straight-Through Rate (Straight-Through Rate card only renders for Layer 2+ users — Layer 1 dashboards show four cards)
 - Pending items — documents awaiting review, clickable → document detail
 - Recent activity list — last 10 actions with timestamps and action type icons
 
@@ -291,6 +299,7 @@ Wire dashboard to Convex queries.
 - Pending Review — count of documents with status: pending_review
 - Recent activity — query activity table, last 10, sorted by createdAt desc
 - Pending items — query documents where status = pending_review, limit 5
+- Straight-Through Rate — percentage of documents with status `auto_cleared` out of all documents processed in the last 30 days: `auto_cleared count / total documents count`. Hidden for Layer 1-only users.
 - Setup checklist — shown until user's first document is captured via add-in
 
 ---
@@ -310,9 +319,12 @@ Build the deterministic validation engine.
 - Rule engine in `convex/lib/ruleEngine.ts`
 - Takes: extracted document data + linked trade data + applicable rules
 - Returns: per-field pass/fail with reason
+- Each document also receives an overall status: `auto_cleared` (all checks pass, all field confidence ≥ 0.9), `exception` (one or more rule failures), or `needs_review` (checks pass but one or more field confidence < 0.9)
+- Only `exception` and `needs_review` documents surface in the Pending Review queue — `auto_cleared` documents post directly to the trade timeline with a system log entry
 - Operators: equals, not_equals, greater_than, less_than, within_range, contains
 - Tolerance support for numeric comparisons
-- Rules loaded from `rules` table, filtered by documentType + commodity
+- Comparison baseline is the linked trade's own contract fields (quantity, price, grade/spec, delivery window) — captured once at trade creation in Layer 1
+- Tolerance values and confidence threshold loaded from the user's settings object (Feature 19)
 - Rule engine runs automatically after extraction completes (for Layer 2+ users only — tier gated)
 - Validation results saved to document record
 - Exceptions written to linked trade record
@@ -330,26 +342,27 @@ Show validation results on document detail page.
 - Summary badge on document card: "2 exceptions" or "All checks passed"
 - Exception details expandable per field
 - Exception summary card on dashboard now shows real data
+- Documents with status `auto_cleared` show a compact "Auto-cleared" tag instead of the full pass/fail field breakdown — full breakdown still available on click
 
 ---
 
-### 19 Rules Editor — Full UI + Logic
+### 19 Tolerance & Threshold Settings
 
-Build the validation rules management page.
+Build the settings page where users adjust tolerance values and the confidence threshold.
 
 **UI:**
 
-- Rules list — name, document type, commodity, field, operator, status toggle
-- Add Rule form — all fields from rules schema
-- Edit inline
-- Delete with confirmation
+- Settings → Validation page
+- Per-commodity tolerance settings: quantity tolerance (%), amount tolerance (%) — defaults pre-filled (e.g. 5%), editable
+- Single confidence threshold slider (default 0.9) — controls what auto-clears vs. surfaces as needs_review
+- No rule builder, no rule list — a small fixed set of tolerance values and one threshold
 
 **Logic:**
 
-- Convex mutations: create, update, delete rules
-- Rules scoped to userId
+- Convex mutation: update user's tolerance/threshold settings (one settings object per user)
+- Settings scoped to userId
 - Tier gated — Layer 2+ only
-- Activity log: rule_created
+- Activity log: settings_updated
 
 ---
 
@@ -366,6 +379,12 @@ Full lifecycle reconciliation from confirmation to invoice.
 - Quantity chain: trade quantity → BL quantity → invoice quantity — must align within tolerance
 - Amount chain: trade price × quantity → LC amount → invoice total — must align
 - Exceptions flagged per field with source document reference
+- Reconciliation result per chain (quantity chain, amount chain) is one of three outcomes: `clean` (within tight tolerance, posts straight through, no review needed), `within_tolerance` (outside tight tolerance but within the configured acceptable range — posts with a visible note on the trade timeline, non-blocking), or `break` (outside acceptable tolerance — becomes an exception requiring review)
+- `within_tolerance` results are visible but non-blocking — they inform the trade finance lead without demanding action
+- Vendor invoices (from inspection companies, surveyors, freight forwarders) are a separate invoice sub-type, distinguished by sender/issuer rather than a new documentType — classification step should detect "vendor invoice" vs. "customer invoice" pattern and tag accordingly
+- Vendor invoices matched against the shipment they reference (by vessel name, BL number, or date proximity — same matching logic as Feature 08's document linking)
+- Match validates: vendor invoice amount within expected range for that service type, invoice references a valid shipment/trade in the system
+- Unmatched or out-of-range vendor invoices flagged as exceptions, same UI pattern as customer-side reconciliation exceptions
 - Tier gated — Layer 3+ only
 
 ---
@@ -376,13 +395,36 @@ Basic counterparty risk signals from public data.
 
 **Logic:**
 
-- For each counterparty in trades, pull basic public data (registration, sanctions lists)
-- Surface risk signals on trade detail page
+- Convex action calls OpenSanctions API (https://api.opensanctions.org) with counterparty name on trade creation/update
+- Match results stored on trade record: matched entity name, list source (OFAC/EU/UN/UK), match confidence
+- No match → counterparty marked "Clear" on trade detail page
+- Match found → counterparty marked with a warning tag, full match detail expandable
+- Re-check on a schedule (e.g. weekly) for trades still in_shipment or confirmed status, since sanctions lists update independently of trade state
 - Tier gated — Layer 3+ only
 
 ---
 
-### 22 Vessel Tracking
+### 22 Market Position — Unrealised P&L
+
+Show live market price vs. contract price per trade, with unrealised gain/loss.
+
+**UI:**
+
+- Market Position card on trade detail page: Contract Locked (price from trade record) vs. Market Now (live price)
+- Unrealised gain/loss calculated and displayed: `(market price - contract price) × quantity`
+- Color-coded per existing signal tokens — gain uses signal-pass, loss uses signal-fail
+- If no live price source configured for that commodity, show manual price input field instead (fallback mode)
+
+**Logic:**
+
+- Convex action fetches current price for the trade's commodity from Nasdaq Data Link (ICE No.11 sugar, CBOT wheat, NYMEX crude — confirm exact dataset codes before implementation)
+- Price fetched on trade detail page load, cached for a short interval (e.g. 15 min) to avoid excessive API calls
+- Fallback: if commodity has no mapped price feed, allow manual entry of current market price, store with a timestamp, calculate unrealised P&L from that manual value
+- Tier gated — Layer 3+ only
+
+---
+
+### 23 Vessel Tracking
 
 Embedded Marine Traffic map on trade detail page for shipments in transit.
 
@@ -390,6 +432,65 @@ Embedded Marine Traffic map on trade detail page for shipments in transit.
 
 - Marine Traffic iframe embed on trade detail page
 - Shows vessel position when BL vessel name is available
+- Tier gated — Layer 3+ only
+
+---
+
+### 24 Trade Brief
+
+On-demand Claude-generated summary of a trade's current state, synthesizing vessel position, market position, and counterparty risk into one paragraph.
+
+**UI:**
+
+- "Generate Trade Brief" button on trade detail page (Layer 3+ only)
+- Output rendered as a short paragraph in `--font-display` (Newsreader italic), matching the editorial accent style already defined in ui-tokens.md
+- Regeneration allowed — not cached permanently, since underlying data (market price, vessel position) changes over time
+
+**Logic:**
+
+- Convex action gathers: trade core fields, latest vessel position (Feature 23), latest market position (Feature 22), counterparty screening result (Feature 21)
+- Single Claude API call, temperature 0, system prompt instructs Claude to synthesize the above into a 2-4 sentence brief in the style already shown on the marketing site (factual, no speculation, cites concrete numbers)
+- Never invent data not present in the gathered fields — same "never invent data" rule as all other extraction prompts in this codebase
+- Tier gated — Layer 3+ only
+
+---
+
+### 25 Draft Provisional Invoice
+
+Generate a draft provisional invoice from trade data, for the trade finance lead to review and send.
+
+**UI:**
+
+- "Generate Provisional Invoice" button on trade detail page (Layer 3+ only), available once trade status is `confirmed` or later
+- Draft rendered as an editable document preview — line items, amounts, references all editable before export
+- "Download" action exports as PDF
+
+**Logic:**
+
+- Convex action gathers trade core fields (commodity, quantity, price, counterparty, delivery terms) and any linked BL/COA data already in the system
+- Single Claude API call, temperature 0, drafts line items and totals from the gathered structured data only — never invent figures not present in the source trade/document records
+- Output stored as a draft on the trade record, editable, not auto-sent anywhere
+- PDF generation — confirm available library/approach before implementation; do not add a new dependency without first updating the approved dependencies list in code-standards.md
+- Tier gated — Layer 3+ only
+
+---
+
+### 26 Draft Outbound Email
+
+Generate a draft email from trade data — confirming terms, chasing a missing document, or updating a counterparty on status — for the user to review and send themselves.
+
+**UI:**
+
+- "Draft Email" button on trade detail page (Layer 3+ only)
+- Small picker for email type: Confirm terms / Chase missing document / Status update
+- Draft rendered as editable text in a modal — subject + body, fully editable before the user copies it or opens it in their own mail client
+- No send capability inside CommodityOps — the user copies the draft or it opens a pre-filled `mailto:` link
+
+**Logic:**
+
+- Convex action gathers trade core fields, linked document data (which documents are present vs. missing, for the "chase missing document" type), and current trade status
+- Single Claude API call, temperature 0, drafts subject + body from the gathered structured data only — never invent figures, counterparty names, or document references not present in the source trade/document records
+- Three system prompt variants matching the three email types, selected by the UI picker
 - Tier gated — Layer 3+ only
 
 ---
@@ -404,5 +505,5 @@ Embedded Marine Traffic map on trade detail page for shipments in transit.
 | Phase 3 — Trades                | 4        |
 | Phase 4 — Dashboard             | 2        |
 | Phase 5 — Validation (Layer 2)  | 3        |
-| Phase 6 — Reconciliation (Layer 3) | 3     |
-| **Total**                       | **22**   |
+| Phase 6 — Reconciliation (Layer 3) | 7     |
+| **Total**                       | **26**   |

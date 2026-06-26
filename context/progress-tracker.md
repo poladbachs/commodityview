@@ -50,7 +50,7 @@ Update this file after every completed feature. Any AI agent reading this should
 
 - [ ] 17 Rule Engine — Core
 - [ ] 18 Validation UI
-- [ ] 19 Rules Editor — Full UI + Logic
+- [ ] 19 Tolerance & Threshold Settings
 
 ### Phase 6 — Reconciliation (Layer 3)
 
